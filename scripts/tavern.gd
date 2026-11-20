@@ -11,6 +11,9 @@ const TRAY := Vector2(18.0, 12.0)   # inner size of the dice tray
 const TABLE_TOP := -0.3            # table surface; the velvet tray floor sits at y = 0
 const FLOOR_Y := -62.0             # the inn floor (a 75 cm table)
 const BACK_WALL_Z := -150.0
+## Where the hub puts things: the top of Hollis's lower shelf, and Brannoc's bench.
+const SHELF_TOP := Vector3(-62.0, FLOOR_Y + 53.5, BACK_WALL_Z + 9.0)
+const BENCH_TOP := Vector3(-178.0, FLOOR_Y + 58.0, BACK_WALL_Z + 22.0)
 
 var _flickers: Array = []          # [light, base_energy, speed, phase]
 var _time := 0.0
@@ -21,6 +24,7 @@ var _gust := 0.0
 static var _gust_added := false
 var environment: Environment
 var particles: Array = []          # dust and embers, switched off at low quality
+var map_space := false             # the game puts the tale board where the loose parchment lies
 
 
 func _ready() -> void:
@@ -319,7 +323,8 @@ func _build_props() -> void:
 	_candle(Vector3(-13.0, TABLE_TOP, -15.0), 3.8, false)
 	_tankard(Vector3(-23.0, TABLE_TOP, -12.0))
 	_coins(Vector3(16.0, TABLE_TOP, -1.0))
-	_parchment(Vector3(-17.5, TABLE_TOP, 4.0))
+	if not map_space:
+		_parchment(Vector3(-17.5, TABLE_TOP, 4.0))
 	_jug(Vector3(25.0, TABLE_TOP, -13.0))
 	var pouch := Props.pouch(_rng(Vector3(9, 9, 9)))
 	pouch.position = Vector3(20.5, TABLE_TOP + 2.6, 1.5)
@@ -454,8 +459,10 @@ func _build_room() -> void:
 	for z in [-120, -60, 0]:
 		_box(Vector3(w, 12, 12), Vector3(0, FLOOR_Y + 230, z), beam)
 
-	_shelf(Vector3(-62, FLOOR_Y + 52, BACK_WALL_Z))
+	_shelf(Vector3(-62, FLOOR_Y + 52, BACK_WALL_Z), not map_space)   # the lower shelf holds your dice
 	_shelf(Vector3(-62, FLOOR_Y + 80, BACK_WALL_Z))
+	if map_space:
+		_dicewright_bench(BENCH_TOP)
 	_window(Vector3(-118, FLOOR_Y + 62, BACK_WALL_Z))
 	_barrel(Vector3(150, FLOOR_Y, BACK_WALL_Z + 30), true)
 	_barrel(Vector3(178, FLOOR_Y, BACK_WALL_Z + 40))
@@ -508,11 +515,13 @@ func _window(c: Vector3) -> void:
 	add_child(moon)
 
 
-func _shelf(pos: Vector3) -> void:
+func _shelf(pos: Vector3, bottles := true) -> void:
 	var plank := Mats.wood({"col_light": Color("#6a4426"), "col_dark": Color("#2e180a"), "axis": 2, "plank_width": 100.0, "seed": 31.0})
 	_box(Vector3(60, 3, 16), pos + Vector3(0, 0, 9), plank)
 	for x in [-24, 24]:  # brackets
 		_box(Vector3(2, 8, 12), pos + Vector3(x, -5, 7), plank)
+	if not bottles:
+		return
 	var rng := _rng(pos)
 	var glass_colors := [Color("#3f7d3a"), Color("#7a3a1c"), Color("#34507a"), Color("#8a7a30"), Color("#5a2850")]
 	var x := -26.0
@@ -522,6 +531,41 @@ func _shelf(pos: Vector3) -> void:
 		b.rotation.y = rng.randf() * TAU
 		add_child(b)
 		x += rng.randf_range(7.0, 11.0)
+
+
+## Old Brannoc's workbench: a heavy top on trestles, a vice, chisels and a mallet, a lamp to
+## carve by and a scatter of shavings. The die being worked sits in the middle.
+func _dicewright_bench(top: Vector3) -> void:
+	var oak := Mats.wood({"col_light": Color("#7a5232"), "col_dark": Color("#3a2210"), "axis": 0, "plank_width": 14.0, "seed": 71.0})
+	var dark := Mats.wood({"col_light": Color("#4a2e1a"), "col_dark": Color("#1c0e06"), "axis": 1, "plank_width": 100.0, "seed": 73.0})
+	var iron := Mats.metal(Color("#3a3632"), 0.45)
+	_box(Vector3(56, 4, 26), top + Vector3(0, -2, 0), oak)
+	for x in [-24, 24]:
+		_box(Vector3(4, 54, 20), Vector3(top.x + x, FLOOR_Y + 27, top.z), dark)
+	_box(Vector3(50, 3, 3), Vector3(top.x, FLOOR_Y + 12, top.z), dark)                  # stretcher
+	# the vice at the right end
+	_box(Vector3(6, 5, 6), top + Vector3(20, 2.5, 6), iron)
+	_box(Vector3(6, 5, 1.5), top + Vector3(20, 2.5, 10), iron)
+	_cyl(0.5, 0.5, 9, top + Vector3(20, 2.5, 12), iron, 8).rotation_degrees.x = 90
+	# chisels and a mallet laid out
+	for i in 4:
+		var c := _box(Vector3(0.7, 0.5, 9), top + Vector3(-18 + i * 2.2, 0.25, 4), iron)
+		c.rotation_degrees.y = -8 + i * 4
+		var h := _box(Vector3(1.0, 1.0, 4), top + Vector3(-18 + i * 2.2, 0.5, 9.5), dark)
+		h.rotation_degrees.y = -8 + i * 4
+	var mallet := _cyl(2.2, 2.2, 6, top + Vector3(-6, 2.2, -6), dark, 16)
+	mallet.rotation_degrees.z = 90
+	_box(Vector3(1, 1, 10), top + Vector3(-6, 1.2, -0.5), oak)
+	# shavings and dust
+	var rng := _rng(top)
+	var shav := Mats.plain(Color("#c8a070"), 0.9)
+	for i in 14:
+		var b := _box(Vector3(rng.randf_range(0.6, 1.4), 0.12, rng.randf_range(0.3, 0.6)), top + Vector3(rng.randf_range(-10, 10), 0.06, rng.randf_range(-6, 8)), shav)
+		b.rotation_degrees.y = rng.randf() * 180
+	# a stub of candle to carve by
+	_candle(top + Vector3(14, 0, -7), 3.0, false)
+	# a rack of finished dice blanks on the wall above
+	_box(Vector3(30, 2, 6), top + Vector3(0, 28, -14), oak)
 
 
 func _barrel(base: Vector3, tap := false) -> void:

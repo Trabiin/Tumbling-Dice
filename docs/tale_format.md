@@ -73,6 +73,17 @@ Option properties go before the option's first `>`. After a `>`, `do:` and `goto
   - `waystone` lets the player swap dice with the Saddlebag.
 - `goto: id`
 - `on enter: effects`
+- `tile: icon` puts the scene on the tale board as a painted tile. Icons: `inn`, `village`, `shore`,
+  `drowned`, `jetty`, `abbey`, `cove`, `camp`, `dive`, `chest`, `shrine`, `bell`, `tower`, `forest`,
+  `cave`, `bridge`, `place`. Scenes without a tile (the wager, packing the Pouch, the ending) are not
+  places: roads run straight through them.
+- `at: x, y` places the tile, in grid steps: x to the right, y toward the player. Leave it out and the
+  tile goes in a column by its distance from the start.
+- `token: condition => icon "label"` leaves a token on this scene's tile whenever the condition holds,
+  for example `token: gold_taken => coins "The bell's gold, taken"`. Tokens: `chest`, `coins`, `grave`,
+  `lamp`, `beacon`, `flag`, `knife`, `rune`, `boat`, `footprints`, `handbell`, `candle`, `broken_bell`,
+  `wave`, `dove`, `foe`, `skull`, `fire`, `seal`. The label shows when the mouse is over the token.
+  Every fight you win also leaves the beaten foe's figurine, toppled, on the tile where you fought.
 
 **Option:**
 - `if: condition`: the option only shows when this holds.
@@ -124,6 +135,18 @@ Effects are separated by `;`. Words with spaces go in double quotes. Lists go in
 | `defeat` | The tale was lost |
 | `not X`, `X and Y`, `X or Y` | Combinations. `and` binds tighter than `or`. There are no parentheses. |
 
+## The tale board
+
+The board is drawn from the tale itself. Each `goto:` between two tiles becomes a road (roads bend
+around tiles in their way). While you play:
+- tiles you have visited are painted and named, and the roads you walked are inked;
+- tiles one road from where you stand are sketched in faint ink;
+- roads you could have taken and didn't stay faded for the rest of the tale;
+- everything else is under mist, which lifts as you arrive;
+- tiles walked in an earlier telling of the same tale show washed out, not in mist.
+
+A tale with no `tile:` lines at all still gets a board: one tile per scene, laid out automatically.
+
 ## The linter
 
 The linter checks every tale. Run it with `godot --headless -s res://tests/run_tests.gd -- --only=lint`, or open the text preview in the game.
@@ -136,6 +159,7 @@ It reports each problem with the tale's file and line. It checks for:
 - `goto:` targets that don't exist;
 - scenes that can't be reached;
 - flags that are read but never set;
-- card-sharp contests with no `caught` outcome.
+- card-sharp contests with no `caught` outcome;
+- unknown tile or token icons, and tokens or `at:` on a scene without a tile.
 
 Italics, `[i]like this[/i]`, are the Teller's asides.

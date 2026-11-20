@@ -3,7 +3,7 @@ extends SceneTree
 ##
 ##   godot --headless -s res://tests/run_tests.gd                       unit tests + linter + quick bots
 ##   godot --headless -s res://tests/run_tests.gd -- --runs=400 --report=media/balance.md
-##   options: --only=<suite>  (pouch, scoring, odds, combat, contest, challenges, lint, format, preview, save, practice, bots)
+##   options: --only=<suite>  (pouch, scoring, odds, combat, contest, challenges, lint, format, preview, save, board, forge, practice, bots)
 ##
 ## Exit code is the number of failed checks.
 
@@ -25,6 +25,8 @@ const Writer := preload("res://scripts/rules/tale_writer.gd")
 const Lint := preload("res://scripts/rules/tale_lint.gd")
 const Preview := preload("res://scripts/rules/preview.gd")
 const Practice := preload("res://scripts/tale/practice.gd")
+const Board := preload("res://scripts/rules/board.gd")
+const Forge := preload("res://scripts/rules/forge.gd")
 
 var failures := 0
 var checks := 0
@@ -40,7 +42,7 @@ func _init() -> void:
 		elif a.begins_with("--report="): report_path = a.substr(9)
 		elif a.begins_with("--only="): only = a.substr(7)
 	var t0 := Time.get_ticks_msec()
-	var suites := ["pouch", "scoring", "odds", "combat", "contest", "challenges", "lint", "format", "preview", "save", "practice", "bots"]
+	var suites := ["pouch", "scoring", "odds", "combat", "contest", "challenges", "lint", "format", "preview", "save", "board", "forge", "practice", "bots"]
 	for s in suites:
 		if only == "" or only == s:
 			print("== ", s)
@@ -601,6 +603,9 @@ func test_save() -> void:
 		eq(r2.pouch.draw_pile.size() + r2.pouch.discard.size(), r.pouch.draw_pile.size() + r.pouch.discard.size(), "resume %d keeps the draw pile" % k)
 		eq(r2.pouch.fatigue, r.pouch.fatigue, "resume %d keeps Fatigue" % k)
 		eq(r2.visible_options().size(), r.visible_options().size(), "resume %d shows the same options" % k)
+		var v1 := Board.view(r.tale, r.state, [], r.ctx())
+		var v2 := Board.view(r2.tale, r2.state, [], r2.ctx())
+		eq(JSON.stringify([v2.tiles, v2.roads, v2.path, v2.tokens]), JSON.stringify([v1.tiles, v1.roads, v1.path, v1.tokens]), "resume %d brings the tale board back as it was" % k)
 		if r.state.wager != null:
 			check(r2.state.wager != null and r2.pouch.collection.has(r2.state.wager), "resume %d keeps the wager as the same die" % k)
 		var bt2 := Bot.new()
@@ -608,6 +613,176 @@ func test_save() -> void:
 		bt2.play(r2)
 		eq(r2.phase, "ending", "resumed run %d plays on to an ending" % k)
 	check(resumed >= 8, "most runs were saved and resumed mid-tale (%d)" % resumed)
+
+
+# ===================================================================== tale board
+
+func test_board() -> void:
+	var tale: Dictionary = Tales.drowned_bell()
+	var lay := Board.layout(tale)
+	eq(lay.tiles.size(), 11, "The Drowned Bell has 11 tiles (wager, prepare and the ending are not places)")
+	eq(lay.start, "plea", "the board starts at Wren's table")
+	var keys: Array = lay.roads.map(func(r): return Board.road_key(r.a, r.b))
+	for pair in [["plea", "arrival"], ["arrival", "waystone"], ["fork", "dive"], ["dive", "gold"], ["gold", "waystone"], ["waystone", "chamber"], ["kettle", "kettle_brawl"]]:
+		check(keys.has(Board.road_key(pair[0], pair[1])), "a road joins %s and %s" % pair)
+	check(not keys.has(Board.road_key("plea", "wager")), "scenes that are not tiles are walked through, not drawn")
+	# Roads bend around tiles they would otherwise run through.
+	for r in lay.roads:
+		for id in lay.pos:
+			if id == r.a or id == r.b:
+				continue
+			var d := Board._dist_to_curve(lay.pos[id], lay.pos[r.a], lay.pos[r.b], r.bend)
+			check(d >= Board.MIN_GAP * 0.99 or r.bend == 0.0, "the road %s-%s keeps clear of %s" % [r.a, r.b, id])
+	# A walk: at the fork, three roads open; after the cove, the others stay as roads not taken.
+	var camp := Campaign.new()
+	camp.new_campaign()
+	var st = load("res://scripts/rules/tale_state.gd").new()
+	st.visited = ["plea", "wager", "prepare", "arrival", "tolls", "fork"]
+	var v := Board.view(tale, st)
+	eq(v.here, "fork", "the figurine stands at the jetty")
+	eq(v.path, ["plea", "arrival", "tolls", "fork"], "the path skips scenes that are not tiles")
+	eq(v.tiles.fork, Board.CURRENT, "current tile")
+	eq(v.tiles.arrival, Board.VISITED, "visited tile")
+	for id in ["scriptorium", "kettle", "dive"]:
+		eq(v.tiles[id], Board.OPEN, "%s is a road you could take" % id)
+	eq(v.tiles.chamber, Board.FOG, "the Bell Chamber is still in fog")
+	eq(v.tiles.waystone, Board.PASSED, "the row-out road you didn't take leaves the shrine sketched")
+	eq(v.roads[Board.road_key("arrival", "tolls")], Board.VISITED, "walked roads are inked")
+	eq(v.roads[Board.road_key("arrival", "waystone")], Board.PASSED, "the road not taken stays faded")
+	st.visited.append("kettle")
+	v = Board.view(tale, st)
+	eq(v.tiles.dive, Board.PASSED, "after the cove, the dive is a road not taken")
+	eq(v.tiles.kettle_brawl, Board.OPEN, "from the cove, the brawl is open")
+	# Tokens: choices leave marks; a won fight leaves the foe's figurine.
+	st.set_flag("smugglers_allied")
+	st.set_flag("villagers_saved", 2)
+	st.set_flag("fisherman_lost")
+	st.marks.append({"scene": "tolls", "icon": "foe", "label": "Two Drowned, beaten", "figure": "drowned"})
+	v = Board.view(tale, st, [], {"state": st, "pouch": camp.pouch, "campaign": camp})
+	var labels: Array = v.tokens.map(func(t): return t.label)
+	check(labels.has("Kettle's crew, allies"), "an alliance leaves Kettle's flag on the cove")
+	check(labels.has("The village, every lamp lit"), "saving the village leaves lit lamps")
+	check(labels.has("Aldous, taken by the lake"), "a lost fisherman leaves a grave")
+	check(labels.has("Two Drowned, beaten"), "a won fight leaves the foe's figurine")
+	check(not labels.has("Ysolde, at rest"), "the ending's marks wait for the ending")
+	# The board remembers earlier tellings: roads walked before are not fog.
+	st.visited = ["plea", "wager", "prepare", "arrival"]
+	v = Board.view(tale, st, ["plea", "arrival", "tolls", "fork", "dive", "gold", "waystone", "chamber"])
+	eq(v.tiles.chamber, Board.REMEMBERED, "a tile from an earlier telling is remembered")
+	eq(v.roads[Board.road_key("dive", "gold")], Board.REMEMBERED, "and so is its road")
+	eq(v.tiles.scriptorium, Board.FOG, "places never seen stay in fog")
+	camp.remember_map("drowned_bell", ["plea", "fork", "plea"])
+	camp.remember_map("drowned_bell", ["fork", "dive"])
+	eq(camp.map_seen("drowned_bell"), ["plea", "fork", "dive"], "the campaign remembers each place once")
+	var path := "user://test_board_campaign.json"
+	camp.save(path)
+	var c2 := Campaign.new()
+	c2.load_save(path)
+	eq(c2.map_seen("drowned_bell"), ["plea", "fork", "dive"], "map memory survives a save")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	# A tale with no tiles still gets a board, laid out by distance from the start.
+	var bare: Dictionary = Parser.parse("title: T\nid: t\nstart: a\n## a: A\n* x: X\n  goto: b\n* y: Y\n  goto: c\n## b: B\n* z: Z\n  goto: d\n## c: C\n* z: Z\n  goto: d\n## d: D\n* z: Z\n  goto: e\n## e: E\ntype: ending\n+ end: End\n").tale
+	var bl := Board.layout(bare)
+	check(bl.auto, "a tale without tiles is laid out automatically")
+	eq(bl.tiles.size(), 4, "every scene but the ending is a tile")
+	eq(bl.pos.b.x, 1.0, "laid out by distance from the start")
+	eq(bl.pos.d.x, 2.0, "branches rejoin a column further on")
+	# The parser and linter know tiles and tokens.
+	var bt := Parser.parse("title: T\nid: t\nstart: a\n## a: A\ntile: castle\nat: 1, 2.5\ntoken: nope => banana \"A b\"\n* x: X\n  goto: a\n")
+	eq(bt.tale.scenes.a.at, Vector2(1, 2.5), "at: reads two numbers")
+	eq(bt.tale.scenes.a.tokens[0], {"cond": "nope", "icon": "banana", "label": "A b"}, "token: reads condition, icon and label")
+	var li := " | ".join(Lint.run(bt.tale, bt.lines).map(func(i): return i.msg))
+	check(li.contains("Unknown tile 'castle'"), "the linter catches an unknown tile")
+	check(li.contains("Unknown token 'banana'"), "the linter catches an unknown token")
+	check(li.contains("'nope' is read here but never set"), "token conditions count as flags read")
+	# A real run leaves a fallen-foe mark where it won a fight, and the board can show it.
+	var found := false
+	for k in 30:
+		var cc := Campaign.new()
+		cc.new_campaign()
+		var r := Runner.new()
+		var b := Bot.new()
+		b.rng.seed = 300 + k
+		r.start(Tales.drowned_bell(), cc, 400 + k)
+		b.play(r)
+		for m in r.state.marks:
+			if m.icon == "foe":
+				found = true
+				check(Board.layout(r.tale).pos.has(m.scene), "the fallen foe lies on a tile (%s)" % m.scene)
+		check(cc.map_seen("drowned_bell").size() >= 4, "a finished tale is remembered on the map")
+	check(found, "bots win fights and leave fallen-foe tokens")
+
+
+# ===================================================================== the Dicewright and the shelf
+
+func test_forge() -> void:
+	var c := Campaign.new()
+	c.new_campaign()
+	c.coin = 100
+	var oak: Dictionary = c.pouch.collection[0]
+	var r := Forge.recarve(c, oak, 0, 1)
+	check(r.ok, "recarve a plain oak face")
+	eq(oak.faces[0].n, 2, "the 1 is a 2 now")
+	eq(c.coin, 100 - Forge.RECARVE_COST, "recarving costs Coin")
+	for i in 3:
+		Forge.recarve(c, oak, 1 + i, 1)
+	eq(Forge.carved(oak), 4, "four points carved")
+	check(not Forge.can_recarve(c, oak, 5, 1).ok, "a die's faces rise by 4 at most")
+	check(Forge.can_recarve(c, oak, 5, -1).ok, "carving down is still allowed")
+	check(not Forge.can_recarve(c, oak, 0, 2).ok, "one point at a time")
+	var loaded: Dictionary = c.pouch.collection.filter(func(d): return d.has("loaded_face"))[0]
+	check(not Forge.can_recarve(c, loaded, 0, 1).ok, "Brannoc won't recarve a loaded die")
+	# Inscribe needs a shard, a plain face and room under the rune cap.
+	check(not Forge.can_inscribe(c, oak, 2, "guard").ok, "no shard, no rune")
+	c.shards.append("Guard")
+	r = Forge.inscribe(c, oak, 2, "guard")
+	check(r.ok, "inscribe Guard from a shard")
+	eq(oak.faces[2].rune, "guard", "the face carries Guard")
+	eq(c.shards.size(), 0, "the shard is used up")
+	c.shards.append("Spark")
+	check(not Forge.can_inscribe(c, oak, 3, "spark").ok, "a common die holds one rune face")
+	var brass: Dictionary = c.pouch.collection.filter(func(d): return d.base == "brass_d8")[0]
+	check(not Forge.can_inscribe(c, brass, 6, "spark").ok, "a face with a rune can't take another")
+	check(not Forge.can_inscribe(c, brass, 0, "spark").ok, "a fine die with two rune faces is full")
+	var jade: Dictionary = c.pouch.collection.filter(func(d): return d.base == "jade_d8")[0]
+	check(Forge.can_inscribe(c, jade, 0, "spark").ok, "a fine die with one rune face has room for another")
+	# Melt gives the runes back as shards.
+	var dragon: Dictionary = c.pouch.collection.filter(func(d): return d.base == "dragon_d10")[0]
+	var n: int = c.pouch.collection.size()
+	r = Forge.melt(c, dragon)
+	check(r.ok, "melt a die")
+	eq(c.pouch.collection.size(), n - 1, "the die is gone")
+	check(c.shards.has("Strike"), "its Strike runes come back as a shard")
+	var bell := Dice.create("bellmetal_d20")
+	c.pouch.collection.append(bell)
+	check(not Forge.can_melt(c, bell).ok, "a cursed die won't melt")
+	check(not Forge.can_sell(c, bell).ok, "or sell")
+	check(Forge.unworkable(bell) != "", "or go under the chisel")
+	# Hollis buys and sells, but won't leave you with nothing to throw.
+	var coin := c.coin
+	r = Forge.buy(c, Forge.STOCK[0])
+	check(r.ok, "buy an oak die")
+	eq(c.coin, coin - int(Forge.STOCK[0].price), "it costs its price")
+	var sold: Dictionary = c.pouch.collection[1]
+	coin = c.coin
+	r = Forge.sell(c, sold)
+	check(r.ok and not c.pouch.collection.has(sold), "sell a die")
+	eq(c.coin, coin + Forge.sell_price(sold), "for its price")
+	while c.pouch.collection.size() > Forge.MIN_COLLECTION:
+		c.pouch.lose(c.pouch.collection[0])
+	check(not Forge.can_sell(c, c.pouch.collection[0]).ok, "Hollis keeps you to %d dice at least" % Forge.MIN_COLLECTION)
+	check(not Forge.can_melt(c, c.pouch.collection[0]).ok, "and so does Brannoc")
+	# Forged dice survive a save, with their history.
+	var path := "user://test_forge.json"
+	c.save(path)
+	var c2 := Campaign.new()
+	c2.load_save(path)
+	var oak2: Array = c2.pouch.collection.filter(func(d): return d.id == oak.id)
+	if not oak2.is_empty():
+		eq(oak2[0].faces[0].n, 2, "a recarved face survives a save")
+		eq(oak2[0].faces[2].rune, "guard", "an inscribed rune survives a save")
+		eq(int(oak2[0].get("carved", 0)), 4, "so does how far it has been carved")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
 # ===================================================================== bots

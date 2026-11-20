@@ -42,10 +42,11 @@ var coin := 0                  # coin earned this tale
 var ending := ""
 var throws := 0
 var choices: Array = []        # [scene_id, option_id] for telemetry and the pick-rate check
+var marks: Array = []          # tokens left on the tale board by play itself, e.g. a fallen foe
 
 
 const SAVED := ["grit", "grit_max", "fate", "wounds", "flags", "temper", "regard", "defy_used", "fail_streak",
-	"visited", "chronicle", "rumours", "standing", "shards", "coin", "ending", "throws", "choices"]
+	"visited", "chronicle", "rumours", "standing", "shards", "coin", "ending", "throws", "choices", "marks"]
 
 
 ## For a mid-tale save. Dice are saved whole (a lost die is no longer in the collection).

@@ -29,6 +29,13 @@ static func _scene(sc: Dictionary, out: Array[String]) -> void:
 		out.append("goto: " + sc.goto)
 	if not sc.get("on_enter", []).is_empty():
 		out.append("on enter: " + effects(sc.on_enter))
+	if sc.has("tile"):
+		out.append("tile: " + sc.tile)
+	if sc.has("at"):
+		out.append("at: %s, %s" % [_num(sc.at.x), _num(sc.at.y)])
+	for tok in sc.get("tokens", []):
+		var label: String = " " + value(tok.label) if tok.get("label", "") != "" else ""
+		out.append("token: %s => %s%s" % [tok.cond, tok.icon, label])
 	if not sc.get("text", []).is_empty():
 		out.append("")
 		_lines(sc.text, out, "")
@@ -43,6 +50,10 @@ static func _scene(sc: Dictionary, out: Array[String]) -> void:
 		_lines(en.get("text", []), out, "  ")
 		if not en.get("effects", []).is_empty():
 			out.append("  do: " + effects(en.effects))
+
+
+static func _num(x: float) -> String:
+	return str(int(x)) if x == int(x) else str(snappedf(x, 0.01))
 
 
 static func _lines(lines: Array, out: Array[String], indent: String) -> void:

@@ -5,6 +5,10 @@ start: plea
 
 ## plea: Wren's Plea
 act: 1
+tile: inn
+at: 0, 0
+token: promised_wren => seal "A promise to Wren"
+token: paid_wren => coins "Wren's fifteen coins, taken"
 
 ? seen:drowned_before :: [i]They say a traveller tried this before you. They say the lake kept them. Well. Here you are again, and here is the girl again, and the bell has not stopped.[/i]
 [i]Pull your stool closer to the fire. This one is cold.[/i]
@@ -56,6 +60,12 @@ Your dice wait on the shelf behind the bar. Hollis, the barkeep, sets your leath
 ## arrival: Arrival at Marrowmere
 act: 1
 on enter: random_flag weather [fog, rain, moon]
+tile: village
+at: 1.4, 0.3
+token: rune_fragment => rune "The rune-stone from the shore"
+token: rowed_out => boat "Rowed out alone in the dark"
+token: rumour_smugglers => footprints "Word of Kettle's smugglers"
+token: defeat => wave "Marrowmere, drowned"
 
 Marrowmere is a crooked village of stilts and nets, leaning over a lake as flat and black as a slate. Out on the water, a ruined bell tower juts from a little island like a broken finger.
 ? weather==fog :: Fog lies on the water so thick the tower comes and goes, like something breathing.
@@ -129,6 +139,11 @@ Doors are barred. One window is lit: the Drowned Lamb, the only inn. Down the sh
 ## tolls: The Bell Tolls
 act: 1
 type: encounter
+tile: drowned
+at: 2.7, 0.9
+token: villagers_saved>=2 => lamp "The village, every lamp lit"
+token: fisherman_lost => grave "Aldous, taken by the lake"
+token: drowned_path => footprints "Wet footprints to the abbey stair"
 
 Full dark. Then the bell: one note, from under the water, so low you feel it in your teeth.
 Out of the shallows, two figures wade ashore. Grey men in sodden wool, lake water pouring from their sleeves. Their eyes are open. They walk toward the nearest door, where a lamp is lit and a child is laughing.
@@ -197,6 +212,8 @@ Out of the shallows, two figures wade ashore. Grey men in sodden wool, lake wate
 
 ## fork: The Jetty
 act: 2
+tile: jetty
+at: 3.8, 0.1
 
 Morning, grey as pewter. You stand at the end of the village jetty with a borrowed skiff.
 The island and its ruined abbey sit out on the lake. Somewhere under the water between here and there, the bell.
@@ -228,6 +245,10 @@ The island and its ruined abbey sit out on the lake. Somewhere under the water b
 ## scriptorium: The Flooded Scriptorium
 act: 2
 type: challenge
+tile: abbey
+at: 5.1, -1.3
+token: abbess_name => candle "Her true name: Ysolde"
+token: bell_crack => broken_bell "A crack in the bell"
 
 Inside the abbey, the lake has come up through the floor. Water has swallowed the lower shelves. Ledgers float like dead fish.
 On a high desk, out of the water, one candle stub is still standing, and beside it a book bound in black: the Register of the Drowned. Somewhere in it is the name of everyone the lake ever took. And the name of the woman who rang the bell.
@@ -278,6 +299,11 @@ On a high desk, out of the water, one candle stub is still standing, and beside 
 ## kettle: Mother Kettle's Table
 act: 2
 type: challenge
+tile: cove
+at: 5.2, 0.15
+token: smugglers_allied => flag "Kettle's crew, allies"
+token: smugglers_hostile or kettle_grudge => knife "Kettle's grudge"
+token: caught_cheating => seal "Caught with a loaded die"
 
 The north cove: a cave mouth full of boats, barrels and lamp smoke. At a table made from a door sits Mother Kettle, round and grey and smiling, shuffling a deck of cards with hands that never stop.
 ? kettle_warned :: "Ah," she says, before you open your mouth. "The one who's been asking about me."
@@ -356,6 +382,8 @@ The north cove: a cave mouth full of boats, barrels and lamp smoke. At a table m
 ## kettle_brawl: Knives in the Cove
 act: 2
 type: encounter
+tile: camp
+at: 6, 0.75
 
 Three of Kettle's crew between you and the cave mouth, and Kettle herself watching from her chair, shuffling.
 [i]Caught with a loaded die. It happens to the best of us. It happens most of all to the best of us.[/i]
@@ -387,6 +415,9 @@ Three of Kettle's crew between you and the cave mouth, and Kettle herself watchi
 ## dive: The Dive
 act: 2
 type: challenge
+tile: dive
+at: 5, 1.55
+token: found_hoard => chest "The drowned hoard"
 
 You tie the skiff off over the darkest water and the bell hums up through the hull, through the oars, through your bones.
 ? tide_lore :: The ferryman was right. As the tide turns you feel it: a pull, gentle and certain, straight down.
@@ -420,6 +451,10 @@ You tie the skiff off over the darkest water and the bell hums up through the hu
 
 ## gold: The Bell's Gold
 act: 2
+tile: chest
+at: 6, 1.95
+token: gold_taken => coins "The bell's gold, taken"
+token: left_gold => candle "The gold, given back to the lake"
 
 You surface, gasping, with one hand full of gold. In the bottom of the skiff it gleams: coins stamped with the abbey's bell, and a die. A d20 cast from the bell's own metal, warm as skin, humming faintly.
 There is so much more down there.
@@ -447,6 +482,10 @@ There is so much more down there.
 act: 2
 type: waystone
 on enter: rest 5; if gold_taken then toll
+tile: shrine
+at: 7, 0.3
+token: wren_present => handbell "Wren on the shore with her bell"
+token: wren_safe => seal "Wren, sent home safe"
 
 A shrine of grey stones at the water's edge, with a roof of turf and a fire pit full of old ash. A Waystone. You light the fire, empty your Pouch onto a flat stone, and breathe.
 ? gold_taken :: In your Pouch, the Bellmetal d20 tolls once, by itself.
@@ -476,6 +515,12 @@ A shrine of grey stones at the water's edge, with a roof of turf and a fire pit 
 ## chamber: The Bell Chamber
 act: 3
 type: challenge
+tile: bell
+at: 8.3, -0.1
+token: climax==freed => beacon "Ysolde, at rest"
+token: climax==destroyed => skull "The Abbess, destroyed"
+token: climax==broken => broken_bell "The bell, broken"
+token: climax==salvaged => boat "The bell, hauled up and sold"
 
 Down the abbey stair, step after step into the lake, and the water does not close over you. It parts. At the bottom, a chamber of green stone, air trapped in the vault like a held breath. In the middle, the bell, upright now, and beside it, her.
 The Drowned Abbess. Mother Ysolde, forty years under the lake, her habit drifting like weed. Her hand is on the bell rope. Behind her, in rows, stand the Drowned: Hobb, Aldous, all of them, eyes open, waiting to be called.

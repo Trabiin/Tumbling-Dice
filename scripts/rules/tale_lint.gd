@@ -8,6 +8,7 @@ extends RefCounted
 const Dice := preload("res://scripts/rules/dice.gd")
 const Foes := preload("res://scripts/rules/foes.gd")
 const Cond := preload("res://scripts/rules/conditions.gd")
+const Board := preload("res://scripts/rules/board.gd")
 
 const TIERS := ["fail", "mixed", "success", "triumph"]
 const EFFECTS := ["if", "flag", "add", "random_flag", "grit", "fate", "coin", "fatigue", "wound", "gain", "ally",
@@ -62,6 +63,16 @@ class _Lint:
 			for line in sc.get("text", []):
 				if line is Array:
 					reads(line[0], id)
+			if sc.has("tile") and not sc.tile in Board.ICONS:
+				add(id, "Unknown tile '%s'. Use one of: %s." % [sc.tile, ", ".join(Board.ICONS)])
+			if sc.has("at") and not sc.has("tile"):
+				add(id, "at: places a tile, so the scene needs a tile: too.")
+			for tok in sc.get("tokens", []):
+				reads(tok.cond, id)
+				if not tok.icon in Board.TOKENS:
+					add(id, "Unknown token '%s'. Use one of: %s." % [tok.icon, ", ".join(Board.TOKENS)])
+				if not sc.has("tile"):
+					add(id, "A token sits on a tile, so the scene needs a tile: too.")
 			if sc.get("type", "") == "ending":
 				if sc.get("endings", []).is_empty():
 					add(id, "An ending scene has no endings (+).")

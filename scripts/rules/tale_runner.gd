@@ -811,6 +811,9 @@ func _finish(t: int, caught := false) -> void:
 		_say("You take back your %s." % active.stolen.name, "system")
 		active.stolen = null
 	if active.type == "combat" and active.run.outcome == "won":
+		# A fallen-foe token stays on the tale board where the fight was won.
+		state.marks.append({"scene": scene.get("id", ""), "icon": "foe", "label": "%s, beaten" % active.run.foe.name,
+			"figure": active.run.foe.get("figure", "")})
 		var loot: String = active.run.foe.get("loot", "")
 		if loot != "":
 			_gain(loot, false, "%s drops a die: " % active.run.foe.name)
@@ -1063,6 +1066,7 @@ func _finish_tale() -> void:
 	for k in state.standing:
 		campaign.standing[k] = int(campaign.standing.get(k, 0)) + int(state.standing[k])
 	campaign.shards.append_array(state.shards)
+	campaign.remember_map(tale.get("id", ""), state.visited)
 	for d in pouch.pouch:
 		if not d.ally:
 			d.history.append("Carried through %s (%s)." % [tale.title, chosen.title])
