@@ -11,9 +11,14 @@ parser and linter, a text preview for writers, mid-tale saves and the Chronicle)
 and **milestone M4: the vertical slice staged** (the tale board with your figurine, carved foe figurines,
 and a minimal tavern with Hollis's shelf and Brannoc the Dicewright). Design doc: *Tales of the Tumbling Dice: Game Design* (Claude Doc).
 
-Everything is generated in GDScript and shader code: dice, tavern, UI widgets and sounds. The only assets
-are two free fonts (SIL Open Font License): Cinzel for headings and dice, and IM Fell English for the
-Teller's narration (`fonts/OFL.txt`, `fonts/OFL-IMFellEnglish.txt`).
+The dice, room, flames, tale board, UI widgets and sounds are generated in GDScript and shader code.
+Furniture, clutter, board landmarks and the painted miniatures come from free CC0 kits by
+[Quaternius](https://quaternius.com) (Fantasy Props and Stylized Nature MegaKits) and
+[Kay Lousberg](https://www.kaylousberg.com) (KayKit Medieval Hexagon, Adventurers and Skeletons),
+repainted with our toon shader and ink outlines; credits and how they were imported are in
+[assets/kits/README.md](assets/kits/README.md). `-- --kits=off` shows the all-code look. The fonts are
+free (SIL Open Font License): Cinzel for headings and dice, and IM Fell English for the Teller's
+narration (`fonts/OFL.txt`, `fonts/OFL-IMFellEnglish.txt`).
 
 ![throw](media/result_dragon.png)
 
@@ -207,7 +212,9 @@ The rules never touch the scene tree, so the same code runs in the game, in test
 | `scripts/game/game.gd` | The playable table: parchment, cards, Hand, Pouch screen, ending, camera views; turns clicks into runner calls |
 | `scripts/rules/board.gd` | The tale board as data: tiles, roads (bent around other tiles), what each tile and road shows right now, tokens |
 | `scripts/game/tale_board.gd` | The 3D tale board: parchment, painted tiles, inked roads, mist, labels, tokens, the figurine's hop |
-| `scripts/figures.gd` | Painted figurines, tiles and tokens from primitives, merged into one vertex-coloured mesh each, with an ink outline shell |
+| `scripts/figures.gd` | Painted figurines, tiles and tokens from primitives, merged into one vertex-coloured mesh each, with an ink outline shell; with the kits on, KayKit miniatures, hex tiles and buildings take the place of most primitives |
+| `scripts/kits.gd` | Loads the CC0 kit models (`assets/kits/`) and repaints them: toon light bands, brush noise, colour washes, the ink outline shell on Low and on the board |
+| `tools/vendor_kits.py`, `tools/bake_minis.gd` | Copy kit models in (colour maps only) and bake the KayKit characters into posed static miniatures |
 | `scripts/rules/forge.gd` | Hollis's shelf (buy, sell) and Brannoc's bench (recarve, inscribe, melt) as rules |
 | `scripts/game/tavern_hub.gd` | The tavern between tales: the room, the shelf and the bench |
 | `scripts/game/table.gd` | Physical dice: spawns rules dice as rigid bodies, throws (tossed or held and released by hand), settles with a nudge, recovers strays, reads faces, freezes the foe's dice, finds the die under the cursor |

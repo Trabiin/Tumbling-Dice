@@ -9,6 +9,7 @@ extends Node3D
 ## tale and the saved tale state, so it comes back exactly as it was after Continue.
 
 const Board := preload("res://scripts/rules/board.gd")
+const Kits := preload("res://scripts/kits.gd")
 const Fig := preload("res://scripts/figures.gd")
 const Mats := preload("res://scripts/materials.gd")
 
@@ -163,7 +164,7 @@ func _build_tile(t: Dictionary) -> void:
 	root.add_child(icon)
 	if lite:
 		# On Low the board casts no shadows: the dice keep the shadow map to themselves.
-		for c in icon.get_children():
+		for c: GeometryInstance3D in icon.find_children("*", "GeometryInstance3D", true, false):
 			c.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	# A faint inked ring, for a place you know of but have not been.
 	var ring := MeshInstance3D.new()
@@ -409,6 +410,7 @@ func _set_tile(id: String, s: String, animate: bool) -> void:
 			for c in t.icon.get_children():
 				if c.name == "Paint":
 					c.material_override = Fig.material(fade)
+			Kits.set_fade(t.icon, fade)
 		if animate and known and t.icon.scale.y < 0.99:
 			pass
 	t.ring.visible = sketched

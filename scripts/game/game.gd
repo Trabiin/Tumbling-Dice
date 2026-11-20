@@ -45,6 +45,7 @@ const TaleState := preload("res://scripts/rules/tale_state.gd")
 const TaleBoard := preload("res://scripts/game/tale_board.gd")
 const BoardRules := preload("res://scripts/rules/board.gd")
 const Fig := preload("res://scripts/figures.gd")
+const Kits := preload("res://scripts/kits.gd")
 const Hub := preload("res://scripts/game/tavern_hub.gd")
 
 const PANEL_W := 392.0
@@ -234,6 +235,7 @@ func _ready() -> void:
 func _parse_args() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a == "--fast": fast_dice = true
+		elif a == "--kits=off": Kits.enabled = false   # the all-code look, for comparisons
 		elif a == "--new": opt_new = true
 		elif a == "--autoplay": opt_autoplay = true
 		elif a == "--practice": opt_practice = true

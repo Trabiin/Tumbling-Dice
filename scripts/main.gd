@@ -14,6 +14,7 @@ extends Node3D
 const Die := preload("res://scripts/die.gd")
 const Catalog := preload("res://scripts/dice_catalog.gd")
 const Tavern := preload("res://scripts/tavern.gd")
+const Kits := preload("res://scripts/kits.gd")
 
 const INK := Color("#3a2210")
 const GOLD := Color("#f2c75c")
@@ -85,6 +86,7 @@ func _parse_args() -> bool:
 	var seeded := false
 	for a in OS.get_cmdline_user_args():
 		if a == "--capture": opt_capture = true
+		elif a == "--kits=off": Kits.enabled = false
 		elif a == "--still": opt_still = true
 		elif a == "--gallery": gallery = true
 		elif a == "--extras": with_extras = true
