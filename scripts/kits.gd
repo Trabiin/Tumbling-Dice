@@ -106,6 +106,8 @@ static func _shader(cutout: bool) -> Shader:
 ##   sat     colour saturation (default 1.12; the bright KayKit palette wants less)
 ##   fade    0..1 toward the parchment
 ##   shadows false to cast none
+##   glow    lamplight catch for the props kit's vertex-coloured pieces (default 0.35, for
+##           glass; bronze blades and book spines want less)
 static func model(path: String, opts := {}) -> Node3D:
 	if not _scenes.has(path):
 		_scenes[path] = load(ROOT + path + ".gltf")
@@ -142,7 +144,8 @@ static func paint(src: Material, opts := {}, outline_local := 0.0) -> ShaderMate
 	var wash: float = opts.get("wash", 0.0)
 	var fade: float = opts.get("fade", 0.0)
 	var sat: float = opts.get("sat", 1.12)
-	var key := "%d|%s|%.2f|%.2f|%.2f|%.4f|%s|%s" % [src.get_instance_id() if src else 0, tint.to_html(), wash, fade, sat, outline_local, Mats.lite, normals]
+	var glow_opt: float = opts.get("glow", -1.0)
+	var key := "%d|%s|%.2f|%.2f|%.2f|%.4f|%s|%s|%.2f" % [src.get_instance_id() if src else 0, tint.to_html(), wash, fade, sat, outline_local, Mats.lite, normals, glow_opt]
 	if _mats.has(key):
 		return _mats[key]
 	var tex: Texture2D = null
@@ -168,9 +171,17 @@ static func paint(src: Material, opts := {}, outline_local := 0.0) -> ShaderMate
 			rough = 0.25   # glass and glazed pots: a crisp toon highlight and a little glow
 			glass = true
 		metal = b.metallic * 0.6
+		if String(b.resource_name).begins_with("MI_Trim_Metal"):
+			# Fully metallic iron mirrors the cool sky ambience and goes lilac in a firelit room.
+			# Mostly diffuse, with a tight highlight, it reads as warm forged iron instead.
+			metal = 0.15
+			rough = 0.4
+			if wash == 0.0:
+				tint = Color("#3e342c")
+				wash = 0.65
 	var m := _new_mat(tex, col, vcol, cutout, rough, metal, Color(tint, wash), fade)
 	m.set_shader_parameter("sat", sat)
-	m.set_shader_parameter("glow", 0.35 if glass else 0.0)
+	m.set_shader_parameter("glow", glow_opt if glow_opt >= 0.0 else (0.35 if glass else 0.0))
 	if nmap != null:
 		m.set_shader_parameter("normal_tex", nmap)
 		m.set_shader_parameter("use_normal", true)

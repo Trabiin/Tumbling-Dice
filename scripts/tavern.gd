@@ -155,8 +155,10 @@ func _cyl(r_top: float, r_bottom: float, h: float, pos: Vector3, mat: Material, 
 ## A kit model (path under assets/kits, no extension), k units per kit metre, turned by
 ## rot_y degrees, standing on pos. The kits are modelled close to real size; 1 m is 83 of
 ## our units, but the furniture reads better a little smaller than life next to the table.
-func _kit(path: String, pos: Vector3, rot_y := 0.0, k := 66.0, parent: Node = self) -> Node3D:
-	var n := Kits.model(path, {"scale": k})
+func _kit(path: String, pos: Vector3, rot_y := 0.0, k := 66.0, parent: Node = self, opts := {}) -> Node3D:
+	var o := opts.duplicate()
+	o["scale"] = k
+	var n := Kits.model(path, o)
 	n.position = pos
 	n.rotation_degrees.y = rot_y
 	parent.add_child(n)
@@ -355,14 +357,14 @@ func _build_props() -> void:
 func _kit_props() -> void:
 	_candle(Vector3(15.0, TABLE_TOP, -12.0), 6.0, false)
 	_candle(Vector3(-13.0, TABLE_TOP, -15.0), 3.8, false)
-	_kit("fantasy_props/Mug", Vector3(-23.0, TABLE_TOP, -12.0), 200.0, 52.0)
+	_kit("fantasy_props/Mug", Vector3(-15.0, TABLE_TOP, -22.0), 200.0, 46.0)
 	_kit("fantasy_props/Coin_Pile_2", Vector3(16.5, TABLE_TOP, -1.0), 25.0, 30.0)
 	_kit("fantasy_props/Coin_Pile", Vector3(18.5, TABLE_TOP, 3.0), -40.0, 28.0)
 	if not map_space:
 		_parchment(Vector3(-17.5, TABLE_TOP, 4.0))
 	_jug(Vector3(25.0, TABLE_TOP, -13.0))
 	_kit("fantasy_props/Pouch_Large", Vector3(21.5, TABLE_TOP, -4.0), -60.0, 34.0)
-	_kit("fantasy_props/Book_Stack_1", Vector3(-25.0, TABLE_TOP, -19.0), 25.0, 34.0)
+	_kit("fantasy_props/Book_Stack_1", Vector3(-33.0, TABLE_TOP, -21.0), 25.0, 34.0)
 	_kit("fantasy_props/Chalice", Vector3(29.0, TABLE_TOP, -5.0), 0.0, 34.0)
 
 
@@ -529,7 +531,11 @@ func _kit_room() -> void:
 	_shelf_bottles(Vector3(-62, FLOOR_Y + 81.5, wall + 9), 1)
 	if map_space:
 		_dicewright_bench(BENCH_TOP)
-		_kit("fantasy_props/Anvil", Vector3(-214, FLOOR_Y, wall + 40), 80.0, 40.0)
+		_kit("fantasy_props/Anvil_Log", Vector3(-212, FLOOR_Y, wall + 48), 70.0, 46.0)
+		_kit("fantasy_props/Bucket_Metal", Vector3(-196, FLOOR_Y, wall + 74), 20.0, 38.0)
+		_kit("fantasy_props/Peg_Rack", Vector3(-178, FLOOR_Y + 112, wall), 0.0, 40.0)
+		_kit("fantasy_props/Axe_Bronze", Vector3(-191, FLOOR_Y + 108, wall + 4), 0.0, 34.0, self, {"glow": 0.15})
+		_kit("fantasy_props/Sword_Bronze", Vector3(-166, FLOOR_Y + 110, wall + 4), 0.0, 32.0, self, {"glow": 0.15})
 	_window(Vector3(-118, FLOOR_Y + 62, wall))
 	# Barrels on a rack, with more stacked about
 	_kit("fantasy_props/Barrel_Holder", Vector3(160, FLOOR_Y, wall + 26), 0.0, 52.0)
@@ -555,6 +561,88 @@ func _kit_room() -> void:
 	_kit("fantasy_props/Shield_Wooden", Vector3(-40, FLOOR_Y + 150, wall + 8), 0.0, 50.0)
 	if not map_space:
 		_kit("fantasy_props/Cabinet", Vector3(-205, FLOOR_Y, wall), 0.0, 56.0)
+	_kit_dressing()
+
+
+## The rest of the room: books along the side wall, banners on the beams, crates and sacks,
+## a coil of rope, and a candle chandelier whose warm light lifts the back wall.
+func _kit_dressing() -> void:
+	var wall := BACK_WALL_Z
+	# The side wall by Brannoc's corner: a tall bookcase and a weapon stand.
+	var case := _kit("fantasy_props/Bookcase_2", Vector3(-227, FLOOR_Y, wall + 62), 90.0, 54.0)
+	for b in BOOKCASE_FILL:
+		_kit_in(case, b[0], b[1], b[2])
+	var stand := _kit("fantasy_props/WeaponStand", Vector3(-212, FLOOR_Y, wall + 128), 70.0, 46.0)
+	for w in STAND_FILL:
+		_kit_in(stand, w[0], w[1], w[2])
+	# Banners hung over the beams, Marrowmere red and the inn's own green.
+	_kit("fantasy_props/Banner_1_Cloth", Vector3(-150, FLOOR_Y + 214, wall + 8.6), 0.0, 44.0)
+	_kit("fantasy_props/Banner_2_Cloth", Vector3(200, FLOOR_Y + 214, wall + 8.6), 0.0, 44.0)
+	# Stores under the window and by the barrels.
+	_kit("fantasy_props/Crate_Wooden", Vector3(-121, FLOOR_Y, wall + 26), 8.0, 40.0)
+	_kit("fantasy_props/FarmCrate_Apple", Vector3(-121, FLOOR_Y + 37, wall + 26), -6.0, 40.0)
+	_kit("fantasy_props/Bag", Vector3(-98, FLOOR_Y, wall + 30), -30.0, 40.0)
+	_kit("fantasy_props/Rope_3", Vector3(-150, FLOOR_Y, wall + 70), 30.0, 34.0)
+	_kit("fantasy_props/FarmCrate_Carrot", Vector3(214, FLOOR_Y, wall + 128), 80.0, 42.0)
+	_kit("fantasy_props/Chain_Coil", Vector3(186, FLOOR_Y, wall + 130), 0.0, 30.0)
+	# Books and a candlestick on the cabinet-height shelf ends.
+	_kit("fantasy_props/BookGroup_Medium_2", Vector3(78, FLOOR_Y + 112, wall + 12), 0.0, 22.0)
+	_kit_chandelier(Vector3(-60, FLOOR_Y + 226, -78))
+
+
+## What sits on the bookcase's four shelves (model units: shelves at y 0.77, 1.15, 1.53, 1.92,
+## about 1.3 wide, the open side toward +z), and what stands in the weapon rack.
+## [model, position, rotation in degrees]
+const BOOKCASE_FILL := [
+	["BookGroup_Medium_1", Vector3(-0.1, 0.775, 0.02), Vector3(0, 0, 0)],
+	["Potion_1", Vector3(0.56, 0.775, 0.02), Vector3(0, 30, 0)],
+	["BookGroup_Small_1", Vector3(-0.48, 1.155, 0.02), Vector3(0, 0, 0)],
+	["Book_7", Vector3(0.08, 1.19, 0.0), Vector3(0, 80, 0)],
+	["Book_5", Vector3(0.1, 1.25, 0.0), Vector3(0, 95, 0)],
+	["BookGroup_Small_2", Vector3(0.5, 1.155, 0.02), Vector3(0, 0, 0)],
+	["BookGroup_Medium_2", Vector3(0.06, 1.535, 0.02), Vector3(0, 0, 0)],
+	["BookGroup_Small_1", Vector3(-0.42, 1.925, 0.02), Vector3(0, 180, 0)],
+	["Book_Simplified_Single", Vector3(-0.2, 1.925, 0.02), Vector3(0, 0, -14)],
+	["Potion_2", Vector3(0.22, 1.925, 0.04), Vector3(0, 0, 0)],
+	["Book_5", Vector3(0.48, 1.955, 0.0), Vector3(0, 85, 0)],
+]
+const STAND_FILL := [
+	["Sword_Bronze", Vector3(-0.32, 1.0, 0.0), Vector3(180, 0, 0)],
+	["Sword_Bronze", Vector3(0.05, 1.0, 0.0), Vector3(180, 12, 0)],
+	["Axe_Bronze", Vector3(0.42, 0.62, 0.0), Vector3(0, 0, 78)],
+]
+
+## A kit model placed inside another one, in that model's own units.
+func _kit_in(parent: Node3D, model: String, pos: Vector3, rot: Vector3) -> Node3D:
+	var s := parent.scale.x
+	var glow := 0.35 if model.begins_with("Potion") else (0.15 if model.contains("Bronze") else 0.12)
+	var n := Kits.model("fantasy_props/" + model, {"outline": 0.35 / s if Mats.lite else 0.0, "glow": glow})
+	n.position = pos
+	n.rotation_degrees = rot
+	parent.add_child(n)
+	return n
+
+
+## A ring of candles on chains. Our flames sit on the kit's candle tips (measured from the
+## model), and one warm light below the ring lights the back wall and the room view.
+const CHANDELIER_TIPS := [Vector3(-0.538, -0.91, 0.0), Vector3(-0.409, -0.969, -0.409), Vector3(0.0, -0.943, -0.569),
+	Vector3(0.382, -0.908, -0.377), Vector3(0.578, -0.908, -0.033), Vector3(0.402, -0.969, 0.408),
+	Vector3(0.0, -0.943, 0.575), Vector3(-0.401, -0.908, 0.376)]
+
+func _kit_chandelier(top: Vector3) -> void:
+	var k := 46.0
+	_kit("fantasy_props/Chandelier", top, 0.0, k)
+	for i in CHANDELIER_TIPS.size():
+		var tip: Vector3 = top + CHANDELIER_TIPS[i] * k
+		add_child(Props.flame(tip, 2.8, {"base_amount": 1.0, "speed": 0.7, "wild": 0.45, "seed": float(i) * 3.1, "glow": 2.6}))
+	var l := OmniLight3D.new()
+	l.position = top + Vector3(0, -1.05 * k, 0)
+	l.light_color = Color("#ffb468")
+	l.light_energy = 3.2
+	l.omni_range = 190.0
+	l.omni_attenuation = 1.1
+	add_child(l)
+	_flicker(l, 5.0)
 
 
 func _kit_lantern(pos: Vector3) -> void:
@@ -564,16 +652,16 @@ func _kit_lantern(pos: Vector3) -> void:
 	# The cage hangs from the end of the arm, in the lower part of the model.
 	l.position = Vector3(pos.x, pos.y - 10 + (box.position.y + box.size.y * 0.2) * 24.0, BACK_WALL_Z + (box.end.z - box.size.z * 0.12) * 24.0)
 	l.light_color = Color("#ffa04a")
-	l.light_energy = 3.0
-	l.omni_range = 120
+	l.light_energy = 3.6
+	l.omni_range = 140
 	add_child(l)
 	_flicker(l, 4.0)
 	var glow := MeshInstance3D.new()
 	var sm := SphereMesh.new()
-	sm.radius = 2.2
-	sm.height = 4.4
+	sm.radius = 1.1
+	sm.height = 2.2
 	glow.mesh = sm
-	glow.material_override = Mats.glow(Color("#ffb060"), 2.5)
+	glow.material_override = Mats.glow(Color("#ffb060"), 1.6)
 	glow.position = l.position
 	glow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(glow)

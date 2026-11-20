@@ -140,9 +140,9 @@ func _ready() -> void:
 	add_child(camera)
 	var attr := CameraAttributesPractical.new()
 	attr.dof_blur_far_enabled = true
-	attr.dof_blur_far_distance = 75.0
-	attr.dof_blur_far_transition = 90.0
-	attr.dof_blur_amount = 0.05
+	attr.dof_blur_far_distance = 110.0   # the room stays readable behind the table
+	attr.dof_blur_far_transition = 120.0
+	attr.dof_blur_amount = 0.035
 	camera.attributes = attr
 	_frame_camera()
 	Settings.apply_scene(get_viewport(), tavern, camera)

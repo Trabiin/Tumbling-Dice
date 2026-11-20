@@ -24,7 +24,8 @@ Vase_2 Vase_4 Barrel Barrel_Holder Barrel_Apples Crate_Wooden Bag Lantern_Wall C
 Chair_1 Bench Bookcase_2 Cabinet Workbench Workbench_Drawers Anvil Whetstone Peg_Rack Cauldron Bucket_Wooden_1
 Mug Chalice Book_7 Book_5 Book_Stack_1 Book_Stack_2 BookGroup_Medium_1 BookGroup_Small_1 Coin Coin_Pile
 Coin_Pile_2 Pouch_Large Candle_1 Candle_2 CandleStick CandleStick_Triple WeaponStand
-Shield_Wooden Axe_Bronze Sword_Bronze Rope_1 Rope_2 Chain_Coil FarmCrate_Apple Key_Gold Banner_1 Banner_2
+Shield_Wooden Axe_Bronze Sword_Bronze Rope_1 Rope_2 Rope_3 Chain_Coil FarmCrate_Apple FarmCrate_Carrot Key_Gold Banner_1 Banner_2
+Banner_1_Cloth Banner_2_Cloth Anvil_Log BookGroup_Medium_2 BookGroup_Small_2 Book_Simplified_Single Cage_Small Bucket_Metal
 Table_Plate Pot_1 Pot_1_Lid Dummy""".split()
 
 NATURE = """CommonTree_1 CommonTree_2 CommonTree_3 Pine_1 Pine_2 DeadTree_1 DeadTree_2 TwistedTree_1
