@@ -41,19 +41,25 @@ void fragment() {
 """
 
 ## Mist over the parts of the map you don't know yet: soft, drifting, a shade darker than
-## the parchment.
+## the parchment. Lit like the paper under it (an unshaded puff glowed pale grey in the
+## candlelight), with wispy, broken edges so it reads as smoke rather than a blot.
 const FOG := """
 shader_type spatial;
-render_mode unshaded, cull_disabled, depth_draw_never, shadows_disabled;
-uniform vec3 tint : source_color = vec3(0.6, 0.54, 0.44);
-uniform float alpha = 0.92;
+render_mode cull_disabled, depth_draw_never, shadows_disabled, specular_disabled;
+uniform vec3 mist : source_color = vec3(0.74, 0.67, 0.56);
+uniform float alpha = 0.7;
 uniform float seed = 0.0;
 uniform float fade = 0.0;
 void fragment() {
 	vec2 p = UV * 2.0 - 1.0;
-	float n = fbm(vec3(UV * 2.5 + vec2(TIME * 0.02, seed), seed));
-	float a = smoothstep(1.0, 0.35, length(p) + (n - 0.5) * 0.7);
-	ALBEDO = tint * (0.88 + 0.24 * n);
+	vec2 drift = vec2(TIME * 0.015, seed);
+	float n = fbm(vec3(UV * 2.2 + drift, seed));
+	float w = fbm(vec3(UV * 6.0 - drift * 1.7, seed + 7.0));
+	float d = length(p) + (n - 0.5) * 0.9 + (w - 0.5) * 0.35;
+	float a = smoothstep(1.0, 0.25, d);
+	a *= 0.7 + 0.3 * smoothstep(0.3, 0.7, w);   // thin streaks inside the bank
+	ALBEDO = mist * (0.85 + 0.25 * n);
+	ROUGHNESS = 1.0;
 	ALPHA = a * alpha * (1.0 - fade);
 }
 """
