@@ -14,6 +14,8 @@ extends Node3D
 const Die := preload("res://scripts/die.gd")
 const Catalog := preload("res://scripts/dice_catalog.gd")
 const Tavern := preload("res://scripts/tavern.gd")
+const Kits := preload("res://scripts/kits.gd")
+const Mats := preload("res://scripts/materials.gd")
 
 const INK := Color("#3a2210")
 const GOLD := Color("#f2c75c")
@@ -55,9 +57,9 @@ func _ready() -> void:
 	# Painterly depth of field: the room behind the tray softens (Forward+ only).
 	var attr := CameraAttributesPractical.new()
 	attr.dof_blur_far_enabled = true
-	attr.dof_blur_far_distance = 75.0
-	attr.dof_blur_far_transition = 90.0
-	attr.dof_blur_amount = 0.05
+	attr.dof_blur_far_distance = 110.0   # the room stays readable behind the table
+	attr.dof_blur_far_transition = 120.0
+	attr.dof_blur_amount = 0.035
 	camera.attributes = attr
 	_camera_tray()
 	_build_ui()
@@ -85,6 +87,10 @@ func _parse_args() -> bool:
 	var seeded := false
 	for a in OS.get_cmdline_user_args():
 		if a == "--capture": opt_capture = true
+		elif a == "--kits=off": Kits.enabled = false
+		elif a == "--kits-look=stock": Kits.stock = true
+		elif a == "--kits-normals=off": Kits.normals = false
+		elif a.begins_with("--brush="): Mats.brush_px = int(a.substr(8))
 		elif a == "--still": opt_still = true
 		elif a == "--gallery": gallery = true
 		elif a == "--extras": with_extras = true

@@ -219,6 +219,12 @@ void fragment() {
 	float fine = vnoise(vec3(uv * 3.0, h * 7.0));
 	vec2 cl = cells(vec3(uv * 0.35, h * 5.0));
 	float pits = smoothstep(0.12, 0.0, cl.x) * step(0.7, hash3(vec3(floor(uv * 0.35), h)));
+#ifdef LITE
+	// Low renders at 0.6 scale without MSAA: the fine grain and hard-edged pits are smaller
+	// than a pixel there and alias into blocky purple blotches, so leave them out.
+	fine = 0.5;
+	pits = 0.0;
+#endif
 
 	vec2 d = min(f, 1.0 - f) * vec2(block.x * wscale, block.y);
 	float edge = min(d.x, d.y) + (grit - 0.5) * 3.0;
@@ -736,8 +742,11 @@ static func night_window() -> ShaderMaterial:
 	return _mat("window", WINDOW, {})
 
 
+## Brush size of the painterly screen pass in pixels (0 turns the smear off, keeps the ink).
+static var brush_px := 3
+
 static func post() -> ShaderMaterial:
-	var m := _mat("post", POST, {})
+	var m := _mat("post", POST, {"brush_px": brush_px})
 	m.render_priority = Material.RENDER_PRIORITY_MIN  # before flames and glass, which stay crisp
 	return m
 

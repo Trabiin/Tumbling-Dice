@@ -23,6 +23,8 @@ theme/default_font_multichannel_signed_distance_field=true
 common/physics_ticks_per_second=120
 
 [rendering]
+
+textures/vram_compression/import_etc2_astc=true
 renderer/rendering_method="forward_plus"
 renderer/rendering_method.mobile="gl_compatibility"
 rendering_device/fallback_to_opengl3=true

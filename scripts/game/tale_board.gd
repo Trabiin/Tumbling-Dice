@@ -9,6 +9,7 @@ extends Node3D
 ## tale and the saved tale state, so it comes back exactly as it was after Continue.
 
 const Board := preload("res://scripts/rules/board.gd")
+const Kits := preload("res://scripts/kits.gd")
 const Fig := preload("res://scripts/figures.gd")
 const Mats := preload("res://scripts/materials.gd")
 
@@ -40,19 +41,25 @@ void fragment() {
 """
 
 ## Mist over the parts of the map you don't know yet: soft, drifting, a shade darker than
-## the parchment.
+## the parchment. Lit like the paper under it (an unshaded puff glowed pale grey in the
+## candlelight), with wispy, broken edges so it reads as smoke rather than a blot.
 const FOG := """
 shader_type spatial;
-render_mode unshaded, cull_disabled, depth_draw_never, shadows_disabled;
-uniform vec3 tint : source_color = vec3(0.6, 0.54, 0.44);
-uniform float alpha = 0.92;
+render_mode cull_disabled, depth_draw_never, shadows_disabled, specular_disabled;
+uniform vec3 mist : source_color = vec3(0.74, 0.67, 0.56);
+uniform float alpha = 0.7;
 uniform float seed = 0.0;
 uniform float fade = 0.0;
 void fragment() {
 	vec2 p = UV * 2.0 - 1.0;
-	float n = fbm(vec3(UV * 2.5 + vec2(TIME * 0.02, seed), seed));
-	float a = smoothstep(1.0, 0.35, length(p) + (n - 0.5) * 0.7);
-	ALBEDO = tint * (0.88 + 0.24 * n);
+	vec2 drift = vec2(TIME * 0.015, seed);
+	float n = fbm(vec3(UV * 2.2 + drift, seed));
+	float w = fbm(vec3(UV * 6.0 - drift * 1.7, seed + 7.0));
+	float d = length(p) + (n - 0.5) * 0.9 + (w - 0.5) * 0.35;
+	float a = smoothstep(1.0, 0.25, d);
+	a *= 0.7 + 0.3 * smoothstep(0.3, 0.7, w);   // thin streaks inside the bank
+	ALBEDO = mist * (0.85 + 0.25 * n);
+	ROUGHNESS = 1.0;
 	ALPHA = a * alpha * (1.0 - fade);
 }
 """
@@ -163,7 +170,7 @@ func _build_tile(t: Dictionary) -> void:
 	root.add_child(icon)
 	if lite:
 		# On Low the board casts no shadows: the dice keep the shadow map to themselves.
-		for c in icon.get_children():
+		for c: GeometryInstance3D in icon.find_children("*", "GeometryInstance3D", true, false):
 			c.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	# A faint inked ring, for a place you know of but have not been.
 	var ring := MeshInstance3D.new()
@@ -409,6 +416,7 @@ func _set_tile(id: String, s: String, animate: bool) -> void:
 			for c in t.icon.get_children():
 				if c.name == "Paint":
 					c.material_override = Fig.material(fade)
+			Kits.set_fade(t.icon, fade)
 		if animate and known and t.icon.scale.y < 0.99:
 			pass
 	t.ring.visible = sketched

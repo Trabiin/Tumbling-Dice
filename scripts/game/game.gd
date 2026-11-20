@@ -45,6 +45,7 @@ const TaleState := preload("res://scripts/rules/tale_state.gd")
 const TaleBoard := preload("res://scripts/game/tale_board.gd")
 const BoardRules := preload("res://scripts/rules/board.gd")
 const Fig := preload("res://scripts/figures.gd")
+const Kits := preload("res://scripts/kits.gd")
 const Hub := preload("res://scripts/game/tavern_hub.gd")
 
 const PANEL_W := 392.0
@@ -139,9 +140,9 @@ func _ready() -> void:
 	add_child(camera)
 	var attr := CameraAttributesPractical.new()
 	attr.dof_blur_far_enabled = true
-	attr.dof_blur_far_distance = 75.0
-	attr.dof_blur_far_transition = 90.0
-	attr.dof_blur_amount = 0.05
+	attr.dof_blur_far_distance = 110.0   # the room stays readable behind the table
+	attr.dof_blur_far_transition = 120.0
+	attr.dof_blur_amount = 0.035
 	camera.attributes = attr
 	_frame_camera()
 	Settings.apply_scene(get_viewport(), tavern, camera)
@@ -234,6 +235,10 @@ func _ready() -> void:
 func _parse_args() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a == "--fast": fast_dice = true
+		elif a == "--kits=off": Kits.enabled = false
+		elif a == "--kits-look=stock": Kits.stock = true
+		elif a == "--kits-normals=off": Kits.normals = false
+		elif a.begins_with("--brush="): Mats.brush_px = int(a.substr(8))   # the all-code look, for comparisons
 		elif a == "--new": opt_new = true
 		elif a == "--autoplay": opt_autoplay = true
 		elif a == "--practice": opt_practice = true

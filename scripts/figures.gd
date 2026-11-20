@@ -8,6 +8,7 @@ extends RefCounted
 ## Scale: 1 unit is about 1.2 cm, as in the tavern. A figurine is about 2.2 units tall.
 
 const Mats := preload("res://scripts/materials.gd")
+const Kits := preload("res://scripts/kits.gd")
 
 ## Painted wood in soft toon bands. COLOR comes from the merged mesh; fade washes it toward
 ## the parchment, for tiles you remember from an earlier telling.
@@ -97,6 +98,12 @@ class Kit:
 	var uv := PackedVector2Array()
 	var idx := PackedInt32Array()
 	var glow_kit: Kit = null
+	## CC0 kit pieces placed alongside the primitives: [kind, name, Transform3D, carved].
+	## kind "mini" is a baked KayKit character, "model" a kit model (scripts/kits.gd).
+	var pieces: Array = []
+
+	func piece(kind: String, name: String, xf: Transform3D, carved := false, opts := {}) -> void:
+		pieces.append([kind, name, xf, carved, opts])
 
 	func add(mesh: PrimitiveMesh, xf: Transform3D, col: Color) -> void:
 		var arr := mesh.get_mesh_arrays()
@@ -127,7 +134,7 @@ class Kit:
 		return glow_kit
 
 	func empty() -> bool:
-		return v.is_empty()
+		return v.is_empty() and pieces.is_empty()
 
 	func mesh() -> ArrayMesh:
 		var arr := []
@@ -144,7 +151,7 @@ class Kit:
 	## The finished piece: a node with the painted mesh and, if any, the glowing one.
 	func node(fade := 0.0, shadows := true) -> Node3D:
 		var root := Node3D.new()
-		if not empty():
+		if not v.is_empty():
 			var mi := MeshInstance3D.new()
 			mi.name = "Paint"
 			mi.mesh = mesh()
@@ -165,6 +172,26 @@ class Kit:
 			g.material_override = gm
 			g.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			root.add_child(g)
+		for p in pieces:
+			var xf: Transform3D = p[2]
+			var sc := xf.basis.get_scale().x
+			var n: Node3D
+			if p[0] == "mini":
+				n = Kits.mini(p[1], p[3], fade, 0.035 / sc)
+			else:
+				var o: Dictionary = {"outline": 0.03 / sc, "fade": fade, "shadows": shadows}
+				if String(p[1]).begins_with("hexagon/"):
+					o.sat = 0.9   # KayKit's toy-bright palette, toned a little toward our painted wood
+				o.merge(p[4], true)
+				n = Kits.model(p[1], o)
+			if not shadows:
+				for m: MeshInstance3D in n.find_children("*", "MeshInstance3D", true, false) + ([n] if n is MeshInstance3D else []):
+					m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			var holder := Node3D.new()
+			holder.name = "Kit_" + String(p[1]).get_file()
+			holder.transform = xf
+			holder.add_child(n)
+			root.add_child(holder)
 		return root
 
 
@@ -254,6 +281,9 @@ static func add_figure(k: Kit, kind: String, at: Transform3D, carved := false) -
 	k.add(_cyl(0.56, 0.62, 0.16, 18), _at(at, Vector3(0, 0.08, 0)), base_col)
 	k.add(_cyl(0.5, 0.56, 0.04, 18), _at(at, Vector3(0, 0.18, 0)), base_col.lightened(0.18))
 	var y := 0.2
+	if Kits.has_mini(kind):
+		k.piece("mini", kind, _at(at, Vector3(0, y, 0)), carved)
+		return
 	match kind:
 		"hero":
 			k.add(_cyl(0.2, 0.46, 1.0), _at(at, Vector3(0, y + 0.5, -0.02)), tint.call(Color("#8a2a22")))     # cloak
@@ -361,13 +391,98 @@ static func tile(icon: String, fade := 0.0, rng_seed := 0) -> Node3D:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = rng_seed
 	var g := terrain(icon)
-	k.add(_cyl(0.98, 1.02, 0.16, 6), T(Vector3(0, 0.08, 0), Vector3(0, 30, 0)), g.darkened(0.25))
-	k.add(_cyl(0.92, 0.98, 0.04, 6), T(Vector3(0, 0.18, 0), Vector3(0, 30, 0)), g)
+	if Kits.enabled:
+		# A KayKit hex, pressed flat: its top sits at 0.2 like the painted one.
+		k.piece("model", "hexagon/" + hex_ground(icon), T(Vector3.ZERO, Vector3(0, 30, 0), Vector3(0.98, 0.2, 0.98)), false,
+			{"tint": g, "wash": 0.7, "sat": 1.0})
+	else:
+		k.add(_cyl(0.98, 1.02, 0.16, 6), T(Vector3(0, 0.08, 0), Vector3(0, 30, 0)), g.darkened(0.25))
+		k.add(_cyl(0.92, 0.98, 0.04, 6), T(Vector3(0, 0.18, 0), Vector3(0, 30, 0)), g)
 	var at := T(Vector3(0, 0.2, -0.2), Vector3.ZERO, Vector3.ONE * 1.3)
-	add_icon(k, icon, at, rng)
+	if not (Kits.enabled and kit_icon(k, icon, at, rng)):
+		add_icon(k, icon, at, rng)
 	var node := k.node(fade)
 	node.name = "Tile_" + icon
 	return node
+
+
+## Which KayKit hex goes under a tile icon.
+static func hex_ground(icon: String) -> String:
+	match icon:
+		"dive", "bell", "bridge": return "hex_water"
+		"shore", "drowned", "jetty": return "hex_coast_A"
+		"cove", "chest": return "hex_coast_B"
+	return "hex_grass"
+
+
+## Tile scenes from kit pieces (KayKit buildings, Quaternius trees and rocks), keeping the
+## code-built boats, bells, jetty and water rings that no kit has. False: use add_icon.
+static func kit_icon(k: Kit, icon: String, at: Transform3D, rng: RandomNumberGenerator) -> bool:
+	var hex := func(name: String, pos: Vector3, rot := 0.0, s := 0.62) -> void:
+		k.piece("model", "hexagon/" + name, _at(at, pos, Vector3(0, rot, 0), Vector3.ONE * s * 1.2))
+	var nat := func(name: String, pos: Vector3, rot := 0.0, s := 0.6) -> void:
+		k.piece("model", "nature/" + name, _at(at, pos, Vector3(0, rot, 0), Vector3.ONE * s))
+	match icon:
+		"inn":
+			hex.call("building_tavern_red", Vector3(-0.05, 0, 0.05), 200.0, 0.7)
+			hex.call("barrel", Vector3(0.45, 0, 0.45), 0.0, 0.5)
+		"village":
+			hex.call("building_home_A_red", Vector3(-0.35, 0, 0.05), 195.0, 0.55)
+			hex.call("building_home_B_red", Vector3(0.3, 0, -0.15), 170.0, 0.55)
+			hex.call("building_well_red", Vector3(0.25, 0, 0.5), 0.0, 0.45)
+		"drowned":
+			_water(k, _at(at, Vector3(0.1, 0, 0.25)), 0.62)
+			add_figure(k, "drowned", _at(at, Vector3(-0.15, -0.05, 0.25), Vector3.ZERO, Vector3.ONE * 0.5), true)
+			add_figure(k, "drowned", _at(at, Vector3(0.32, -0.05, 0.05), Vector3(0, -20, 0), Vector3.ONE * 0.45), true)
+			hex.call("building_home_B_red", Vector3(-0.45, 0, -0.35), 160.0, 0.4)
+		"jetty":
+			_water(k, _at(at, Vector3(0.15, 0, 0.25)), 0.66)
+			for i in 5:
+				k.add(_box(Vector3(0.34, 0.04, 0.12)), _at(at, Vector3(-0.3 + i * 0.13, 0.12, -0.3 + i * 0.15), Vector3(0, -40, 0)), WOOD_L)
+			for i in 3:
+				k.add(_cyl(0.035, 0.04, 0.3, 6), _at(at, Vector3(-0.2 + i * 0.2, 0.1, -0.12 + i * 0.22)), WOOD_D)
+			_boat(k, _at(at, Vector3(0.45, 0.02, 0.0), Vector3(0, 70, 0)), 0.6)
+			hex.call("crate_A_small", Vector3(-0.45, 0, -0.35), 20.0, 0.5)
+		"abbey":
+			hex.call("building_church_red", Vector3(0.0, 0, -0.05), 190.0, 0.62)
+			_water(k, _at(at, Vector3(-0.4, 0, 0.55)), 0.3)
+		"cove":
+			nat.call("Rock_Medium_1", Vector3(-0.4, 0, -0.05), 0.0, 0.32)
+			nat.call("Rock_Medium_2", Vector3(0.35, 0, -0.1), 60.0, 0.3)
+			_boat(k, _at(at, Vector3(0.0, 0.03, 0.48), Vector3(0, 10, 0)), 0.55)
+			hex.call("crate_A_small", Vector3(-0.1, 0, -0.05), 10.0, 0.45)
+			hex.call("sack", Vector3(0.12, 0, -0.1), 0.0, 0.45)
+		"camp":
+			hex.call("tent", Vector3(-0.3, 0, -0.05), 30.0, 1.2)
+			hex.call("resource_lumber", Vector3(0.45, 0, -0.3), 70.0, 0.5)
+			for i in 3:
+				k.add(_cyl(0.04, 0.04, 0.36, 6), _at(at, Vector3(0.3, 0.05, 0.25), Vector3(90, i * 60, 0)), WOOD_D)
+			k.glow().add(_cyl(0.0, 0.1, 0.28, 8), _at(at, Vector3(0.3, 0.2, 0.25)), Color("#ff9a3a"))
+			add_figure(k, "smuggler", _at(at, Vector3(0.1, 0, -0.25), Vector3(0, 20, 0), Vector3.ONE * 0.42), true)
+		"chest":
+			k.piece("model", "fantasy_props/Chest_Wood", _at(at, Vector3(0, 0, 0), Vector3(0, 10, 0), Vector3.ONE * 0.5))
+			k.piece("model", "fantasy_props/Coin_Pile_2", _at(at, Vector3(0.3, 0, 0.45), Vector3(0, 40, 0), Vector3.ONE * 1.2))
+			k.piece("model", "fantasy_props/Coin_Pile", _at(at, Vector3(-0.35, 0, 0.4), Vector3(0, -20, 0), Vector3.ONE * 1.2))
+		"shrine":
+			for p in [Vector3(-0.35, 0, 0), Vector3(0.35, 0, 0)]:
+				k.add(_box(Vector3(0.18, 0.62, 0.18)), _at(at, p + Vector3(0, 0.31, 0)), STONE)
+			k.add(_box(Vector3(0.95, 0.15, 0.24)), _at(at, Vector3(0, 0.69, 0)), STONE_D)
+			k.add(_prism(Vector3(1.05, 0.2, 0.34)), _at(at, Vector3(0, 0.86, 0)), Color("#5a6a32"))
+			k.add(_cyl(0.18, 0.2, 0.06, 10), _at(at, Vector3(0, 0.03, 0.4)), STONE_D)
+			k.glow().add(_cyl(0.0, 0.09, 0.22, 8), _at(at, Vector3(0, 0.16, 0.4)), Color("#ff9a3a"))
+			nat.call("Pine_1", Vector3(-0.55, 0, -0.35), 0.0, 0.11)
+			nat.call("Bush_Common", Vector3(0.55, 0, 0.45), 0.0, 0.25)
+		"tower":
+			hex.call("building_tower_A_red", Vector3(0, 0, 0), 0.0, 0.6)
+		"forest":
+			nat.call("CommonTree_1", Vector3(-0.3, 0, 0), 0.0, 0.12)
+			nat.call("Pine_2", Vector3(0.28, 0, -0.1), 40.0, 0.12)
+			nat.call("CommonTree_2", Vector3(0.0, 0, 0.38), 80.0, 0.1)
+		"bridge":
+			hex.call("building_bridge_A", Vector3(0, 0, 0), 90.0, 0.6)
+		_:
+			return false
+	return true
 
 
 static func _house(k: Kit, at: Transform3D, w: float, roof_col := ROOF, lit := true) -> void:

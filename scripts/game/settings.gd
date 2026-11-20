@@ -85,6 +85,7 @@ static func apply_scene(vp: Viewport, tavern, camera: Camera3D) -> void:
 	vp.scaling_3d_scale = qq.scale
 	var fwd := RenderingServer.get_current_rendering_method() == "forward_plus"
 	vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_FSR if (fwd and qq.scale < 1.0) else Viewport.SCALING_3D_MODE_BILINEAR
+	vp.fsr_sharpness = 0.8   # softer than the 0.2 default: upscaled noise otherwise looks crunchy
 	vp.positional_shadow_atlas_size = qq.shadow_size
 	if tavern != null and tavern.has_method("apply_quality"):
 		tavern.apply_quality(qq)
