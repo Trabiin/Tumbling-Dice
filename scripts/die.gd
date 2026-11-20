@@ -10,6 +10,8 @@ extends RigidBody3D
 ##   load         0..1, how far the centre of mass is pushed away from that face (default 0.45)
 ##   radius       optional circumradius in world units
 ##   bevel        optional edge rounding multiplier (default 1, 0 = sharp)
+##   face_inks    optional Array of per-face ink colours (null = the style's ink), value order
+##   mass, bounce, friction   optional physics feel (material traits)
 
 const Geo := preload("res://scripts/dice_geometry.gd")
 const Mats := preload("res://scripts/materials.gd")
@@ -150,7 +152,11 @@ func _build_mesh(verts: PackedVector3Array, faces: Array, slots: PackedInt32Arra
 			var size := (Geo.face_inradius(verts, f) - bevel) * 1.3
 			if sides == 10:
 				size *= 1.1  # kites are narrow but tall
-			_add_label(text, c, normals[i], up, size, ink, ink_outline)
+			var face_ink := ink
+			var inks: Array = spec.get("face_inks", [])
+			if slots[i] < inks.size() and inks[slots[i]] != null:
+				face_ink = inks[slots[i]]
+			_add_label(text, c, normals[i], up, size, face_ink, ink_outline)
 	return hull
 
 
@@ -207,8 +213,8 @@ func _build_collision(points: PackedVector3Array) -> void:
 func _build_physics() -> void:
 	mass = spec.get("mass", 1.0)
 	var pm := PhysicsMaterial.new()
-	pm.friction = 0.55
-	pm.bounce = 0.25
+	pm.friction = spec.get("friction", 0.55)
+	pm.bounce = spec.get("bounce", 0.25)
 	physics_material_override = pm
 	angular_damp = 0.4
 	linear_damp = 0.1
@@ -235,16 +241,24 @@ func _build_physics() -> void:
 func read_result() -> Dictionary:
 	var best := -INF
 	var best_slot := 0
+	var second := -INF
+	var second_slot := 0
 	for i in sides:
 		var d := (global_transform.basis * face_normals[i]).normalized().dot(Vector3.UP)
 		if d > best:
+			second = best
+			second_slot = best_slot
 			best = d
 			best_slot = i
+		elif d > second:
+			second = d
+			second_slot = i
 	return {
 		"value": best_slot + 1,
 		"label": labels[best_slot],
 		"flatness": best,
 		"cocked": best < FLAT_THRESHOLD,
+		"alt_value": second_slot + 1,   # the other face it leans toward
 	}
 
 
