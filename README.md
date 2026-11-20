@@ -4,8 +4,9 @@ A dice-collecting RPG told at a tavern table. An unseen storyteller, the Teller,
 deed in it is decided by real dice you own, pack and throw into a physical tray. Your Pouch of dice is your
 character: no stats, no classes, only the dice you carry and what they have been through.
 
-This build is **milestone M1: The Drowned Bell**, the first tale, playable start to finish. Design doc:
-*Tales of the Tumbling Dice: Game Design* (Claude Doc).
+This build covers **milestone M1** (the rules core and The Drowned Bell, playable start to finish) and
+**milestone M2: dice on the table** (throwing by hand, picking dice in the tray, and the Practice Table
+for the M2 playtest). Design doc: *Tales of the Tumbling Dice: Game Design* (Claude Doc).
 
 Everything is generated in GDScript and shader code: dice, tavern, UI widgets and sounds. The only assets
 are two free fonts (SIL Open Font License): Cinzel for headings and dice, and IM Fell English for the
@@ -21,13 +22,36 @@ Teller's narration (`fonts/OFL.txt`, `fonts/OFL-IMFellEnglish.txt`).
 | Input | Action |
 |---|---|
 | Click | Choose, pick dice from your Hand, place dice in slots |
-| Space | Throw |
+| Drag across the tray | Pick up the chosen dice, shake, and let go to throw. A quick flick throws hard; holding still and letting go drops them. Right-click while holding puts them back |
+| Click a die in the tray | Select it while placing dice (then click a slot, or use Nudge, Reroll) |
+| 1 to 9 | Select a thrown die while placing dice |
+| Space | Throw (tossed in from your side of the table) |
 | Enter | Confirm / continue |
 | F | Fast dice: skip the physics (same odds, results drawn from each die's measured faces) |
 | Esc | Quit |
 
 The campaign (your dice, Coin, Chronicle, endings found) is saved to `user://campaign.json` when a tale
 ends. Run with `-- --new` to start fresh. The old dice-tray sandbox is still there: `main.tscn`.
+
+### The Practice Table (M2 playtest)
+
+**Practice table: 20 challenges** on the title screen runs twenty challenges with no story stakes: six
+tests, four trials, five contests and five fights, the same twenty in the same order for every tester.
+Grit, Fate, Wounds and the Pouch are restored before each one, and it never touches your campaign save.
+
+Nothing is pre-picked, so every choice of dice is the player's own. An optional row of reasons on the throw
+card ("Best odds", "Right aspect", "Saving dice", "Chasing a combo", "Hunch") lets testers say why they
+chose. Every throw is logged with the Hand, the pick, the table's own suggestion, the odds of both, the
+reason and the outcome, to `user://playtests/practice-<time>.json`. The end screen sums it up. This is the
+data for the M2 gate: *five playtesters each play 20 challenges and can explain why they chose their dice*.
+
+### Throwing by hand
+
+The gesture steers the dice, never the faces. Dice get a uniformly random orientation when picked up and
+keep tumbling in the hand, and release spin has a floor, so even a gentle drop rolls. `tests/physics_check.gd`
+throws a d6 handful 200 times with drops, rolls and hard flicks: every die lands in the tray, and the faces
+pass a chi-square test (6.5 against a 0.001 critical value of 20.5). A die still rocking after 5 seconds
+gets one small knock from the table. A die that leaves the tray is put back and thrown again.
 
 ### How a tale plays
 
@@ -75,12 +99,19 @@ The rules never touch the scene tree, so the same code runs in the game, in test
 | `scripts/rules/conditions.gd` | The small condition language tales use (`rumour_smugglers or has:guile`) |
 | `scripts/rules/bot.gd` | Balance bots with archetype Pouches |
 | `scripts/tale/drowned_bell.gd` | The tale itself, as data |
+| `scripts/tale/practice.gd` | The Practice Table: twenty challenges in the same tale format |
 | `scripts/game/game.gd` | The playable table: parchment, cards, Hand, Pouch screen, ending; turns clicks into runner calls |
-| `scripts/game/table.gd` | Physical dice: spawns rules dice as rigid bodies, throws, settles, reads faces, freezes the foe's dice |
+| `scripts/game/table.gd` | Physical dice: spawns rules dice as rigid bodies, throws (tossed or held and released by hand), settles with a nudge, recovers strays, reads faces, freezes the foe's dice, finds the die under the cursor |
+| `scripts/game/practice_log.gd` | The Practice Table's log: picks against the table's suggestion, odds, reasons, outcomes, saved as JSON |
 | `scripts/game/ui_kit.gd` | Paper-and-wax UI styles plus code-drawn widgets (die tiles, odds bar, pips) |
 | `tests/run_tests.gd` | Unit tests, the tale linter and the balance bots |
+| `tests/physics_check.gd` | Real physics: drag throws land in the tray and give fair faces |
 
 ## Tests, linter and balance
+
+Physics (real Jolt dice): `godot --headless --fixed-fps 120 -s res://tests/physics_check.gd -- --throws=200`.
+UI autoplay through the practice table with simulated mouse drags and tray clicks:
+`godot --headless --fixed-fps 60 -- --new --autoplay --practice --drag --quit-at-end`.
 
 ```
 godot --headless -s res://tests/run_tests.gd                                   # everything, quick bots
