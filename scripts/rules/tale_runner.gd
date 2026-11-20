@@ -910,6 +910,17 @@ func _effect(e: Array) -> void:
 			pouch.rest(rng, 2)
 			_say(teller.line("rest"), "teller")
 			_say("Grit restored to %d. Fatigue cleared. You may swap up to 2 dice with your Saddlebag." % state.grit, "system")
+		"practice_reset":
+			# The practice table: every challenge starts from the same footing.
+			state.grit_max = TaleState.START_GRIT
+			state.grit = state.grit_max
+			state.fate = TaleState.START_FATE
+			state.wounds.clear()
+			state.defy_used = false
+			state.fail_streak = 0
+			pouch.return_hand(rng)
+			pouch.rest(rng, 0)
+			pouch.hand_penalty = 0
 		"toll":
 			for d in pouch.pouch:
 				if d.base == "bellmetal_d20":

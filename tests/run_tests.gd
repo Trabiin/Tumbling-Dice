@@ -3,7 +3,7 @@ extends SceneTree
 ##
 ##   godot --headless -s res://tests/run_tests.gd                       unit tests + linter + quick bots
 ##   godot --headless -s res://tests/run_tests.gd -- --runs=400 --report=media/balance.md
-##   options: --only=<suite>  (pouch, scoring, odds, combat, contest, challenges, lint, save, bots)
+##   options: --only=<suite>  (pouch, scoring, odds, combat, contest, challenges, lint, save, practice, bots)
 ##
 ## Exit code is the number of failed checks.
 
@@ -20,6 +20,7 @@ const Campaign := preload("res://scripts/rules/campaign.gd")
 const Runner := preload("res://scripts/rules/tale_runner.gd")
 const Bot := preload("res://scripts/rules/bot.gd")
 const Tale := preload("res://scripts/tale/drowned_bell.gd")
+const Practice := preload("res://scripts/tale/practice.gd")
 
 var failures := 0
 var checks := 0
@@ -35,7 +36,7 @@ func _init() -> void:
 		elif a.begins_with("--report="): report_path = a.substr(9)
 		elif a.begins_with("--only="): only = a.substr(7)
 	var t0 := Time.get_ticks_msec()
-	var suites := ["pouch", "scoring", "odds", "combat", "contest", "challenges", "lint", "save", "bots"]
+	var suites := ["pouch", "scoring", "odds", "combat", "contest", "challenges", "lint", "save", "practice", "bots"]
 	for s in suites:
 		if only == "" or only == s:
 			print("== ", s)
@@ -440,7 +441,14 @@ func test_challenges() -> void:
 # ===================================================================== linter
 
 func test_lint() -> void:
-	var tale := Tale.tale()
+	print("  The Drowned Bell")
+	_lint(Tale.tale())
+	print("  The Practice Table")
+	_lint(Practice.tale())
+	eq(Practice.challenges().size(), 20, "the practice table has 20 challenges")
+
+
+func _lint(tale: Dictionary) -> void:
 	var scenes: Dictionary = tale.scenes
 	var set_flags := {}
 	var read_flags := {}
@@ -556,6 +564,44 @@ func test_save() -> void:
 
 
 # ===================================================================== bots
+
+## The practice table, played by the bot: every run reaches the end, nothing carries over between
+## challenges, and the tier mix per kind of challenge goes in the report.
+func test_practice() -> void:
+	var by_type := {}
+	var n := maxi(10, runs / 4)
+	for k in n:
+		var camp := Campaign.new()
+		camp.new_campaign()
+		var r := Runner.new()
+		var bt := Bot.new()
+		bt.rng.seed = k * 104729 + 3
+		var fresh := [true]
+		r.said.connect(func(text, style):
+			if style.begins_with("tier_") and style != "tier_caught":
+				var ty: String = "combat" if r.option.has("combat") else ("contest" if r.option.has("contest") else r.option.challenge.kind)
+				if not by_type.has(ty):
+					by_type[ty] = [0, 0, 0, 0]
+				by_type[ty][["tier_fail", "tier_mixed", "tier_success", "tier_triumph"].find(style)] += 1)
+		r.changed.connect(func():
+			if r.phase == "choose" and r.scene.id.begins_with("c"):
+				if r.state.grit != r.state.grit_max or r.state.fate != 3 or not r.state.wounds.is_empty() or r.pouch.fatigue != 0:
+					fresh[0] = false)
+		r.start(Practice.tale(), camp, k * 13 + 5)
+		bt.play(r)
+		check(r.phase == "ending" and r.state.ending == "practice", "practice run %d reaches the end (stuck in %s at %s)" % [k, r.phase, r.scene.get("id", "?")])
+		check(fresh[0], "practice run %d starts every challenge whole" % k)
+		check(r.state.visited.size() == 22, "practice run %d visits all 20 challenges (%d scenes)" % [k, r.state.visited.size()])
+	report.append("## The practice table, played by the bot (%d runs)\n" % n)
+	report.append("| Kind | Fail | Mixed | Success | Triumph |")
+	report.append("|---|---|---|---|---|")
+	for ty in by_type:
+		var t: Array = by_type[ty]
+		var tot := float(t[0] + t[1] + t[2] + t[3])
+		report.append("| %s | %d%% | %d%% | %d%% | %d%% |" % [ty, roundi(t[0] / tot * 100), roundi(t[1] / tot * 100), roundi(t[2] / tot * 100), roundi(t[3] / tot * 100)])
+		print("  %-8s F/M/S/T %s" % [ty, _pct(t.map(func(x): return x / tot))])
+	report.append("")
+
 
 func test_bots() -> void:
 	report.append("## The Drowned Bell, played by bots (%d runs per Pouch, random choices)\n" % runs)

@@ -12,6 +12,8 @@ extends Node3D
 ##   --shots=<dir>   save a screenshot whenever the table changes (needs a renderer)
 ##   --max-shots=<n> stop after n screenshots (default 40)
 ##   --quit-at-end   quit when the tale ends
+##   --practice      with --autoplay: play the practice table instead of the tale
+##   --drag          with --autoplay: throw by simulated mouse drags instead of the button
 
 const Tavern := preload("res://scripts/tavern.gd")
 const Table := preload("res://scripts/game/table.gd")
@@ -21,6 +23,8 @@ const S := preload("res://scripts/rules/scoring.gd")
 const Runner := preload("res://scripts/rules/tale_runner.gd")
 const Campaign := preload("res://scripts/rules/campaign.gd")
 const Tale := preload("res://scripts/tale/drowned_bell.gd")
+const Practice := preload("res://scripts/tale/practice.gd")
+const PracticeLog := preload("res://scripts/game/practice_log.gd")
 const Odds := preload("res://scripts/rules/odds.gd")
 const Combat := preload("res://scripts/rules/combat.gd")
 const Contest := preload("res://scripts/rules/contest.gd")
@@ -75,9 +79,16 @@ var opt_shots := ""
 var opt_max_shots := 40
 var opt_quit_at_end := false
 var opt_new := false
+var opt_practice := false
+var opt_drag := false
 var opt_seed := -1
 var shots_taken := 0
 var bot = Bot.new()
+
+# practice table
+var practice = null              # PracticeLog while at the practice table
+var practice_reason := ""
+var home_campaign = null         # the real campaign, set aside during practice
 
 
 func _ready() -> void:
@@ -111,7 +122,10 @@ func _ready() -> void:
 	_show_title()
 	if opt_autoplay:
 		await _wait(10)
-		_begin_tale()
+		if opt_practice:
+			_begin_practice()
+		else:
+			_begin_tale()
 
 
 func _parse_args() -> void:
@@ -119,6 +133,8 @@ func _parse_args() -> void:
 		if a == "--fast": fast_dice = true
 		elif a == "--new": opt_new = true
 		elif a == "--autoplay": opt_autoplay = true
+		elif a == "--practice": opt_practice = true
+		elif a == "--drag": opt_drag = true
 		elif a == "--quit-at-end": opt_quit_at_end = true
 		elif a.begins_with("--shots="): opt_shots = a.substr(8)
 		elif a.begins_with("--max-shots="): opt_max_shots = int(a.substr(12))
@@ -145,6 +161,7 @@ func _process(delta: float) -> void:
 	_breath += delta
 	var off := Vector3(sin(_breath * 0.37) * 0.12, sin(_breath * 0.29 + 1.0) * 0.07, sin(_breath * 0.21) * 0.08)
 	camera.transform = _cam_rest.translated(off).rotated_local(Vector3.FORWARD, sin(_breath * 0.17) * 0.003)
+	_process_hold(delta)
 
 
 # ===================================================================== layout
@@ -450,6 +467,10 @@ func _show_title() -> void:
 	var b := UI.seal_button("Begin the tale", 18)
 	b.pressed.connect(_begin_tale)
 	v.add_child(b)
+	var pb := UI.seal_button("Practice table: 20 challenges", 14, Color("#2a5a6a"))
+	pb.tooltip_text = "No story, no stakes: twenty challenges to learn the dice. Your choices are logged for playtesting."
+	pb.pressed.connect(_begin_practice)
+	v.add_child(pb)
 	if campaign.tales_played > 0:
 		var nb := UI.seal_button("Start a new campaign", 13, Color("#5a4a3a"))
 		nb.pressed.connect(func():
@@ -462,12 +483,25 @@ func _show_title() -> void:
 
 
 func _begin_tale() -> void:
+	_start_runner(Tale.tale())
+
+
+## The practice table runs on a throwaway campaign, so it never touches your save.
+func _begin_practice() -> void:
+	home_campaign = campaign
+	campaign = Campaign.new()
+	campaign.new_campaign()
+	practice = PracticeLog.new()
+	_start_runner(Practice.tale())
+
+
+func _start_runner(t: Dictionary) -> void:
 	UI.clear(overlay)
 	log_text.clear()
 	runner = Runner.new()
 	runner.said.connect(_on_said)
 	runner.changed.connect(_on_changed)
-	runner.start(Tale.tale(), campaign, opt_seed)
+	runner.start(t, campaign, opt_seed)
 	_refresh_status()
 
 
@@ -491,14 +525,22 @@ func _on_phase(serial: int) -> void:
 		"approach": _show_approaches()
 		"foe_throw": _foe_throw()
 		"throw":
-			selected = [] if opt_autoplay else _default_pick()
+			# At the practice table nothing is pre-picked: the choice has to be the player's own.
+			selected = [] if (opt_autoplay or practice != null) else _default_pick()
+			practice_reason = ""
 			_show_throw()
 		"quake": _quake()
 		"assign": _show_assign()
 		"push": _show_push()
 		"defy": _show_defy()
-		"cost": _show_costs()
-		"outcome": _show_continue()
+		"cost":
+			if practice != null:
+				practice.settle(runner.scene.id, runner.tier)
+			_show_costs()
+		"outcome":
+			if practice != null:
+				practice.settle(runner.scene.id, runner.tier)
+			_show_continue()
 		"ending": _show_ending()
 	await _shot(ph)
 	if opt_autoplay:
@@ -685,6 +727,17 @@ func _show_throw() -> void:
 			card_box.add_child(UI.label("It throws: %s." % c.intent_text(), 15, Color("#8a2a1a")))
 			if runner.pouch.hand.any(func(d): return Dice.trait_of(d) == "clarity"):
 				card_box.add_child(UI.label("Clarity (Elven Jade): next round it throws %s." % Odds.foe_throw_odds(c.phase().dice), 12, UI.INK_SOFT, "italic"))
+	if practice != null and a.type != "laststand":
+		var rrow := HBoxContainer.new()
+		rrow.add_theme_constant_override("separation", 6)
+		card_box.add_child(rrow)
+		rrow.add_child(UI.label("Why these dice? (optional)", 12, UI.INK_SOFT, "italic"))
+		for r in PracticeLog.REASONS:
+			var rb := UI.seal_button(r, 11, Color("#1f4a5a") if practice_reason == r else Color("#7a6a5a"))
+			rb.pressed.connect(func():
+				practice_reason = "" if practice_reason == r else r
+				_show_throw())
+			rrow.add_child(rb)
 	# odds
 	var orow := HBoxContainer.new()
 	orow.add_theme_constant_override("separation", 12)
@@ -705,7 +758,8 @@ func _show_throw() -> void:
 	brow.alignment = BoxContainer.ALIGNMENT_END
 	brow.add_theme_constant_override("separation", 10)
 	card_box.add_child(brow)
-	var hint := UI.label("Pick dice from your Hand, then throw." if a.type != "laststand" else "Last Stand: everything you have.", 13, UI.INK_SOFT, "italic")
+	var hint := UI.label(("Pick dice from your Hand, then drag across the tray and let go, or press Throw." if a.type != "laststand" else "Last Stand: everything you have. Drag across the tray, or press Throw."), 13, UI.INK_SOFT, "italic")
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD
 	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	brow.add_child(hint)
 	if runner.can_flee():
@@ -755,10 +809,18 @@ func _update_odds() -> void:
 			odds_text.text = "Finish it this round: %d%%. Damage dealt about %.1f, taken about %.1f (of %d coming)." % [roundi(o.kill * 100), o.dealt, o.taken, a.run.incoming()]
 
 
-func _do_throw() -> void:
+## Throw the selected dice. With `release` (a velocity from a drag), the dice already held over
+## the tray are let go along it; without, they are tossed in from your side of the table.
+func _do_throw(release = null) -> void:
 	if busy or selected.is_empty() or runner.phase != "throw":
 		return
+	if release == null and table.is_holding():
+		release = Vector3.ZERO
 	var dice := selected.duplicate()
+	if practice != null:
+		var how := "fast" if fast_dice else ("drag" if release != null else "button")
+		practice.record(runner, dice, bot.choose_dice(runner), practice_reason, how)
+		practice_reason = ""
 	selected.clear()
 	busy = true
 	_card_clear()
@@ -769,7 +831,11 @@ func _do_throw() -> void:
 		ts = Odds.roll(dice, rng)
 		results = []
 	else:
-		var res: Array = await table.throw_player(dice)
+		var res: Array
+		if release != null:
+			res = await table.release(release)
+		else:
+			res = await table.throw_player(dice)
 		results = res
 		for i in dice.size():
 			var t := S.make_thrown(dice[i], res[i].value - 1)
@@ -1320,6 +1386,9 @@ func _show_ending() -> void:
 	_refresh_hand(false)
 	table.clear_player()
 	table.clear_foe()
+	if practice != null:
+		_show_practice_summary()
+		return
 	campaign.save()
 	UI.clear(overlay)
 	var st = runner.state
@@ -1367,10 +1436,63 @@ func _show_ending() -> void:
 		get_tree().quit()
 
 
+func _show_practice_summary() -> void:
+	UI.clear(overlay)
+	var sm: Dictionary = practice.summary()
+	var path: String = practice.save()
+	var p := UI.panel(UI.PAPER, 18)
+	p.position = Vector2(12, 60)
+	p.custom_minimum_size = Vector2(CARD_W, 0)
+	overlay.add_child(p)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 8)
+	p.add_child(v)
+	v.add_child(UI.label("Practice done", 26, Color("#6a1010"), "title"))
+	var tiers: Dictionary = sm.tiers
+	var tl: Array[String] = []
+	for t in S.TIER_NAMES:
+		tl.append("%s %d" % [t, int(tiers.get(t, 0))])
+	v.add_child(UI.label("%d challenges, %d throws.   %s" % [sm.challenges, sm.throws, "   ".join(tl)], 15, UI.INK))
+	v.add_child(UI.wrap_label("You picked the same dice as the table's own suggestion %d times out of %d, and beat its odds %d times. On average your picks gave up %d points of odds against it." % [sm.same, sm.throws, sm.better, roundi(sm.given_up * 100)], 15, UI.INK))
+	var rl: Array[String] = []
+	for r in sm.reasons:
+		rl.append("%s %d" % [r, sm.reasons[r]])
+	v.add_child(UI.wrap_label("Your reasons: " + ", ".join(rl), 14, UI.INK_SOFT, "italic"))
+	if path != "":
+		v.add_child(UI.wrap_label("The full log is saved at %s" % path, 12, UI.INK_SOFT))
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_END
+	v.add_child(row)
+	var b := UI.seal_button("Back to the tavern", 16)
+	b.pressed.connect(func():
+		campaign = home_campaign
+		home_campaign = null
+		practice = null
+		log_text.clear()
+		runner = null
+		_refresh_status()
+		_refresh_hand(false)
+		_show_title())
+	row.add_child(b)
+	if opt_quit_at_end:
+		print("PRACTICE: ", JSON.stringify(sm), "  log: ", path)
+		await _wait(20)
+		await _shot("practice_final")
+		get_tree().quit()
+
+
 # ===================================================================== input
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton or event is InputEventMouseMotion:
+		_tray_mouse(event)
+		return
 	if not (event is InputEventKey and event.pressed and not event.echo):
+		return
+	if runner and runner.phase == "assign" and not busy and event.keycode >= KEY_1 and event.keycode <= KEY_9:
+		var i: int = event.keycode - KEY_1
+		if i < runner.thrown.size():
+			_select_chip(i)
 		return
 	match event.keycode:
 		KEY_ESCAPE:
@@ -1390,6 +1512,89 @@ func _unhandled_input(event: InputEvent) -> void:
 				"throw": _do_throw()
 
 
+# ===================================================================== hands on the tray
+
+var dragging := false
+var drag_samples: Array = []     # [[time, world point]]
+const DRAG_WINDOW := 0.12        # seconds of motion that set the throw's velocity
+const DRAG_GAIN := 1.15
+
+
+## Mouse on the tray: drag to throw in the throw phase, click a die to pick it when placing.
+func _tray_mouse(event: InputEvent) -> void:
+	if runner == null:
+		return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			if runner.phase == "throw" and not busy and not selected.is_empty():
+				_drag_start(event.position)
+			elif runner.phase == "assign" and not busy:
+				var n = table.node_at(camera, event.position)
+				if n != null:
+					for i in results.size():
+						if results[i].node == n:
+							_select_chip(i)
+		elif dragging:
+			_drag_end(event.position)
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed and dragging:
+		# Right click while holding: put the dice back in the Hand.
+		dragging = false
+		table.cancel_hold()
+		_show_throw()
+	elif event is InputEventMouseMotion and dragging:
+		# Held dice hover under the cursor: intersect the plane they float in, not the felt.
+		var p = Table.table_point(camera, event.position, Table.HOLD_HEIGHT)
+		if p != null:
+			drag_samples.append([Time.get_ticks_msec() / 1000.0, Table.clamp_hold(p)])
+			while drag_samples.size() > 40:
+				drag_samples.pop_front()
+
+
+func _drag_start(screen: Vector2) -> void:
+	var p = Table.table_point(camera, screen)
+	if p == null:
+		return
+	# Only over the tray itself (with a little slack), so clicks elsewhere don't pick up dice.
+	if absf(p.x) > Tavern.TRAY.x / 2 + 2.0 or absf(p.z) > Tavern.TRAY.y / 2 + 2.0:
+		return
+	if fast_dice:
+		_do_throw()
+		return
+	dragging = true
+	var hp = Table.table_point(camera, screen, Table.HOLD_HEIGHT)
+	if hp != null:
+		p = hp
+	drag_samples = [[Time.get_ticks_msec() / 1000.0, Table.clamp_hold(p)]]
+	table.hold_player(selected, p)
+	_card_clear()
+	card_box.add_child(UI.label("Shake them... and let go. Flick to throw hard. Right-click to put them back.", 15, UI.INK_SOFT, "italic"))
+
+
+func _drag_end(screen: Vector2) -> void:
+	dragging = false
+	var p = Table.table_point(camera, screen, Table.HOLD_HEIGHT)
+	var now := Time.get_ticks_msec() / 1000.0
+	if p != null:
+		drag_samples.append([now, Table.clamp_hold(p)])
+	# Velocity from the last moment of the gesture (a flick), not the whole drag.
+	var vel := Vector3.ZERO
+	var last: Array = drag_samples[-1]
+	for k in range(drag_samples.size() - 1, -1, -1):
+		var s: Array = drag_samples[k]
+		if last[0] - s[0] >= DRAG_WINDOW or k == 0:
+			var dt: float = maxf(0.016, last[0] - s[0])
+			vel = (last[1] - s[1]) / dt * DRAG_GAIN
+			break
+	if now - last[0] > 0.15:
+		vel = Vector3.ZERO   # held still before letting go: a drop
+	_do_throw(vel)
+
+
+func _process_hold(delta: float) -> void:
+	if dragging and table.is_holding() and not drag_samples.is_empty():
+		table.move_hold(drag_samples[-1][1], delta)
+
+
 # ===================================================================== testing
 
 func _wait(frames: int) -> void:
@@ -1407,6 +1612,30 @@ func _shot(tag: String) -> void:
 	var path := "%s/%02d_%s.png" % [opt_shots, shots_taken, tag]
 	img.save_png(path)
 	print("shot ", path)
+
+
+## A simulated mouse gesture across the tray, through the same input handler a player uses.
+func _autoplay_drag() -> void:
+	var a := camera.unproject_position(Vector3(rng.randf_range(-6, -3), 0, rng.randf_range(-2, 3)))
+	var b := camera.unproject_position(Vector3(rng.randf_range(2, 6), 0, rng.randf_range(-3, 2)))
+	var down := InputEventMouseButton.new()
+	down.button_index = MOUSE_BUTTON_LEFT
+	down.pressed = true
+	down.position = a
+	_tray_mouse(down)
+	var steps := 12
+	for k in steps + 1:
+		var m := InputEventMouseMotion.new()
+		m.position = a.lerp(b, float(k) / steps)
+		_tray_mouse(m)
+		await get_tree().process_frame
+		if k == steps / 2:
+			await _shot("drag")
+	var up := InputEventMouseButton.new()
+	up.button_index = MOUSE_BUTTON_LEFT
+	up.pressed = false
+	up.position = b
+	_tray_mouse(up)
 
 
 ## A bot plays through the real UI: the same buttons a player presses.
@@ -1432,11 +1661,24 @@ func _autoplay_step(serial: int) -> void:
 			runner.pick_approach(bot.best_approach(runner))
 		"throw":
 			selected = bot.choose_dice(runner)
-			_do_throw()
+			if opt_drag and not fast_dice:
+				await _autoplay_drag()
+			else:
+				_do_throw()
 		"assign":
 			if not runner.bell_targets().is_empty():
 				_bell()
 				return
+			if opt_drag and not results.is_empty() and is_instance_valid(results[0].node):
+				# Click the first die in the tray, as a player would, and check it gets picked.
+				var click := InputEventMouseButton.new()
+				click.button_index = MOUSE_BUTTON_LEFT
+				click.pressed = true
+				click.position = camera.unproject_position(results[0].node.global_position)
+				var before := sel_chip
+				_tray_mouse(click)
+				print("TRAYCLICK ", "ok" if sel_chip != before else "missed")
+				sel_chip = -1
 			_confirm()
 		"push":
 			runner.stop()
