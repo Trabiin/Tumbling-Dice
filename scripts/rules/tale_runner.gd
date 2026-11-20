@@ -811,6 +811,9 @@ func _finish(t: int, caught := false) -> void:
 		_say("You take back your %s." % active.stolen.name, "system")
 		active.stolen = null
 	if active.type == "combat" and active.run.outcome == "won":
+		# A fallen-foe token stays on the tale board where the fight was won.
+		state.marks.append({"scene": scene.get("id", ""), "icon": "foe", "label": "%s, beaten" % active.run.foe.name,
+			"figure": active.run.foe.get("figure", "")})
 		var loot: String = active.run.foe.get("loot", "")
 		if loot != "":
 			_gain(loot, false, "%s drops a die: " % active.run.foe.name)
@@ -972,10 +975,13 @@ func _effect(e: Array) -> void:
 				_say("Your %s is gone, into the dark." % low.die.name, "foe")
 				events.append({"type": "lost", "die": low.die})
 		"rest":
-			state.add_grit(int(e[1]))
+			# A Waystone gets you back on your feet, not back to full: Grit rises to n if it is lower.
+			var before_rest: int = state.grit
+			state.grit = clampi(maxi(state.grit, int(e[1])), state.grit, state.grit_max)
 			pouch.rest(rng, 2)
 			_say(teller.line("rest"), "teller")
-			_say("Grit restored to %d. Fatigue cleared. You may swap up to 2 dice with your Saddlebag." % state.grit, "system")
+			var grit_text := ("Grit back up to %d." % state.grit) if state.grit > before_rest else ("Grit stays at %d." % state.grit)
+			_say("%s Fatigue cleared. You may swap up to 2 dice with your Saddlebag." % grit_text, "system")
 		"practice_reset":
 			# The practice table: every challenge starts from the same footing.
 			state.grit_max = TaleState.START_GRIT
@@ -1063,6 +1069,7 @@ func _finish_tale() -> void:
 	for k in state.standing:
 		campaign.standing[k] = int(campaign.standing.get(k, 0)) + int(state.standing[k])
 	campaign.shards.append_array(state.shards)
+	campaign.remember_map(tale.get("id", ""), state.visited)
 	for d in pouch.pouch:
 		if not d.ally:
 			d.history.append("Carried through %s (%s)." % [tale.title, chosen.title])

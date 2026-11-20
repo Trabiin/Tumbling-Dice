@@ -19,6 +19,9 @@ extends Node3D
 ##   --continue      with --autoplay: continue the saved tale instead of starting over
 ##   --screens       screenshot the title and the Chronicle, then quit
 ##   --quality=<p>   graphics preset for this run: low, medium or high (not saved)
+##   --shot-phases=a,b  only screenshot these phases (e.g. foe_throw,ending)
+##   --board-test=<scenes>[+flag=value...]  show the tale board after these scenes, screenshot, quit
+##   --hub=<place>   screenshot the tavern hub (room, shelf or bench), then quit
 
 const Tavern := preload("res://scripts/tavern.gd")
 const Table := preload("res://scripts/game/table.gd")
@@ -39,6 +42,10 @@ const Contest := preload("res://scripts/rules/contest.gd")
 const Bot := preload("res://scripts/rules/bot.gd")
 const Pouch := preload("res://scripts/rules/pouch.gd")
 const TaleState := preload("res://scripts/rules/tale_state.gd")
+const TaleBoard := preload("res://scripts/game/tale_board.gd")
+const BoardRules := preload("res://scripts/rules/board.gd")
+const Fig := preload("res://scripts/figures.gd")
+const Hub := preload("res://scripts/game/tavern_hub.gd")
 
 const PANEL_W := 392.0
 const CARD_W := 856.0
@@ -71,6 +78,16 @@ var overlay: Control
 var fast_toggle: CheckButton
 var _type_tween: Tween
 var fps_label: Label
+var hover_label: Label
+var board: Node3D             # the tale board, left of the tray
+var cam_mode := "tray"
+var _cam_tray := Transform3D()
+var _cam_board := Transform3D()
+var _cam_tween: Tween
+var hub                       # the tavern between tales
+var views := {}               # extra camera spots: room, shelf, bench
+var foe_figure: Node3D        # the carved figurine of whoever you face, behind the tray
+var foe_figure_kind := ""
 
 # A throw in progress
 var selected: Array = []
@@ -96,6 +113,10 @@ var opt_quit_at_scene := 0
 var opt_quality := ""
 var opt_drag := false
 var opt_seed := -1
+var opt_shot_phases := []        # only screenshot these phases (default: all)
+var opt_figures := false          # screenshot every figurine on the table, then quit
+var opt_hub := ""                 # room, shelf or bench: screenshot the tavern hub there and quit
+var opt_board_test := ""          # scene ids, comma separated (+flag=value): render the board there and quit
 var shots_taken := 0
 var bot = Bot.new()
 
@@ -112,6 +133,7 @@ func _ready() -> void:
 		Settings.preset = opt_quality
 	Settings.apply_engine()
 	tavern = Tavern.new()
+	tavern.map_space = true
 	add_child(tavern)
 	camera = Camera3D.new()
 	add_child(camera)
@@ -127,6 +149,8 @@ func _ready() -> void:
 	table.tavern = tavern
 	table.font = UI.font("ui")
 	add_child(table)
+	board = TaleBoard.new()
+	add_child(board)
 	if opt_seed >= 0:
 		rng.seed = opt_seed
 		table.rng.seed = opt_seed + 3
@@ -138,6 +162,7 @@ func _ready() -> void:
 	if opt_new or not campaign.load_save():
 		campaign.new_campaign()
 	_build_ui()
+	hub = Hub.new(self)
 	_show_title()
 	if opt_preview:
 		_show_preview()
@@ -158,6 +183,41 @@ func _ready() -> void:
 		await _shot("title")
 		_show_chronicle()
 		await _shot("chronicle")
+		get_tree().quit()
+		return
+	if opt_board_test != "":
+		await _board_test()
+		return
+	if opt_figures:
+		await _wait(5)
+		card.visible = false
+		hand_panel.visible = false
+		UI.clear(overlay)
+		var kinds: Array = Fig.FIGURES
+		for i in kinds.size():
+			var f := Fig.figurine(kinds[i], i > 0)
+			f.position = Vector3(-6.5 + i * 2.6, 0.0, 1.0 + (i % 2) * 2.2)
+			f.scale = Vector3.ONE * 1.25
+			add_child(f)
+		runner = null
+		foe_figure_kind = ""
+		_place_foe_figure("abbess")
+		await _wait(30)
+		await _shot("figures")
+		get_tree().quit()
+		return
+	if opt_hub != "":
+		await _wait(5)
+		_show_tavern()
+		if opt_hub == "shelf":
+			hub.show_shelf()
+		elif opt_hub == "bench":
+			hub.sel = campaign.pouch.collection[6]
+			hub.sel_face = 7
+			campaign.shards.append("Guard")
+			hub.show_bench()
+		await _wait(40)
+		await _shot("hub_" + opt_hub)
 		get_tree().quit()
 		return
 	if opt_autoplay:
@@ -187,6 +247,10 @@ func _parse_args() -> void:
 		elif a.begins_with("--shots="): opt_shots = a.substr(8)
 		elif a.begins_with("--max-shots="): opt_max_shots = int(a.substr(12))
 		elif a.begins_with("--seed="): opt_seed = int(a.substr(7))
+		elif a.begins_with("--board-test="): opt_board_test = a.substr(13)
+		elif a.begins_with("--hub="): opt_hub = a.substr(6)
+		elif a == "--figures": opt_figures = true
+		elif a.begins_with("--shot-phases="): opt_shot_phases = Array(a.substr(14).split(","))
 	if opt_shots != "":
 		DirAccess.make_dir_recursive_absolute(opt_shots)
 
@@ -299,8 +363,12 @@ func _apply_quality(rebuild: bool) -> void:
 		tavern.queue_free()
 		Mats._cache.clear()
 		tavern = Tavern.new()
+		tavern.map_space = true
 		add_child(tavern)
 		move_child(tavern, 0)
+		if runner != null and practice == null and board.has_board():
+			_board_setup(runner.tale)
+			_refresh_board(false)
 		table.tavern = tavern
 	Settings.apply_scene(get_viewport(), tavern, camera)
 
@@ -316,7 +384,137 @@ func _frame_camera() -> void:
 	camera.fov = 52
 	camera.position = Vector3(7.0, 21.0, 21.0)
 	camera.look_at(Vector3(5.6, -5.0, 1.5))
-	_cam_rest = camera.transform
+	_cam_tray = camera.transform
+	_cam_rest = _cam_tray
+	_cam_board = _cam_tray
+	var look := func(from: Vector3, to: Vector3) -> Transform3D:
+		return Transform3D.IDENTITY.translated(from).looking_at(to, Vector3.UP)
+	views.room = look.call(Vector3(-20, 34, 36), Vector3(-84, -14, -140))
+	views.shelf = look.call(Tavern.SHELF_TOP + Vector3(6, 12, 30), Tavern.SHELF_TOP + Vector3(5, -9, -2))
+	views.bench = look.call(Tavern.BENCH_TOP + Vector3(10, 18, 34), Tavern.BENCH_TOP + Vector3(8, -9, 0))
+
+
+## The camera glides between the tray (throwing) and the tale board (choosing, travelling).
+func _set_view(mode: String, instant := false) -> void:
+	if mode == "board" and (not board.has_board() or not board.visible):
+		mode = "tray"
+	if mode == cam_mode and not instant:
+		return
+	cam_mode = mode
+	# Depth of field softens the room behind the table; away from the table it would blur
+	# what you came to look at.
+	if camera.attributes is CameraAttributesPractical:
+		(camera.attributes as CameraAttributesPractical).dof_blur_far_enabled = mode == "tray" or mode == "board"
+	var to: Transform3D = _cam_board if mode == "board" else views.get(mode, _cam_tray)
+	if _cam_tween != null:
+		_cam_tween.kill()
+	if instant:
+		_cam_rest = to
+		return
+	var from := _cam_rest
+	_cam_tween = create_tween()
+	_cam_tween.tween_method(func(t): _cam_rest = from.interpolate_with(to, t), 0.0, 1.0, 0.9) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+## The tavern between tales: the card drops to the bottom of the screen and the Hand goes away.
+func _show_tavern() -> void:
+	UI.clear(overlay)
+	_hub_layout(true)
+	hub.show_room()
+
+
+func _hub_layout(on: bool) -> void:
+	hand_panel.visible = not on
+	card.offset_bottom = -12 if on else -126
+	card.offset_top = card.offset_bottom
+
+
+## Lay out the board for a tale, on the table left of the tray.
+func _board_setup(t: Dictionary) -> void:
+	board.clear()
+	board.visible = practice == null
+	if practice != null:
+		_set_view("tray", true)
+		return
+	board.setup(t, UI.font("title"))
+	if not board.has_board():
+		return
+	# Centre the parchment at a fixed spot left of the tray, turned a little, as if set down by hand.
+	var spot := Vector3(-24.2, Tavern.TABLE_TOP + 0.01, 0.6)
+	board.rotation = Vector3(0, deg_to_rad(3.0), 0)
+	board.position = Vector3.ZERO
+	var local_center: Vector3 = board.paper.position
+	board.position = spot - board.basis * Vector3(local_center.x, 0, local_center.z)
+	# The board view: the parchment fills the space above the cards, with the tray's edge in view.
+	var f := spot
+	var cam := Transform3D.IDENTITY.translated(f + Vector3(6.6, 19.5, 16.0))
+	_cam_board = cam.looking_at(f + Vector3(6.4, -4.6, 1.4), Vector3.UP)
+
+
+## Foes and rivals stand behind the far wall of the tray as carved wooden figurines.
+func _update_foe_figure() -> void:
+	var kind := ""
+	var a: Dictionary = runner.active if runner != null else {}
+	if a.get("type", "") == "combat":
+		kind = String(a.run.foe.get("figure", "hooded"))
+	elif a.get("type", "") == "contest":
+		kind = Fig.OPPONENT_FIGURE.get(String(a.run.opponent.get("id", "")), "hooded")
+	_place_foe_figure(kind)
+
+
+func _place_foe_figure(kind: String) -> void:
+	if kind == foe_figure_kind:
+		return
+	foe_figure_kind = kind
+	if foe_figure != null:
+		var old := foe_figure
+		var tw := create_tween()
+		tw.tween_property(old, "scale", Vector3(2.4, 0.01, 2.4), 0.3).set_ease(Tween.EASE_IN)
+		tw.tween_callback(old.queue_free)
+		foe_figure = null
+	if kind == "":
+		return
+	foe_figure = Fig.figurine(kind, true)
+	foe_figure.position = Vector3(6.5, Tavern.TABLE_TOP, -9.4)
+	foe_figure.rotation.y = deg_to_rad(-8.0)
+	foe_figure.scale = Vector3(2.4, 0.01, 2.4)
+	add_child(foe_figure)
+	var tw2 := create_tween()
+	tw2.tween_property(foe_figure, "scale", Vector3.ONE * 2.6, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw2.tween_property(foe_figure, "scale", Vector3.ONE * 2.4, 0.12)
+
+
+## For screenshots and checking layouts: put the figurine somewhere in the tale with some flags
+## set, show the board and quit. --board-test=plea,arrival,tolls,fork+climax=freed+gold_taken
+func _board_test() -> void:
+	_begin_tale()
+	await _wait(5)
+	var parts := opt_board_test.split("+")
+	runner.state.visited = Array(parts[0].split(","))
+	for f in parts.slice(1):
+		var kv := f.split("=")
+		runner.state.set_flag(kv[0], (int(kv[1]) if kv[1].is_valid_int() else kv[1]) if kv.size() > 1 else true)
+	board.clear()
+	_board_setup(runner.tale)
+	_refresh_board(false)
+	_set_view("board", true)
+	card.visible = false
+	await _wait(20)
+	print("BOARD draw calls: ", RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME))
+	await _shot("board")
+	_set_view("tray", true)
+	board.visible = false
+	await _wait(10)
+	print("TRAY (no board) draw calls: ", RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME))
+	get_tree().quit()
+
+
+func _refresh_board(animate := true) -> void:
+	if runner == null or not board.has_board() or practice != null:
+		return
+	var view := BoardRules.view(runner.tale, runner.state, campaign.map_seen(runner.tale.get("id", "")), runner.ctx())
+	board.show_view(view, animate)
 
 
 func _process(delta: float) -> void:
@@ -327,7 +525,8 @@ func _process(delta: float) -> void:
 	if fps_label != null:
 		fps_label.visible = Settings.show_fps
 		if Settings.show_fps:
-			fps_label.text = "%d fps · %s" % [Engine.get_frames_per_second(), Settings.NAMES[Settings.preset]]
+			fps_label.text = "%d fps · %s · %d draws" % [Engine.get_frames_per_second(), Settings.NAMES[Settings.preset],
+				RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME)]
 
 
 # ===================================================================== layout
@@ -475,6 +674,12 @@ func _build_ui() -> void:
 	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(banner)
 
+	hover_label = UI.label("", 13, Color("#f4e4c0"), "ui")
+	hover_label.add_theme_color_override("font_outline_color", Color("#1a0a02"))
+	hover_label.add_theme_constant_override("outline_size", 6)
+	hover_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hover_label.visible = false
+	root.add_child(hover_label)
 	fps_label = UI.label("", 13, Color("#f0e0c0"), "ui")
 	fps_label.position = Vector2(300, 8)
 	fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -618,6 +823,9 @@ func _skip_typing() -> void:
 
 func _show_title() -> void:
 	card.visible = false
+	if hub != null:
+		hub.close()
+	_hub_layout(false)
 	UI.clear(overlay)
 	var p := UI.panel(UI.PAPER, 24)
 	p.custom_minimum_size = Vector2(520, 0)
@@ -647,9 +855,14 @@ func _show_title() -> void:
 		cb.tooltip_text = "Saved %s." % str(snap.get("saved_at", "")).replace("T", " at ")
 		cb.pressed.connect(func(): _continue_tale(snap))
 		v.add_child(cb)
-	var b := UI.seal_button("Begin the tale" if snap.is_empty() else "Begin it again from the start", 18 if snap.is_empty() else 14)
-	b.pressed.connect(_begin_tale)
-	v.add_child(b)
+	var hb := UI.seal_button("Into the tavern", 18 if snap.is_empty() else 15)
+	hb.tooltip_text = "Wren's table, Hollis's shelf with your dice, and old Brannoc the Dicewright."
+	hb.pressed.connect(_show_tavern)
+	v.add_child(hb)
+	if not snap.is_empty():
+		var b := UI.seal_button("Begin the tale again from the start", 13, Color("#5a4a3a"))
+		b.pressed.connect(_begin_tale)
+		v.add_child(b)
 	var pb := UI.seal_button("Practice table: 20 challenges", 14, Color("#2a5a6a"))
 	pb.tooltip_text = "No story, no stakes: twenty challenges to learn the dice. Your choices are logged for playtesting."
 	pb.pressed.connect(_begin_practice)
@@ -726,6 +939,8 @@ func _clear_tale_save() -> void:
 
 func _continue_tale(snap: Dictionary) -> void:
 	UI.clear(overlay)
+	_hub_layout(false)
+	hub.close()
 	log_text.clear()
 	tale_path = snap.tale_path
 	campaign = Campaign.new()
@@ -735,7 +950,9 @@ func _continue_tale(snap: Dictionary) -> void:
 		log_text.append_text(_format_said(e.text, e.style) + "\n")
 	runner.said.connect(_on_said)
 	runner.changed.connect(_on_changed)
-	runner.resume(Tales.load_tale(tale_path), campaign, snap)
+	var t := Tales.load_tale(tale_path)
+	_board_setup(t)
+	runner.resume(t, campaign, snap)
 	_refresh_status()
 
 
@@ -750,10 +967,13 @@ func _begin_practice() -> void:
 
 func _start_runner(t: Dictionary) -> void:
 	UI.clear(overlay)
+	_hub_layout(false)
+	hub.close()
 	log_text.clear()
 	runner = Runner.new()
 	runner.said.connect(_on_said)
 	runner.changed.connect(_on_changed)
+	_board_setup(t)
 	runner.start(t, campaign, opt_seed)
 	_refresh_status()
 
@@ -770,6 +990,9 @@ func _on_phase(serial: int) -> void:
 	var ph: String = runner.phase
 	if ph != "throw" and ph != "assign":
 		selected.clear()
+	_refresh_board(true)
+	_update_foe_figure()
+	_set_view("board" if ph in ["choose", "outcome", "wager", "cost", "ending"] else "tray")
 	match ph:
 		"choose":
 			_write_tale_save()
@@ -1653,11 +1876,18 @@ func _show_ending() -> void:
 	UI.clear(overlay)
 	var st = runner.state
 	var p := UI.panel(UI.PAPER, 18)
-	p.position = Vector2(12, 60)
-	p.custom_minimum_size = Vector2(CARD_W, 0)
+	# At the bottom, so the finished tale board stays in view above it.
+	p.anchor_top = 1.0
+	p.anchor_bottom = 1.0
+	p.offset_left = 12
+	p.offset_right = 12 + CARD_W
+	p.offset_bottom = -12
+	p.offset_top = -12
+	p.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	overlay.add_child(p)
+	hand_panel.visible = false
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 8)
+	v.add_theme_constant_override("separation", 6)
 	p.add_child(v)
 	var names := {"rest": "Rest", "silence": "Silence", "greed": "Greed", "bargain": "The Bargain", "drowned": "Drowned"}
 	v.add_child(UI.label("Ending: %s" % names.get(st.ending, st.ending), 26, Color("#6a1010"), "title"))
@@ -1683,11 +1913,10 @@ func _show_ending() -> void:
 	v.add_child(row2)
 	var b := UI.seal_button("Back to the tavern", 16)
 	b.pressed.connect(func():
-		log_text.clear()
 		runner = null
 		_refresh_status()
 		_refresh_hand(false)
-		_show_title())
+		_show_tavern())
 	row2.add_child(b)
 	if opt_quit_at_end:
 		print("ENDING: ", st.ending, "  throws: ", st.throws, "  scenes: ", st.visited.size())
@@ -1744,6 +1973,11 @@ func _show_practice_summary() -> void:
 # ===================================================================== input
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion and cam_mode == "board" and not dragging:
+		var txt: String = board.hover_text(event.position, camera)
+		hover_label.visible = txt != ""
+		hover_label.text = txt
+		hover_label.position = event.position + Vector2(16, 10)
 	if event is InputEventMouseButton or event is InputEventMouseMotion:
 		_tray_mouse(event)
 		return
@@ -1868,7 +2102,15 @@ func _wait(frames: int) -> void:
 func _shot(tag: String) -> void:
 	if opt_shots == "" or shots_taken >= opt_max_shots or DisplayServer.get_name() == "headless":
 		return
+	if not opt_shot_phases.is_empty() and not tag in opt_shot_phases:
+		return
 	await _wait(8)
+	var guard := 0
+	while (board._moving or (_cam_tween != null and _cam_tween.is_running())) and guard < 240:
+		await get_tree().process_frame
+		guard += 1
+	if guard > 0:
+		await _wait(12)
 	await RenderingServer.frame_post_draw
 	var img := get_viewport().get_texture().get_image()
 	shots_taken += 1

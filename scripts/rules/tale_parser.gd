@@ -15,7 +15,7 @@ extends RefCounted
 ## parse() returns {tale, errors: [{line, msg}], lines: {path: line}}, where a path is
 ## "scene", "scene.option" or "scene.option.tier", for the linter to point at the right line.
 
-const SCENE_KEYS := ["act", "type", "goto", "on enter"]
+const SCENE_KEYS := ["act", "type", "goto", "on enter", "tile", "at", "token"]
 const OPTION_KEYS := ["if", "temper", "do", "goto", "reply", "challenge", "contest", "combat", "mod"]
 const OUTCOME_KEYS := ["do", "goto", "retry", "cost"]
 const ENDING_KEYS := ["if", "do"]
@@ -234,6 +234,24 @@ class _State:
 				scene.goto = val
 			"on enter":
 				scene.on_enter = _effects(val)
+			"tile":
+				scene.tile = val
+			"at":
+				var xy := val.split(",")
+				if xy.size() != 2 or not xy[0].strip_edges().is_valid_float() or not xy[1].strip_edges().is_valid_float():
+					err("at: takes two numbers, 'at: 3, -1.5' (across, then toward you).")
+					return
+				scene.at = Vector2(float(xy[0]), float(xy[1]))
+			"token":
+				var sep := val.find("=>")
+				var rest := Lex.tokens(val.substr(sep + 2)) if sep >= 0 else []
+				if sep < 0 or rest.is_empty():
+					err("token: takes 'condition => icon \"label\"', e.g. 'token: gold_taken => coins \"The bell's gold, taken\"'.")
+					return
+				if not scene.has("tokens"):
+					scene.tokens = []
+				var label = Lex.value(rest[1]) if rest.size() > 1 else ""
+				scene.tokens.append({"cond": val.substr(0, sep).strip_edges(), "icon": String(rest[0]), "label": str(label)})
 			_:
 				err("'%s:' does not belong to a scene." % key)
 

@@ -16,6 +16,8 @@ var standing := {}
 var shards: Array = []
 var endings_seen: Array = []
 var tales_played := 0
+var map_memory := {}           # tale id -> scene ids walked in any telling (the board remembers)
+var forged := 0                # times the Dicewright has worked for you
 
 
 func new_campaign() -> void:
@@ -29,6 +31,8 @@ func new_campaign() -> void:
 	shards.clear()
 	endings_seen.clear()
 	tales_played = 0
+	map_memory.clear()
+	forged = 0
 
 
 func has_mark(m: String) -> bool:
@@ -37,6 +41,19 @@ func has_mark(m: String) -> bool:
 
 func mark(m: String) -> void:
 	marks[m] = true
+
+
+## Scenes walked in earlier tellings show on the tale board as remembered roads, not fog.
+func remember_map(tale_id: String, visited: Array) -> void:
+	var seen: Array = map_memory.get(tale_id, [])
+	for id in visited:
+		if not seen.has(id):
+			seen.append(id)
+	map_memory[tale_id] = seen
+
+
+func map_seen(tale_id: String) -> Array:
+	return map_memory.get(tale_id, [])
 
 
 func add_coin(n: int) -> int:
@@ -54,6 +71,7 @@ func to_dict() -> Dictionary:
 		"weight_limit": pouch.weight_limit,
 		"coin": coin, "chronicle": chronicle, "marks": marks, "rumours": rumours,
 		"standing": standing, "shards": shards, "endings_seen": endings_seen, "tales_played": tales_played,
+		"map_memory": map_memory, "forged": forged,
 	}
 
 
@@ -88,6 +106,8 @@ func from_dict(d: Dictionary) -> void:
 	shards = d.get("shards", [])
 	endings_seen = d.get("endings_seen", [])
 	tales_played = int(d.get("tales_played", 0))
+	map_memory = d.get("map_memory", {})
+	forged = int(d.get("forged", 0))
 	Dice._serial = maxi(Dice._serial, pouch.collection.size() * 10 + 1000)
 
 

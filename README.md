@@ -6,8 +6,10 @@ character: no stats, no classes, only the dice you carry and what they have been
 
 This build covers **milestone M1** (the rules core and The Drowned Bell, playable start to finish),
 **milestone M2: dice on the table** (throwing by hand, picking dice in the tray, and the Practice Table
-for the M2 playtest), and **milestone M3: the tale runner** (tales as plain-text `.tale` files with a
-parser and linter, a text preview for writers, mid-tale saves and the Chronicle), plus graphics presets. Design doc: *Tales of the Tumbling Dice: Game Design* (Claude Doc).
+for the M2 playtest), **milestone M3: the tale runner** (tales as plain-text `.tale` files with a
+parser and linter, a text preview for writers, mid-tale saves and the Chronicle), plus graphics presets,
+and **milestone M4: the vertical slice staged** (the tale board with your figurine, carved foe figurines,
+and a minimal tavern with Hollis's shelf and Brannoc the Dicewright). Design doc: *Tales of the Tumbling Dice: Game Design* (Claude Doc).
 
 Everything is generated in GDScript and shader code: dice, tavern, UI widgets and sounds. The only assets
 are two free fonts (SIL Open Font License): Cinzel for headings and dice, and IM Fell English for the
@@ -29,7 +31,7 @@ Teller's narration (`fonts/OFL.txt`, `fonts/OFL-IMFellEnglish.txt`).
 | Space | Throw (tossed in from your side of the table) |
 | Enter | Confirm / continue |
 | F | Fast dice: skip the physics (same odds, results drawn from each die's measured faces) |
-| F4 | Show or hide the frame rate |
+| F4 | Show or hide the frame rate and draw calls |
 | Esc | Quit |
 
 The campaign (your dice, Coin, Chronicle, endings found) is saved to `user://campaign.json` when a tale
@@ -43,13 +45,48 @@ else starts on High. **Frame rate** on the title screen (or F4) shows the fps in
 
 | Preset | Meant for | What changes |
 |---|---|---|
-| Low | Tablets and Chromebooks (Lenovo Duet class) | 3D at 60% resolution, no MSAA, no screen-space effects, no glow, no dust or embers, no painterly screen pass, cheaper shaders (no per-pixel relief, fewer noise octaves), 2048 shadow map with hard edges, 30 fps cap |
+| Low | Tablets and Chromebooks (Lenovo Duet class) | 3D at 60% resolution, no MSAA, no screen-space effects, no glow, no dust or embers, no painterly screen pass, cheaper shaders (no per-pixel relief, fewer noise octaves), 2048 shadow map with hard edges, 30 fps cap; the tale board casts no shadows and has thinner mist |
 | Medium | A mid laptop | 85% resolution with FSR, 2x MSAA, ambient occlusion, glow, depth of field, painterly pass, 4096 soft shadows, 60 fps cap |
 | High | A strong laptop or desktop | The full look: native resolution, 8x MSAA, bounced light, volumetric haze, 8192 soft shadows, no cap |
 
 Physics runs at 120 Hz on every preset. At 60 Hz the dice measurably favour some faces (see
 `tests/physics_check.gd`), and a few dice cost little next to rendering. On Android, Godot uses the
 Compatibility renderer (`rendering_method.mobile`), and Low has been checked under it.
+
+### The tale board
+
+A parchment map lies on the table left of the dice tray. Every place in the tale is a painted tile, and
+your figurine (a little hooded traveller with a lantern) is picked up and set down on the next tile as
+the story moves. The camera glides to the map while you choose and back to the tray when you throw.
+- Roads are inked in as you walk them. Places one road away are sketched in faint ink, and roads you
+  could have taken and didn't stay faded for the rest of the tale. Everything else is under mist, which
+  lifts as you arrive.
+- Your choices leave tokens on the map: lit lamps in the village you saved, a grave for the fisherman
+  the lake took, Kettle's flag at the cove, the bell's gold, Wren's hand-bell at the shrine, and at the
+  end a beacon, a broken bell or a wave. Every foe you beat lies toppled on the tile where you fought it.
+  Hover a token to read it.
+- The map comes back exactly as it was when you Continue a saved tale, and the next time you tell the
+  same tale, the places you walked before show washed out instead of under mist.
+- Writers place tiles and tokens in the `.tale` file (`tile:`, `at:`, `token:`; see
+  [docs/tale_format.md](docs/tale_format.md)). A tale without them still gets a board, laid out
+  automatically.
+
+**Foe figurines.** In a fight or a social contest, whoever you face stands behind the far wall of the
+tray as a carved wooden figurine: the Mire Wolf, the Drowned, Kettle's knives, Odile, Mother Kettle, the
+Drowned Abbess.
+
+### The tavern
+
+**Into the tavern** on the title screen (and **Back to the tavern** after a tale) pulls the camera back
+into the room:
+- **Wren's table** begins (or continues) The Drowned Bell.
+- **Hollis's shelf**: your whole Collection stands on the shelf behind the bar. Buy plain dice for Coin,
+  sell the ones you don't need (Hollis won't let you go below 6 dice, and won't touch cursed ones).
+- **Brannoc's bench**, the Dicewright: **recarve** a face up or down by 1 (8 Coin; a die's faces can rise
+  by 4 in all), **inscribe** a rune on a plain face from a rune shard (10 Coin; common dice hold 1 rune
+  face, fine 2, masterwork 3, relics 4), or **melt** a die for a shard of each rune it carried. Loaded and
+  cursed dice can't be worked. Loading, Rebind and Mend come in M5 with materials and curses.
+- **The Chronicle**, as before.
 
 ### Saves, and the Chronicle
 
@@ -167,7 +204,12 @@ The rules never touch the scene tree, so the same code runs in the game, in test
 | `scripts/rules/tales.gd` | Finds and caches the shipped tales |
 | `scripts/rules/preview.gd` | The writers' text preview (used by the in-game panel and `tools/preview.gd`) |
 | `scripts/tale/practice.gd` | The Practice Table: twenty challenges in the same tale format |
-| `scripts/game/game.gd` | The playable table: parchment, cards, Hand, Pouch screen, ending; turns clicks into runner calls |
+| `scripts/game/game.gd` | The playable table: parchment, cards, Hand, Pouch screen, ending, camera views; turns clicks into runner calls |
+| `scripts/rules/board.gd` | The tale board as data: tiles, roads (bent around other tiles), what each tile and road shows right now, tokens |
+| `scripts/game/tale_board.gd` | The 3D tale board: parchment, painted tiles, inked roads, mist, labels, tokens, the figurine's hop |
+| `scripts/figures.gd` | Painted figurines, tiles and tokens from primitives, merged into one vertex-coloured mesh each, with an ink outline shell |
+| `scripts/rules/forge.gd` | Hollis's shelf (buy, sell) and Brannoc's bench (recarve, inscribe, melt) as rules |
+| `scripts/game/tavern_hub.gd` | The tavern between tales: the room, the shelf and the bench |
 | `scripts/game/table.gd` | Physical dice: spawns rules dice as rigid bodies, throws (tossed or held and released by hand), settles with a nudge, recovers strays, reads faces, freezes the foe's dice, finds the die under the cursor |
 | `scripts/game/settings.gd` | Graphics presets (Low, Medium, High) |
 | `scripts/game/preview_panel.gd` | The text preview on paper, inside the game |
@@ -219,8 +261,8 @@ Where the design doc left a gap or two rules pulled against each other, this is 
 - Standard single-try Tests are harsh with a mixed Pouch (three on-aspect dice are rare), so the slice's
   Standard Tests give two tries with progress carrying over, like the doc's flooded-gate example.
 
-Not in M1 (later milestones): Epithets, forging and the Dicewright, the tavern hub and patrons, the parchment
-tale map, carved foe figurines, flick-to-throw, the Ink-like tale text format.
+Not built yet (later milestones): Epithets, loading and the rest of forging, patrons and the full tavern hub,
+seasons, Standing and Rumours with consequences across tales.
 
 ## The dice tray (prototype)
 
