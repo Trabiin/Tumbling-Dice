@@ -260,8 +260,13 @@ static func _at(parent: Transform3D, pos: Vector3, rot_deg := Vector3.ZERO, scl 
 
 # ------------------------------------------------------------------ figurines
 
-const FIGURES := ["hero", "wolf", "drowned", "smuggler", "abbess", "innkeeper", "kettle", "hooded"]
-const OPPONENT_FIGURE := {"odile": "innkeeper", "kettle": "kettle", "kettle_threat": "kettle", "abbess_name": "abbess"}
+const FIGURES := ["hero", "wolf", "drowned", "smuggler", "abbess", "innkeeper", "kettle", "hooded", "knight", "mage", "warrior"]
+const OPPONENT_FIGURE := {"odile": "innkeeper", "kettle": "kettle", "kettle_threat": "kettle", "abbess_name": "abbess",
+	"pell": "smuggler", "ormond_bid": "mage", "court_judge": "abbess", "drowned_court": "warrior", "brask": "innkeeper",
+	"magistrate": "hooded", "harrow_parley": "knight", "holloway_council": "innkeeper", "ashgrove": "knight"}
+## Figures that only exist as kit miniatures stand in as the nearest code-built figure when the
+## kits are off (-- --kits=off).
+const CODE_FALLBACK := {"knight": "smuggler", "mage": "abbess", "warrior": "drowned", "hooded": "abbess"}
 
 
 ## A figurine on its round base, facing +z (toward the player). carved: foe figurines are
@@ -284,6 +289,7 @@ static func add_figure(k: Kit, kind: String, at: Transform3D, carved := false) -
 	if Kits.has_mini(kind):
 		k.piece("mini", kind, _at(at, Vector3(0, y, 0)), carved)
 		return
+	kind = CODE_FALLBACK.get(kind, kind)
 	match kind:
 		"hero":
 			k.add(_cyl(0.2, 0.46, 1.0), _at(at, Vector3(0, y + 0.5, -0.02)), tint.call(Color("#8a2a22")))     # cloak
@@ -480,6 +486,24 @@ static func kit_icon(k: Kit, icon: String, at: Transform3D, rng: RandomNumberGen
 			nat.call("CommonTree_2", Vector3(0.0, 0, 0.38), 80.0, 0.1)
 		"bridge":
 			hex.call("building_bridge_A", Vector3(0, 0, 0), 90.0, 0.6)
+		"market":
+			hex.call("tent", Vector3(-0.35, 0, -0.1), 20.0, 1.0)
+			hex.call("tent", Vector3(0.3, 0, -0.25), -30.0, 0.9)
+			hex.call("crate_A_small", Vector3(0.35, 0, 0.35), 15.0, 0.5)
+			hex.call("barrel", Vector3(-0.05, 0, 0.4), 0.0, 0.45)
+			hex.call("sack", Vector3(-0.4, 0, 0.4), 0.0, 0.45)
+		"keep":
+			hex.call("building_tower_A_red", Vector3(-0.25, 0, -0.1), 0.0, 0.55)
+			hex.call("building_home_B_red", Vector3(0.35, 0, 0.05), 200.0, 0.45)
+			for i in 3:
+				hex.call("fence_wood_straight", Vector3(-0.45 + i * 0.42, 0, 0.5), 0.0, 0.5)
+			hex.call("flag_red", Vector3(0.45, 0, -0.4), 0.0, 0.5)
+		"road":
+			hex.call("tree_single_A", Vector3(-0.45, 0, -0.2), 0.0, 0.5)
+			hex.call("rock_single_B", Vector3(0.4, 0, 0.35), 40.0, 0.5)
+			hex.call("hill_single_A", Vector3(0.35, 0, -0.35), 0.0, 0.45)
+			for i in 4:
+				k.add(_box(Vector3(0.16, 0.02, 0.1)), _at(at, Vector3(-0.3 + i * 0.2, 0.06, 0.15 - i * 0.08), Vector3(0, 20, 0)), STONE)
 		_:
 			return false
 	return true
@@ -600,6 +624,20 @@ static func add_icon(k: Kit, icon: String, at: Transform3D, rng: RandomNumberGen
 			_water(k, at, 0.8)
 			for i in 6:
 				k.add(_box(Vector3(0.14, 0.05, 0.4)), _at(at, Vector3(-0.42 + i * 0.17, 0.12 + sin(i / 5.0 * PI) * 0.15, 0)), WOOD_L)
+		"market":
+			for p in [Vector3(-0.35, 0, -0.1), Vector3(0.3, 0, -0.2)]:
+				k.add(_box(Vector3(0.45, 0.3, 0.35)), _at(at, p + Vector3(0, 0.15, 0)), WOOD_M)
+				k.add(_prism(Vector3(0.55, 0.22, 0.42)), _at(at, p + Vector3(0, 0.41, 0)), Color("#a83a2a"))
+			k.add(_box(Vector3(0.22, 0.16, 0.16)), _at(at, Vector3(0.3, 0.08, 0.4)), WOOD_L)
+		"keep":
+			k.add(_box(Vector3(0.38, 1.0, 0.38)), _at(at, Vector3(-0.25, 0.5, -0.1)), STONE)
+			k.add(_cyl(0.0, 0.3, 0.4, 4), _at(at, Vector3(-0.25, 1.2, -0.1), Vector3(0, 45, 0)), ROOF)
+			k.add(_box(Vector3(1.0, 0.35, 0.12)), _at(at, Vector3(0.05, 0.18, 0.45)), STONE_D)
+			_house(k, _at(at, Vector3(0.32, 0, 0.0)), 0.42, ROOF)
+		"road":
+			for i in 5:
+				k.add(_box(Vector3(0.18, 0.03, 0.12)), _at(at, Vector3(-0.4 + i * 0.2, 0.05, 0.2 - i * 0.1), Vector3(0, 25, 0)), STONE)
+			k.add(_cyl(0.0, 0.25, 0.55, 8), _at(at, Vector3(-0.4, 0.3, -0.3)), Color("#3e5a2a"))
 		_:
 			k.add(_box(Vector3(0.06, 0.7, 0.06)), _at(at, Vector3(0, 0.35, 0)), WOOD_D)
 			k.add(_box(Vector3(0.42, 0.12, 0.04)), _at(at, Vector3(0.12, 0.58, 0.04), Vector3(0, 0, 6)), WOOD_L)

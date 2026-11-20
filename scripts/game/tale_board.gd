@@ -84,6 +84,9 @@ var _road_shader: Shader
 var _font: Font
 
 
+const TITLE_ROOM := 1.6
+
+
 func setup(p_tale: Dictionary, font: Font = null) -> void:
 	clear()
 	tale = p_tale
@@ -95,6 +98,9 @@ func setup(p_tale: Dictionary, font: Font = null) -> void:
 	var b: Rect2 = lay.bounds
 	var size := b.size * SCALE + MARGIN * 2.0
 	var center := (b.position + b.size * 0.5) * SCALE
+	# Extra parchment at the far edge for the title, so tall tiles in the back row don't stand in it.
+	size.y += TITLE_ROOM
+	center.y -= TITLE_ROOM * 0.5
 	# The parchment, a little larger than the tiles, with burnt edges.
 	paper = MeshInstance3D.new()
 	var pm := PlaneMesh.new()

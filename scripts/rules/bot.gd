@@ -23,7 +23,7 @@ var max_steps := 2000
 
 func pack(campaign, kind: String) -> void:
 	var p = campaign.pouch
-	p.pouch.clear()
+	p.pouch = p.pouch.filter(func(d): return d.get("cursed", false))  # cursed dice stay put
 	p.saddlebag.clear()
 	var want: Array = ARCHETYPES.get(kind, ARCHETYPES.balanced)
 	for b in want:

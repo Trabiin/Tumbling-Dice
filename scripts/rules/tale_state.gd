@@ -16,6 +16,10 @@ const WOUNDS := {
 	"Shaking Hands": "Your d12s and d20s count 2 less.",
 	"Lake Chill": "You cannot gain Fate.",
 	"Bitten": "Mend runes restore only 1 Grit.",
+	"Arrow in the Shoulder": "Your first throw in every fight is one die short.",
+	"Frostbite": "Maximum Grit -3.",
+	"Broken Hand": "Your d4s and d6s count 1 less.",
+	"Fever": "You start each tale with 1 Fate fewer.",
 }
 const WOUND_ORDER := ["Cracked Ribs", "Shaking Hands", "Bitten"]
 
@@ -43,10 +47,16 @@ var ending := ""
 var throws := 0
 var choices: Array = []        # [scene_id, option_id] for telemetry and the pick-rate check
 var marks: Array = []          # tokens left on the tale board by play itself, e.g. a fallen foe
+var rumour_ids: Array = []     # rumours by id, picked up this tale
+var materials: Array = []      # forging materials found this tale
+var lifted: Array = []         # curses lifted this tale (die names)
+var carried: Array = []        # Wounds brought from the tavern (for the ending's tally)
+var triumphs := 0
 
 
 const SAVED := ["grit", "grit_max", "fate", "wounds", "flags", "temper", "regard", "defy_used", "fail_streak",
-	"visited", "chronicle", "rumours", "standing", "shards", "coin", "ending", "throws", "choices", "marks"]
+	"visited", "chronicle", "rumours", "standing", "shards", "coin", "ending", "throws", "choices", "marks",
+	"rumour_ids", "materials", "lifted", "carried", "triumphs"]
 
 
 ## For a mid-tale save. Dice are saved whole (a lost die is no longer in the collection).
@@ -122,10 +132,28 @@ func add_wound(name := "") -> String:
 		if name == "":
 			name = "Cracked Ribs (again)"
 	wounds.append(name)
-	if name == "Cracked Ribs":
-		grit_max -= 4
-		grit = mini(grit, grit_max)
+	_apply_wound(name)
 	return name
+
+
+func _apply_wound(name: String) -> void:
+	match name:
+		"Cracked Ribs":
+			grit_max -= 4
+			grit = mini(grit, grit_max)
+		"Frostbite":
+			grit_max -= 3
+			grit = mini(grit, grit_max)
+
+
+## Wounds carried in from the tavern take hold at the start of the tale.
+func carry_in(list: Array) -> void:
+	for w in list:
+		wounds.append(String(w))
+		carried.append(String(w))
+		_apply_wound(String(w))
+	if wounds.has("Fever"):
+		fate = maxi(0, fate - 1)
 
 
 func wound_count() -> int:
@@ -144,6 +172,14 @@ func shaking() -> bool:
 	return wounds.has("Shaking Hands")
 
 
+func broken_hand() -> bool:
+	return wounds.has("Broken Hand")
+
+
+func arrow() -> bool:
+	return wounds.has("Arrow in the Shoulder")
+
+
 func mend_amount() -> int:
 	return 1 if wounds.has("Bitten") else 2
 
@@ -154,6 +190,8 @@ func pity() -> bool:
 
 
 func record_tier(tier: int) -> void:
+	if tier == S.TRIUMPH:
+		triumphs += 1
 	if tier == S.FAIL:
 		fail_streak += 1
 	else:

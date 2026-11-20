@@ -1,0 +1,447 @@
+title: Siege of Holloway
+id: siege_holloway
+patron: Captain Ashgrove
+start: note
+arc: ashgrove
+order: 3
+pitch: Harrow's army is at Holloway's walls, and the captain has gone home to stand on them. He left word for you.
+offer: told:pretender_road and not seen:sided_harrow and season==autumn
+expires: winter
+missed: Holloway fell in the first snow, without you. The captain's table is empty, and Hollis won't let anyone sit at it.
+teller: triumph :: Now they will ring the bells for that one, whatever bells are left.
+teller: triumph :: A thing like that is why people still tell stories about sieges.
+teller: mixed :: Held. Barely. Sieges are like that.
+teller: fail :: The wall gives a little. Walls do. The town is still standing behind you.
+teller: rest :: A chapel full of wounded and candles, and somebody's grandmother pressing soup into your hands.
+teller: downed :: Down, in the mud under the wall. Get up. Holloway is watching.
+
+// Captain Ashgrove's arc, tale 3 of 3. Reads nearly everything from the arc: Brask (The Last
+// Watch), the oath die, the banner, Harrow's letter, how Kestrel Bridge went (The Pretender's
+// Road), the hill farmers, Mother Kettle's favour and the Abbey's.
+
+## note: The Captain's Note
+act: 1
+tile: inn
+at: 0, 0
+
+The captain's table is empty. On it, under his cup, a folded note in a soldier's square hand.
+[i]Harrow is at Holloway. I've gone home. If you come, come by the north road and ask for me on the wall. If you don't, I understand. A.[/i]
+? seen:banner_home :: The Greyfell banner is gone from the wall above the table. He's taken it with him.
+? seen:bridge_burned :: Hollis says Harrow came round by the long road, a week late and hungry. "Hungry armies don't wait," he says.
+? seen:harrow_exposed :: Hollis says Harrow lost a third of his men on Kestrel Bridge. "Still leaves two thirds," he says.
+? seen:road_lost :: Hollis says Harrow came down the mountain road with every man he had.
+[i]This is the last of the captain's tales. You'll want everything he ever gave you.[/i]
+
+* go: Fold the note into your shirt and go.
+  temper: duty +1
+  do: regard 1
+  goto: prepare
+  reply: [i]Of course you're going. I'd have been disappointed.[/i]
+
+* bring: Go, and take everyone in the tavern who'll come.
+  temper: mercy +1
+  do: flag recruits
+  goto: prepare
+  reply: Two farmhands, a drover, and Hollis's nephew, who is fifteen. You try to send the nephew home. He comes anyway. [i]Every siege has a fifteen-year-old in it. Pray this one gets old.[/i]
+
+* sell: Go, but sell your knowledge of the roads to the highest bidder first.
+  temper: duty -1, honesty -1
+  do: coin 20; flag sold_roads
+  goto: prepare
+  reply: A Crown agent in the corner pays well for a map of Harrow's supply roads. [i]Business, I suppose. Even in wartime. Especially in wartime.[/i]
+
+## prepare: Packing for a Siege
+act: 1
+type: prepare
+goto: lines
+
+Hollis packs your Pouch himself, and won't take money for the bread he puts in with it. "For the captain," he says.
+[i]Choose what you carry. The Saddlebag holds a little more, for the chapel inside the walls.[/i]
+
+## lines: Harrow's Lines
+act: 1
+on enter: random_flag weather [rain, fog, cold]
+tile: camp
+at: 1.4, 0.2
+token: through_quiet => footprints "Through the lines unseen"
+
+Holloway sits on its hill behind an old wall, smoke going up from a dozen fires inside. Around the foot of the hill, Harrow's army: tents, horse lines, a battery of siege engines, and trenches creeping toward the north gate like fingers.
+? weather==rain :: Autumn rain, and the trenches are full of it. Harrow's men look miserable.
+? weather==fog :: A thick fog off the river. You can't see the walls, which means they can't see you.
+? weather==cold :: A hard frost. Winter is two weeks away, and both sides know it.
+? seen:harrow_exposed :: There are fewer tents than you expected. Harrow's army is thin.
+? seen:road_lost :: The camp goes on and on. Harrow brought everyone.
+[i]First, you have to get in.[/i]
+
+* sneak: Slip through the lines in the dark.
+  challenge: kind=trial progress=17 danger=3 danger_text="A sentry lifts his lantern." title="Through the lines"
+  mod: weather==fog => progress=-3
+  mod: seen:harrow_exposed => progress=-2
+  approach guile: Walk through the camp like one of them, a bucket in each hand.
+  approach grace: Crawl the drainage ditches, and freeze when the lanterns pass.
+  approach lore: Read the camp: where the officers sleep, the sentries don't.
+  > triumph: You walk straight through Harrow's camp, past his own tent, where a gold circlet sits on a table, and up to the postern gate. On the way you lift a sapper's map of the tunnels under the north wall.
+    do: flag through_quiet; flag tunnel_map
+    goto: walls
+  > success: You reach the postern gate before dawn, soaked and unseen. The guards nearly shoot you.
+    do: flag through_quiet
+    goto: walls
+  > mixed: You're through, but not cleanly.
+    do: flag through_quiet
+    goto: walls
+    cost: A sentry's crossbow finds you (lose 5 Grit) :: grit -5
+    cost: They know someone got in (the sappers dig faster) :: flag sappers_hurry
+  > fail: A dog finds you. You run the last two hundred yards with half a camp behind you, and the postern opens just in time. You're in, and so is a crossbow bolt.
+    do: grit -4; flag sappers_hurry
+    goto: walls
+
+* smugglers: Find Kettle's people. Smugglers always have a way in.
+  if: seen:kettle_guides or standing:guild>=1 or seen:smugglers_allied
+  temper: honesty -1
+  do: flag smuggled_in; flag food_run; standing guild 1
+  goto: walls
+  reply: A barge loaded with turnips and something under the turnips goes up the river at midnight, and you go with it, under the turnips. In the morning Holloway has three weeks more bread and you have a crick in your neck. [i]Mother Kettle is a patriot, at the right price.[/i]
+
+* charge: Ride for the north gate in broad daylight, and dare them to stop you.
+  temper: duty +1
+  combat: foe=outriders
+  mod: recruits => resolve=-4
+  > triumph: You go through their pickets like a hot knife and the north gate swings open for you, and the whole wall cheers. Harrow's men carry their captain back to camp.
+    do: flag rode_in; regard 1
+    goto: walls
+  > success: You cut your way to the gate and they let you in, and the wall cheers.
+    do: flag rode_in
+    goto: walls
+  > mixed: You're in. It wasn't pretty.
+    do: flag rode_in
+    goto: walls
+    cost: A lance in the shoulder (take a Wound) :: wound ""
+    cost: Your recruits don't all make it (it weighs on you) :: temper mercy -1; regard -1
+  > fail: They ride you down at the ditch. You crawl the rest of the way to the gate under a hail of arrows, and fall through it more dead than alive.
+    do: grit -6
+    goto: walls
+
+## walls: On the Walls
+act: 2
+type: encounter
+on enter: grit -2
+tile: keep
+at: 2.8, 0
+token: council_won => flag "The council stands"
+token: brask_militia => flag "Brask's militia"
+
+Ashgrove is on the wall above the north gate, where you knew he'd be, in an old breastplate with the dents hammered out. He grips your arm. "You came," he says, as though he hadn't been sure.
+? seen:banner_home :: Above the gate, the Greyfell banner snaps in the wind. Every man on the wall looks up at it, now and then.
+? seen:brask_ally :: Beside him, in a borrowed helmet, Sergeant Brask. "Sir," he says to you, and grins.
+? seen:brask_spared and not seen:brask_ally :: Down in the square, drilling the militia with a broom handle, is Sergeant Brask. He sees you, and salutes.
+? seen:brask_hanged :: "Brask's men are in Harrow's camp," Ashgrove says quietly. "I saw them yesterday. They'll be with the sappers. They know how to dig."
+? seen:farmers_warned :: The hill farmers are here, with their sheep, and their sons are on the wall with pitchforks.
+"The council wants to open the gates," Ashgrove says. "Harrow's promised them mercy. He promised Greyfell mercy, too."
+
+* council: Go down to the council hall and stiffen their spines.
+  temper: duty +1
+  contest: opponent=holloway_council title="The Holloway council"
+  mod: seen:banner_home => resolve=-4
+  mod: seen:farmers_warned => resolve=-2
+  mod: food_run => resolve=-3
+  approach grace: Speak to them about Holloway: their children, their dead, their town.
+  approach lore: Tell them what Harrow did at Greyfell, and what he'll do here.
+  approach ward: Stand in front of them and say you will hold the gate yourself if they won't.
+  > triumph: By the end the mayor is on his feet shouting that Holloway has never opened its gates to a traitor and never will, and the whole council roars with him. The smith gives you a die cast from the town bell's own bronze.
+    do: flag council_won; gain holloway_d12
+    goto: tunnel
+  > success: The council votes to hold, narrowly. The gates stay shut.
+    do: flag council_won
+    goto: tunnel
+  > mixed: They'll hold. For now.
+    do: flag council_won
+    goto: tunnel
+    cost: Only if the captain answers for it with his life (Ashgrove takes the gate) :: flag ashgrove_sworn
+    cost: Only if you pay the militia from your own purse (lose 10 coins) :: coin -10
+  > fail: The council votes to send to Harrow for terms. Ashgrove goes white. "Then we'd better win before the messenger gets back," he says.
+    do: flag council_wavers
+    goto: tunnel
+
+* brask: "Sergeant. Show me what your militia can do."
+  if: seen:brask_spared or seen:brask_ally
+  temper: duty +1
+  do: flag brask_militia; ally brask_d6
+  goto: tunnel
+  reply: Brask's militia are farmers and apprentices with pitchforks and three old crossbows, and he has them drilling like the Greyfell company. "They'll stand," he says. "I'll make them." [i]A deserter teaching boys to hold a wall. There's a story in that, and it's not a sad one.[/i]
+
+* rounds: Walk the walls with the captain and see where they'll come.
+  temper: honesty +1
+  challenge: kind=test difficulty=easy tries=2 title="Walking the walls"
+  approach lore: Study the siege lines: where would you attack, if you were Harrow?
+  approach ward: Test every stretch of wall with your own hands.
+  approach grace: Talk to every sentry, and listen to what worries them.
+  > triumph: The north wall, by the old cistern. You can hear them digging under it if you put your ear to the stones. And you notice something else: Harrow's engines are aimed at the wrong gate, as if he wants you to look there.
+    do: flag tunnel_known; flag feint_known
+    goto: tunnel
+  > success: The north wall by the cistern. Put your ear to the stones and you can hear digging.
+    do: flag tunnel_known
+    goto: tunnel
+  > mixed: You find it, eventually.
+    do: flag tunnel_known
+    goto: tunnel
+    cost: A sharpshooter catches you on the parapet (lose 5 Grit) :: grit -5
+    cost: It takes all night (1 Fatigue) :: fatigue 1
+  > fail: Nothing. Walls and more walls. That night, you hear the digging yourself, through the floor of the guardhouse.
+    goto: tunnel
+
+## tunnel: Under the North Wall
+act: 2
+type: challenge
+on enter: grit -2
+tile: cave
+at: 4.3, 0.8
+token: tunnel_flooded => wave "The sappers' tunnel, flooded"
+token: tunnel_held => foe "The sappers, beaten"
+
+Under the north wall, by the old cistern, the sound of picks. Harrow's sappers are digging a mine under the wall, and when they fire the props, the wall will come down.
+? tunnel_known :: You know exactly where they are.
+? seen:brask_hanged :: You hear voices in the tunnel, and one of them you know: one of Brask's men, from the camp in the valley.
+? sappers_hurry :: They're close. Too close. You can hear them talking.
+
+* fight: Break into their tunnel and fight them in the dark.
+  temper: duty +1
+  combat: foe=sappers
+  mod: seen:brask_hanged => resolve=4
+  mod: brask_militia => resolve=-4
+  mod: sappers_hurry => ambushed=1
+  > triumph: You go through them like a flood, and they run back down their own tunnel with their lanterns. You pull the props down after them. The north wall will stand.
+    do: flag tunnel_held; flag tunnel_collapsed
+    goto: chapel
+  > success: They run, and you pull down the props. The tunnel falls in on itself.
+    do: flag tunnel_held
+    goto: chapel
+  > mixed: You drive them off, but the dark makes you pay for it.
+    do: flag tunnel_held
+    goto: chapel
+    cost: A pick catches you in the dark (lose 5 Grit) :: grit -5
+    cost: They fire the props as they go (the wall is cracked) :: flag wall_cracked
+  > fail: They drive you out of the tunnel and fire the props. The wall cracks from top to bottom, but it holds. For now.
+    do: flag wall_cracked; grit -3
+    goto: chapel
+
+* flood: Break the old cistern into their tunnel.
+  temper: mercy -1
+  challenge: kind=trial progress=17 danger=3 danger_text="The props creak." title="Flooding the mine"
+  mod: tunnel_known => progress=-3
+  approach might: Smash through the cistern wall with a sledge.
+  approach lore: Find where the cistern's old outflow runs, and open it.
+  approach ward [progress=19 danger=4]: Shore up the wall above while the water goes in.
+  > triumph: The cistern goes into the tunnel with a roar and the sappers come up out of the mud in Harrow's trenches, coughing, without their picks. The mine is gone. So, mostly, is Harrow's patience.
+    do: flag tunnel_flooded; flag harrow_rushed
+    goto: chapel
+  > success: The water goes in. Nobody will dig there again.
+    do: flag tunnel_flooded
+    goto: chapel
+  > mixed: The water goes in. Holloway is short of water now.
+    do: flag tunnel_flooded
+    goto: chapel
+    cost: The town's water is gone (everyone is thirsty, you too: 1 Fatigue) :: fatigue 1
+    cost: Not all the sappers got out (it weighs on you) :: temper mercy -1; regard -1
+  > fail: The cistern wall won't break. By the time it does, the sappers have fired their props. The wall cracks, and holds, just.
+    do: flag wall_cracked
+    goto: chapel
+
+* parley: Call down the tunnel and talk to them.
+  temper: mercy +1
+  challenge: kind=test difficulty=standard tries=2 title="Voices in the dark"
+  mod: seen:brask_spared => progress=-2
+  mod: seen:harrow_exposed => progress=-3
+  approach grace: Talk to them like miners, not enemies: about pay, and wives, and cave-ins.
+  approach lore: Tell them what Harrow did at Greyfell, and that he'll do it to them.
+  approach guile: Tell them the cistern's about to break. It isn't. Probably.
+  > triumph: They come up out of the tunnel with their hands open, eleven men, and ask for bread. Two of them were Greyfell men, once. They tell you where Harrow will make his real attack.
+    do: flag sappers_turned; flag feint_known
+    goto: chapel
+  > success: The digging stops. In the morning their tunnel is empty, and the props are pulled out.
+    do: flag sappers_turned
+    goto: chapel
+  > mixed: They listen. Some of them.
+    do: flag sappers_turned
+    goto: chapel
+    cost: Half of them fire the props anyway (the wall is cracked) :: flag wall_cracked
+    cost: They want paying to leave (lose 10 coins) :: coin -10
+  > fail: They laugh, and dig faster. That night the props go up, and the north wall cracks from top to bottom.
+    do: flag wall_cracked
+    goto: chapel
+
+## chapel: Holloway Chapel
+act: 2
+type: waystone
+on enter: rest 11; if standing:abbey>=1 then grit 3
+tile: shrine
+at: 5.6, -0.4
+token: oath_released => dove "The Greyfell oath, released"
+
+The town chapel is a hospital now, pews pushed together into beds, candles everywhere. The wounded lie in rows and the women of Holloway go between them with soup and bandages.
+? standing:abbey>=1 :: Two of Sister Maud's sisters are here from the Abbey. They see to your cuts before you can object.
+? cursed and seen:took_oath :: In your Pouch, the Greyfell oath die is cold as a stone in a river.
+Ashgrove kneels at the altar rail, alone, with his sword across his knees. When you come in, he gets up.
+[i]Rest. Tomorrow Harrow comes, and he comes with everything.[/i]
+
+* release: Give the captain the Greyfell oath die.
+  if: seen:took_oath and cursed
+  temper: duty +1
+  do: lift_curse oath_d10; flag oath_released; regard 1
+  goto: breach
+  reply: Ashgrove takes the bone die and holds it a long time. "We swore never to leave the watch," he says. "We left. I ordered it." He closes your fingers back round it. "I release the Greyfell company from its oath. Every man, living and dead." The die goes warm in your hand, and stays warm. [i]Some oaths can only be loosed by the one who made them. That one has waited two years.[/i]
+
+* talk: Sit with the captain a while.
+  temper: honesty +1
+  do: flag talked_captain
+  goto: breach
+  reply: You sit together on the altar step. He tells you about his mother, who kept bees, and about the night at Greyfell, every minute of it. At the end he says, "Whatever happens tomorrow, thank you," and you understand that he doesn't expect to see the end of it. [i]Remember this. It matters, later.[/i]
+
+* sleep: Sleep while you can.
+  goto: breach
+  reply: You sleep on a pew with your boots on, the way soldiers do. Before dawn, drums.
+
+## breach: The Breach
+act: 3
+type: challenge
+tile: keep
+at: 7, 0
+token: climax==won => flag "Holloway holds"
+token: climax==terms => seal "Holloway's terms"
+token: climax==relief => beacon "The Crown's relief"
+token: ashgrove_fell => grave "Captain Ashgrove"
+
+Dawn, and Harrow comes. His engines hammer the south gate, loud and showy, and while the town looks south his best men come over the north wall.
+? feint_known :: You knew. You're already on the north wall, waiting.
+? wall_cracked :: The cracked wall comes down in a roar of stone and dust, and the breach is open.
+? not wall_cracked :: They come over the wall on ladders, and the breach is the gatehouse roof.
+? council_wavers :: Behind you, in the square, somebody is shouting for the gates to be opened.
+? seen:bridge_held :: Far off on the south road, a glint: Crown banners. Relief, a day away. If you can hold a day.
+And at the head of them, in black plate with a gold circlet welded to his helm, Harrow himself.
+? seen:harrow_hates :: He sees you, and you see him remember Kestrel Bridge. "You," he says.
+"Captain Ashgrove," Harrow calls. "Open the town, and I'll let you hang with honour."
+
+* duel: Meet Harrow in the breach.
+  temper: duty +1
+  combat: foe=harrow
+  mod: seen:harrow_exposed => resolve=-6
+  mod: seen:bridge_burned => resolve=-3
+  mod: seen:road_lost => resolve=4
+  mod: feint_known => no_wardens=true
+  mod: brask_militia => resolve=-3
+  mod: seen:harrow_hates => resolve=3
+  mod: talked_captain => resolve=-2
+  > triumph: Harrow goes down in the rubble of the breach, and his circlet rolls away down the hill, and his army, watching, simply stops. By noon they are walking home in twos and threes. Holloway's bell rings until the rope breaks.
+    do: flag climax won
+    goto: ending
+  > success: Harrow falls in the breach. His men carry him back to camp, and by night the camp is breaking up.
+    do: flag climax won
+    goto: ending
+  > mixed: Harrow falls. It costs Holloway dear.
+    do: flag climax won
+    goto: ending
+    cost: Ashgrove takes the blow that was meant for you :: flag ashgrove_fell
+    cost: You take it yourself (take a Wound) :: wound ""
+  > fail: Harrow beats you down in the breach, and his men pour past you into Holloway. Ashgrove holds the gatehouse stair alone, long enough for the town to ask for terms.
+    do: flag climax terms; flag ashgrove_fell
+    goto: ending
+
+* parley: Go out under a white flag and offer Harrow terms he can live with.
+  temper: mercy +1
+  contest: opponent=harrow_parley title="Terms in the breach"
+  mod: seen:bridge_burned => resolve=-4
+  mod: seen:harrow_exposed => resolve=-4
+  mod: food_run => resolve=-3
+  mod: seen:harrow_hates => resolve=4
+  approach lore: Winter is two weeks away. Show him what that means for an army in tents.
+  approach guile: Tell him the Crown's relief is closer than it is.
+  approach grace: Offer him what he actually wants: to leave without looking beaten.
+  > triumph: Harrow listens. Then he laughs, short and bitter, and takes off his helm. "Winter," he says. "You're right, curse you." He marches north at noon, and Holloway keeps every stone and every soul.
+    do: flag climax won; flag harrow_withdrew
+    goto: ending
+  > success: He takes the terms: the town pays him to go, and he goes.
+    do: flag climax terms; flag terms_good
+    goto: ending
+  > mixed: Terms. Hard ones.
+    do: flag climax terms
+    goto: ending
+    cost: Holloway opens its granaries to his army (a hungry winter) :: flag hungry_winter
+    cost: Ashgrove must go with Harrow as hostage :: flag ashgrove_hostage
+  > fail: Harrow tears up your white flag. "No terms," he says, and his men come on.
+    goto: breach
+    retry: duel
+
+* relief: Hold the breach until the Crown's relief arrives.
+  if: seen:bridge_held
+  temper: duty +1
+  challenge: kind=trial progress=22 danger=4 danger_text="The breach gives a yard." title="Holding until relief"
+  mod: brask_militia => progress=-3
+  mod: feint_known => progress=-3
+  mod: wall_cracked => progress=3
+  approach ward: Hold the breach shoulder to shoulder, and do not give a step.
+  approach might: Throw them back down the rubble every time they reach the top.
+  approach grace [progress=24 danger=5]: Be everywhere along the wall at once.
+  > triumph: You hold all day and all night, and at dawn the Crown's cavalry come over the south ridge with Coyle riding at the front, very badly. Harrow's army breaks like a wave on a rock.
+    do: flag climax relief; regard 1
+    goto: ending
+  > success: A day and a night, and then the trumpets on the south road. Harrow pulls back before the relief arrives.
+    do: flag climax relief
+    goto: ending
+  > mixed: You hold. Barely, and not without loss.
+    do: flag climax relief
+    goto: ending
+    cost: Ashgrove falls holding the gatehouse stair :: flag ashgrove_fell
+    cost: You hold the last hour on one leg (take a Wound) :: wound ""
+  > fail: The breach gives. You're thrown back into the town, and Harrow's men are over the wall.
+    goto: breach
+    retry: duel
+
+## ending: How It Ended
+act: 3
+type: ending
+
++ fallen: Holloway Burns
+  if: defeat or wounds>=3
+  [i]And so Holloway fell, in the last week of autumn, with the snow coming.[/i]
+  You wake in a cart going south, among the wounded, and do not need to be told. Behind you there is smoke on the hill.
+  ? not ashgrove_fell :: Ashgrove is in the next cart. He hasn't spoken since the wall came down.
+  [i]A tale can be told again. A town takes longer. Come back to the fire.[/i]
+  do: mark holloway_fell; chronicle "Holloway fell to Harrow."; standing Holloway -1
+
++ last: The Captain's Last Stand
+  if: ashgrove_fell and climax==won or ashgrove_fell and climax==relief
+  renown: 5
+  Holloway holds. Captain Ashgrove doesn't.
+  They bury him in the churchyard on the hill, next to his mother, with the Greyfell banner over him and the whole town at the graveside. Brask carries one corner of the coffin.
+  ? talked_captain :: You remember the chapel step, and his mother's bees, and what he said. He knew. He came anyway.
+  When you get back to the tavern, Hollis gives you a die wrapped in a handkerchief. "He left it for you," he says. "Said you'd know why."
+  [i]A good death, the soldiers say. I've never understood that. A good life, ending well: that I understand.[/i]
+  do: gain ashgrove_d10; standing Holloway 2; chronicle "Holloway held. Captain Ashgrove fell in the breach."; mark holloway_held; mark ashgrove_dead
+
++ won: Holloway Holds
+  if: climax==won
+  renown: 5
+  Holloway holds, and Harrow goes north with what's left of his army, and the town rings its bell until the rope breaks.
+  ? harrow_withdrew :: He went without another blow struck. People will argue for years about whether that was a victory. You know it was.
+  Ashgrove finds you on the wall at sunset. He has his spurs back: the mayor gave them to him, a pair the smith made overnight out of a door-hinge. He's wearing them.
+  ? seen:banner_home :: The Greyfell banner flies over the north gate, and nobody's going to take it down.
+  [i]The captain's tale, ending as it should. I'll admit I wasn't sure. You never are, with soldiers.[/i]
+  do: coin 30; standing Holloway 2; standing crown 1; chronicle "Holloway held against Harrow."; chronicle "Captain Ashgrove got his spurs back."; mark holloway_held
+
++ relief: The Crown's Relief
+  if: climax==relief
+  renown: 4
+  The Crown's cavalry ride into Holloway through the south gate, and Harrow is taken on the road north with a dozen men, and his circlet ends up in the Crown's treasury with a label on it.
+  Magistrate Coyle makes a speech in the square that goes on far too long and mentions you twice.
+  ? not ashgrove_fell :: Ashgrove stands at the back, smiling, with his arms folded. When it's over he buys you a drink in the town's only tavern, which is very like your own.
+  [i]You held a breach for a day and a night. I've told tales of heroes who did less.[/i]
+  do: coin 30; standing crown 2; standing Holloway 1; gain seal_d10; chronicle "Holloway held until the Crown's relief. Harrow taken."; mark holloway_held; mark harrow_taken
+
++ terms: Terms
+  if: climax==terms
+  renown: 2
+  Holloway opens its gates. Harrow rides in under his black and gold, and keeps his word, mostly: nobody is hanged, nothing is burned, and the granary is emptied.
+  ? ashgrove_hostage :: Ashgrove rides out with him as a hostage, his hands tied to the saddle, his back straight.
+  ? ashgrove_fell and not ashgrove_hostage :: They bury Ashgrove by the gatehouse stair he held. Harrow attends, bareheaded. You don't know what to make of that.
+  ? terms_good :: The town paid, and the town stands. That's not nothing.
+  [i]Not every tale ends with a victory. Some end with everyone alive to argue about it.[/i]
+  do: standing Holloway 1; chronicle "Holloway opened its gates to Harrow, on terms."; mark holloway_terms; if ashgrove_fell then mark ashgrove_dead

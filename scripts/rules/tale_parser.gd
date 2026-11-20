@@ -18,8 +18,8 @@ extends RefCounted
 const SCENE_KEYS := ["act", "type", "goto", "on enter", "tile", "at", "token"]
 const OPTION_KEYS := ["if", "temper", "do", "goto", "reply", "challenge", "contest", "combat", "mod"]
 const OUTCOME_KEYS := ["do", "goto", "retry", "cost"]
-const ENDING_KEYS := ["if", "do"]
-const HEADER_KEYS := ["title", "id", "patron", "start"]
+const ENDING_KEYS := ["if", "do", "renown"]
+const HEADER_KEYS := ["title", "id", "patron", "start", "arc", "order", "pitch", "offer", "expires", "missed", "teller"]
 const TIERS := ["fail", "mixed", "success", "triumph", "caught"]
 ## choice, encounter and challenge all play as a choice scene; the name is for the writer.
 const SCENE_TYPES := ["choice", "encounter", "challenge", "prepare", "waystone", "ending"]
@@ -116,7 +116,20 @@ class _State:
 	func _header(t: String) -> void:
 		var kv := _key(t)
 		if kv.is_empty() or not kv[0] in HEADER_KEYS:
-			err("Before the first scene only title:, id:, patron: and start: are allowed.")
+			err("Before the first scene only these are allowed: %s." % ", ".join(HEADER_KEYS.map(func(k): return k + ":")))
+			return
+		if kv[0] == "teller":
+			# teller: event :: line   (the Teller's own lines for this tale, e.g. teller: fail :: ...)
+			var sep: int = kv[1].find(" :: ")
+			if sep < 0:
+				err("teller: takes 'event :: line', e.g. 'teller: triumph :: They sang it for a week.'")
+				return
+			if not tale.has("teller"):
+				tale.teller = {}
+			var ev: String = kv[1].substr(0, sep).strip_edges()
+			if not tale.teller.has(ev):
+				tale.teller[ev] = []
+			tale.teller[ev].append(kv[1].substr(sep + 4).strip_edges())
 			return
 		tale[kv[0]] = kv[1]
 
@@ -338,6 +351,10 @@ class _State:
 				ending.cond = val
 			"do":
 				ending.effects = _effects(val)
+			"renown":
+				if not val.is_valid_int():
+					err("renown: takes a number (0 to 5).")
+				ending.renown = int(val)
 			_:
 				err("'%s:' does not belong to an ending." % key)
 

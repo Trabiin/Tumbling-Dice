@@ -11,7 +11,7 @@ const LINES := {
 		"{die} lands on its highest face, and the fire leans in to look.",
 		"Now that is a throw. {die} could not have done better if you had placed it by hand.",
 		"{die}, showing everything it has. Remember this one.",
-		"A perfect face. I have seen grown smugglers weep for less.",
+		"A perfect face. I have seen grown men weep for less.",
 	],
 	"nat_one": [
 		"{die} shows a one. The candles dip, as if embarrassed for it.",
@@ -25,9 +25,9 @@ const LINES := {
 	],
 	"triumph": [
 		"Better than you hoped. Much better. The whole village will hear of this, and I will tell it bigger.",
-		"Triumph. They will sing that one at the Drowned Lamb, slightly wrong, for years.",
+		"Triumph. They will sing that one in taverns, slightly wrong, for years.",
 		"Now, that is how a tale is supposed to go.",
-		"Even the lake went quiet for that.",
+		"Even the fire went quiet for that.",
 	],
 	"success": [
 		"Clean. No more, no less.",
@@ -35,12 +35,12 @@ const LINES := {
 		"Done, and done well.",
 	],
 	"mixed": [
-		"You get what you came for. The lake takes its share.",
-		"Through, but not free. Nothing in Marrowmere is free.",
+		"You get what you came for. The road takes its share.",
+		"Through, but not free. Nothing in a tale is free.",
 		"Half a victory is still a victory. Choose what it costs you.",
 	],
 	"fail": [
-		"It goes wrong. It was always going to go wrong somewhere. Better here than at the bell.",
+		"It goes wrong. It was always going to go wrong somewhere. Better here than at the end.",
 		"No. Not this time. But the tale goes on, and so do you.",
 		"The dice say no. The story does not stop for them.",
 		"A failure, and a Fate token for your trouble. Spend it well.",
@@ -68,10 +68,10 @@ const LINES := {
 		"There is {die}, settling its grudge.",
 	],
 	"downed": [
-		"You are down. The water is very close. Throw everything you have.",
+		"You are down. Throw everything you have.",
 	],
 	"last_stand_win": [
-		"Up again, bleeding and stubborn. The lake will have to try harder.",
+		"Up again, bleeding and stubborn. The tale will have to try harder.",
 	],
 	"last_stand_fail": [
 		"Hands drag you out of the dark. Not tonight, then. But it will leave a mark.",
@@ -80,7 +80,7 @@ const LINES := {
 		"You refuse it. Very well. I will remember that you did.",
 	],
 	"loaded_caught": [
-		"Mother Kettle's eyes go to {die}, and stay there. Oh dear.",
+		"Their eyes go to {die}, and stay there. Oh dear.",
 	],
 	"loaded_safe": [
 		"{die} lands on its favourite face, and nobody looks twice. Lucky.",
@@ -109,11 +109,13 @@ const REGARD_ASIDE := {
 
 var recent: Array = []
 var rng := RandomNumberGenerator.new()
+## The tale's own lines (its teller: header), said alongside the general ones.
+var extra := {}
 const COOLDOWN := 10
 
 
 func line(event: String, ctx := {}) -> String:
-	var pool: Array = LINES.get(event, [])
+	var pool: Array = LINES.get(event, []) + extra.get(event, [])
 	if pool.is_empty():
 		return ""
 	var fresh := pool.filter(func(l): return not recent.has(l))

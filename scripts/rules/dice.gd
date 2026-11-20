@@ -69,7 +69,13 @@ const PHYSICS := {
 ## lands on its favoured face 75.5% of the time. Odds use this, never an assumption.
 const LOADED_HIT := 0.755
 ## Every die base create() knows (the linter checks gain/ally effects against it).
-const ALL_IDS := ["oak_might", "oak_guile", "oak_lore", "oak_grace", "oak_ward", "dragon_d10", "brass_d8", "jade_d8", "bone_d6", "amethyst_d6", "loaded_d6", "bone_d4", "jade_d10", "dragon_d12", "brass_d4", "knuckle_d4", "brine_d6", "fisher_bone_d6", "hobb_oak_d6", "hook_d6", "kettle_knife_d8", "bellmetal_d20", "rosary_d12", "bellshard_d8", "wild_d4"]
+const ALL_IDS := ["oak_might", "oak_guile", "oak_lore", "oak_grace", "oak_ward", "dragon_d10", "brass_d8", "jade_d8", "bone_d6", "amethyst_d6", "loaded_d6", "bone_d4", "jade_d10", "dragon_d12", "brass_d4", "knuckle_d4", "brine_d6", "fisher_bone_d6", "hobb_oak_d6", "hook_d6", "kettle_knife_d8", "bellmetal_d20", "rosary_d12", "bellshard_d8", "wild_d4",
+	"register_d10", "saltreach_d6", "wren_bell_d4", "tide_d8", "pearl_d12", "banner_d8", "oath_d10", "brask_d6",
+	"deserter_d6", "outrider_d8", "seal_d10", "holloway_d12", "ashgrove_d10"]
+
+## A curse rule: when it acts (rest = every Waystone, set_out = when you leave the tavern), the
+## number it bites at or under, and what it does. Read by the tale runner.
+const BELLMETAL_RULE := {"when": "rest", "at_most": 3, "verb": "tolls", "text": "You lose 1 Fate.", "effects": [["fate", -1]]}
 
 static var _serial := 0
 
@@ -107,7 +113,52 @@ static func make(base: String, sides: int, aspect: String, material: String, opt
 	if opts.has("loaded_face"):
 		d.loaded_face = opts.loaded_face
 		d.load = opts.get("load", 0.3)
+	if opts.has("curse_rule"):
+		d.curse_rule = opts.curse_rule
 	return d
+
+
+## A curse lifted in a tale: the die stays, with its great faces, but the Bane faces go plain
+## and it can leave the Pouch like any other die. It is a relic now.
+static func lift_curse(d: Dictionary, where: String) -> void:
+	d.cursed = false
+	d.curse = ""
+	d.erase("curse_rule")
+	d.rarity = "relic"
+	for f in d.faces:
+		if String(f.rune) == "bane":
+			f.rune = ""
+	if not String(d.name).begins_with("Quiet "):
+		d.name = "Quiet " + String(d.name)
+	d.history.append("Its curse was lifted in %s." % where)
+
+
+## Crack a face: it counts 1 less until Brannoc mends it. Returns the face index, or -1.
+static func crack(d: Dictionary, face: int) -> int:
+	face = clampi(face, 0, d.faces.size() - 1)
+	var f: Dictionary = d.faces[face]
+	if int(f.get("crack", 0)) > 0 or int(f.n) <= 1:
+		# Already cracked or as low as it goes: crack the highest sound face instead.
+		var best := -1
+		for i in d.faces.size():
+			if int(d.faces[i].get("crack", 0)) == 0 and int(d.faces[i].n) > 1 and (best < 0 or int(d.faces[i].n) > int(d.faces[best].n)):
+				best = i
+		if best < 0:
+			return -1
+		face = best
+		f = d.faces[face]
+	f.crack = 1
+	f.n = int(f.n) - 1
+	d.history.append("Cracked across a face.")
+	return face
+
+
+static func cracked_faces(d: Dictionary) -> Array:
+	var out: Array = []
+	for i in d.faces.size():
+		if int(d.faces[i].get("crack", 0)) > 0:
+			out.append(i)
+	return out
 
 
 ## Every die type in the slice, by base id. Starter shelf, tale rewards, foe drops.
@@ -178,6 +229,52 @@ static func create(base: String) -> Dictionary:
 			"desc": "A piece of the broken bell. The abbey is silent forever."})
 		"wild_d4": return make(base, 4, "wild", "amethyst", {"name": "Wanderer's Wild d4", "rarity": "fine",
 			"desc": "Counts in full for any aspect. Nobody sells these."})
+
+		# ---- Wren's arc
+		"register_d10": return make(base, 10, "lore", "driftwood", {"name": "Register of the Drowned d10",
+			"runes": {9: "keen", 10: "mend"}, "rarity": "masterwork",
+			"desc": "Cut from the black boards of the Register's cover. Every face is a name, if you look closely."})
+		"saltreach_d6": return make(base, 6, "guile", "brass", {"name": "Saltreach Silver d6",
+			"runes": {6: "spark"}, "rarity": "fine",
+			"desc": "A river trader's lucky die. It has changed hands in more card games than it can remember."})
+		"wren_bell_d4": return make(base, 4, "wild", "bellmetal", {"name": "Wren's Hand-bell d4",
+			"faces": [2, 2, 3, 4], "ally": true,
+			"desc": "Wren tied the clapper of her little bell into a die for you. Bring it back to her."})
+		"tide_d8": return make(base, 8, "ward", "driftwood", {"name": "Green Bronze d8",
+			"faces": [2, 3, 4, 5, 6, 7, 8, 8], "runes": {8: "guard"}, "rarity": "fine",
+			"desc": "From a drowned soldier's breastplate. It still stands to attention."})
+		"pearl_d12": return make(base, 12, "grace", "jade", {"name": "Tide Pearl d12",
+			"runes": {11: "echo", 12: "spark"}, "rarity": "relic",
+			"desc": "Grey and cold and perfectly round, carved by the lake into twelve faces."})
+
+		# ---- Captain Ashgrove's arc
+		"banner_d8": return make(base, 8, "ward", "oak", {"name": "Greyfell Banner d8",
+			"runes": {6: "kin", 8: "guard"}, "rarity": "masterwork",
+			"desc": "Carved from the banner pole of the Greyfell company. It likes to stand with others."})
+		"oath_d10": return make(base, 10, "might", "bone", {"name": "Oathbreaker's d10",
+			"faces": [1, 2, 6, 7, 8, 9, 10, 11, 12, 14], "runes": {1: "bane", 10: "strike"}, "bane": "grit",
+			"rarity": "cursed", "cursed": true,
+			"curse": "Every time you set out it remembers its oath: throw it, and on 2 or lower lose 3 Grit. It cannot leave your Pouch.",
+			"curse_rule": {"when": "set_out", "at_most": 2, "verb": "remembers its oath", "text": "You lose 3 Grit.", "effects": [["grit", -3]]},
+			"desc": "The Greyfell company swore on it never to leave the tower. Then they left the tower."})
+		"brask_d6": return make(base, 6, "might", "oak", {"name": "Brask's Old d6",
+			"runes": {6: "strike"}, "ally": true,
+			"desc": "Sergeant Brask's die, from the old company. He wants it back when this is done."})
+		"deserter_d6": return make(base, 6, "might", "oak", {"name": "Cut-Badge d6",
+			"faces": [1, 2, 3, 4, 5, 7],
+			"desc": "A deserter's die: the six has been recut into a seven, badly. It doesn't care."})
+		"outrider_d8": return make(base, 8, "grace", "bone", {"name": "Outrider's Spur d8",
+			"runes": {8: "echo"}, "rarity": "fine",
+			"desc": "Turned from a rider's spur-bone. Quick, and it likes to go again."})
+		"seal_d10": return make(base, 10, "ward", "brass", {"name": "Magistrate's Seal d10",
+			"runes": {9: "guard", 10: "guard"}, "rarity": "fine",
+			"desc": "A seal of the Crown, cut down into a die. Officially, it does not exist."})
+		"holloway_d12": return make(base, 12, "ward", "bellmetal", {"name": "Holloway Bell d12",
+			"runes": {11: "guard", 12: "kin"}, "rarity": "relic",
+			"desc": "Cast from the town bell that rang all through the siege. It rings for everyone near it."})
+		"ashgrove_d10": return make(base, 10, "might", "brass", {"name": "Ashgrove's Oath d10",
+			"runes": {1: "mend", 9: "strike", 10: "strike"}, "rarity": "relic",
+			"desc": "The captain's own die. He swore on it once, and kept the oath."})
 	push_error("Unknown die base: " + base)
 	return {}
 
@@ -257,7 +354,7 @@ static func sample(die: Dictionary, rng: RandomNumberGenerator) -> int:
 static func faces_text(die: Dictionary) -> String:
 	var parts: Array[String] = []
 	for f in die.faces:
-		parts.append("%d%s" % [f.n, RUNE_GLYPH.get(f.rune, "")])
+		parts.append("%d%s%s" % [f.n, RUNE_GLYPH.get(f.rune, ""), "x" if int(f.get("crack", 0)) > 0 else ""])
 	return " ".join(parts)
 
 
@@ -280,6 +377,10 @@ static func tooltip(die: Dictionary) -> String:
 		lines.append("Loaded: lands on %d about %d%% of the time." % [die.faces[die.loaded_face - 1].n, roundi(LOADED_HIT * 100)])
 	if die.cursed:
 		lines.append("Cursed. " + die.curse)
+	if not cracked_faces(die).is_empty():
+		lines.append("Cracked (x): those faces count 1 less until Brannoc mends them.")
+	if die.get("rebound", false):
+		lines.append("Rebound once by Brannoc.")
 	if die.ally:
 		lines.append("Lent for this tale only.")
 	if die.epithet != "":

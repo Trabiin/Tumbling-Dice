@@ -9,6 +9,15 @@ extends RefCounted
 ##   temper:mercy>=2                  temperament track
 ##   wounds>=1                        Wound count
 ##   seen:drowned_before              a campaign Chronicle mark
+##   rumour:tide_turn                 a Rumour you hold (from this tale or an earlier one)
+##   told:drowned_bell                you have told that tale (any ending)
+##   ended:drowned_bell               it ended without defeat
+##   missed:siege_holloway            it went by without you
+##   ending:drowned_bell==rest        how it ended (the last ending that was not a defeat)
+##   standing:guild>=1                faction standing, -3 to 3 (guild, abbey, crown, holloway...)
+##   season==winter, night>=7         the campaign calendar (night counts from 1 for the whole year)
+##   renown>=5, trust>=1, coin>=40    Renown, Brannoc's trust, Coin in your purse
+##   cursed, loaded                   you carry a cursed die / a loaded die
 ##   not X, X and Y, X or Y           ("and" binds tighter than "or"; no parentheses)
 
 const OPS := [">=", "<=", "==", ">", "<"]
@@ -39,21 +48,56 @@ static func _atom(a: String, ctx: Dictionary) -> bool:
 		return pouch != null and pouch.has_aspect(a.substr(4))
 	if a.begins_with("mat:"):
 		return pouch != null and pouch.has_material(a.substr(4))
+	var camp = ctx.get("campaign")
 	if a.begins_with("seen:"):
-		var camp = ctx.get("campaign")
 		return camp != null and camp.has_mark(a.substr(5))
+	if a.begins_with("rumour:"):
+		var rid := a.substr(7)
+		if state != null and state.get("rumour_ids") != null and state.rumour_ids.has(rid):
+			return true
+		return camp != null and camp.rumour_ids.has(rid)
+	if a.begins_with("told:"):
+		return camp != null and camp.told(a.substr(5))
+	if a.begins_with("ended:"):
+		return camp != null and camp.done(a.substr(6))
+	if a.begins_with("missed:"):
+		return camp != null and camp.missed.has(a.substr(7))
+	if a == "cursed":
+		return pouch != null and pouch.pouch.any(func(d): return d.get("cursed", false))
+	if a == "loaded":
+		return pouch != null and pouch.pouch.any(func(d): return d.has("loaded_face"))
 	for op in OPS:
 		var at := a.find(op)
 		if at > 0:
 			var lhs := a.substr(0, at).strip_edges()
 			var rhs_s := a.substr(at + op.length()).strip_edges()
 			if not rhs_s.is_valid_int():
-				# String comparison: climax==freed
-				var sv := str(state.flags.get(lhs, ""))
+				# String comparison: climax==freed, season==winter, ending:drowned_bell==rest
+				var sv := ""
+				if lhs == "season":
+					sv = camp.season() if camp != null else "spring"
+				elif lhs.begins_with("ending:"):
+					sv = camp.ending_of(lhs.substr(7)) if camp != null else ""
+				elif state != null:
+					sv = str(state.flags.get(lhs, ""))
 				return (sv == rhs_s) if op == "==" else (sv != rhs_s)
 			var rhs := int(rhs_s)
 			var v := 0
-			if lhs.begins_with("temper:"):
+			if lhs.begins_with("standing:"):
+				v = camp.standing_of(lhs.substr(9)) if camp != null else 0
+				if state != null:
+					v += int(state.standing.get(camp.faction_name(lhs.substr(9)) if camp != null else lhs.substr(9), 0))
+			elif lhs == "night":
+				v = camp.night if camp != null else 1
+			elif lhs == "renown":
+				v = camp.renown if camp != null else 0
+			elif lhs == "trust":
+				v = camp.trust if camp != null else 0
+			elif lhs == "coin":
+				v = camp.coin if camp != null else 0
+			elif state == null:
+				v = 0
+			elif lhs.begins_with("temper:"):
 				v = int(state.temper.get(lhs.substr(7), 0))
 			elif lhs == "wounds":
 				v = state.wound_count()
@@ -69,7 +113,7 @@ static func _atom(a: String, ctx: Dictionary) -> bool:
 				"==": return v == rhs
 				">": return v > rhs
 				"<": return v < rhs
-	return bool(state.flag(a))
+	return state != null and bool(state.flag(a))
 
 
 ## Flag names an expression reads (for the linter).
@@ -87,7 +131,7 @@ static func flags_read(expr: String) -> Array:
 				if at > 0:
 					a = a.substr(0, at).strip_edges()
 					break
-			if a in ["wounds", "fate", "grit"]:
+			if a in ["wounds", "fate", "grit", "season", "night", "renown", "trust", "cursed", "loaded", "coin"]:
 				continue
 			out.append(a)
 	return out

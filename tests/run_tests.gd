@@ -3,7 +3,7 @@ extends SceneTree
 ##
 ##   godot --headless -s res://tests/run_tests.gd                       unit tests + linter + quick bots
 ##   godot --headless -s res://tests/run_tests.gd -- --runs=400 --report=media/balance.md
-##   options: --only=<suite>  (pouch, scoring, odds, combat, contest, challenges, lint, format, preview, save, board, forge, practice, bots)
+##   options: --only=<suite>  (pouch, scoring, odds, combat, contest, challenges, lint, format, preview, save, board, forge, campaign, practice, bots, year)
 ##
 ## Exit code is the number of failed checks.
 
@@ -27,6 +27,7 @@ const Preview := preload("res://scripts/rules/preview.gd")
 const Practice := preload("res://scripts/tale/practice.gd")
 const Board := preload("res://scripts/rules/board.gd")
 const Forge := preload("res://scripts/rules/forge.gd")
+const Patrons := preload("res://scripts/rules/patrons.gd")
 
 var failures := 0
 var checks := 0
@@ -42,7 +43,7 @@ func _init() -> void:
 		elif a.begins_with("--report="): report_path = a.substr(9)
 		elif a.begins_with("--only="): only = a.substr(7)
 	var t0 := Time.get_ticks_msec()
-	var suites := ["pouch", "scoring", "odds", "combat", "contest", "challenges", "lint", "format", "preview", "save", "board", "forge", "practice", "bots"]
+	var suites := ["pouch", "scoring", "odds", "combat", "contest", "challenges", "lint", "format", "preview", "save", "board", "forge", "campaign", "practice", "bots", "year"]
 	for s in suites:
 		if only == "" or only == s:
 			print("== ", s)
@@ -783,6 +784,257 @@ func test_forge() -> void:
 		eq(oak2[0].faces[2].rune, "guard", "an inscribed rune survives a save")
 		eq(int(oak2[0].get("carved", 0)), 4, "so does how far it has been carved")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+# ===================================================================== the campaign
+
+func test_campaign() -> void:
+	var c := Campaign.new()
+	c.new_campaign()
+	# Calendar: four seasons of six nights.
+	eq(c.night, 1, "a campaign starts on night 1")
+	eq(c.season(), "spring", "in spring")
+	var lines := Patrons.pass_nights(c, 6)
+	eq(c.season(), "summer", "six nights later it is summer")
+	check(c.events_seen.has("summer_fair"), "the midsummer fair comes with summer")
+	check(lines.any(func(l): return l.text == "Summer"), "the turning of the season is told")
+	eq(Forge.stock(c).size() > Forge.STOCK.size(), true, "the fair brings fine dice to Hollis's shelf")
+	# Wounds: one mends when the season turns.
+	c.wounds = ["Cracked Ribs", "Fever"]
+	Patrons.pass_nights(c, Patrons.nights_to_next_season(c))
+	eq(c.season(), "autumn", "waiting for the next season lands on its first night")
+	eq(c.wounds, ["Fever"], "the turning of a season mends one Wound")
+	check(c.events_seen.has("winter_road") == false, "winter hasn't come yet")
+	# Expiring tales are missed when their season comes.
+	Patrons.pass_nights(c, Patrons.nights_to_next_season(c))
+	eq(c.season(), "winter", "winter")
+	for t in ["bell_market", "pretender_road", "siege_holloway"]:
+		check(c.missed.has(t), "%s goes by without you when winter comes" % t)
+	check(c.has_mark("road_closed"), "the first snow closes the road")
+	check(not Patrons.offered(c, _header("bell_market")), "a missed tale is not offered")
+	Patrons.pass_nights(c, Patrons.nights_to_next_season(c))
+	check(c.year_over(), "after winter the year is out")
+	# Renown buys Pouch weight.
+	c = Campaign.new()
+	c.new_campaign()
+	var w: int = c.pouch.weight_limit
+	eq(c.add_renown(3), 1, "3 Renown is the first step")
+	eq(c.pouch.weight_limit, w + 1, "and a point of Pouch weight")
+	c.add_renown(9)
+	eq(c.renown_level(), 3, "12 Renown is three steps")
+	eq(c.pouch.saddle_limit, Campaign.BASE_SADDLE + 1, "the third step widens the Saddlebag")
+	# Standing is clamped, and faction ids and names both work.
+	c.add_standing("guild", 5)
+	eq(c.standing_of("Thieves' Guild"), 3, "Standing tops out at 3")
+	c.add_standing("Abbey", -1)
+	eq(c.standing_of("abbey"), -1, "names and ids are the same faction")
+	# What happened in each tale, and the conditions that read it.
+	var ctx := Patrons.ctx(c)
+	check(not Cond.check("told:drowned_bell", ctx), "an untold tale")
+	c.record_tale("drowned_bell", "drowned", false)
+	check(Cond.check("told:drowned_bell", ctx) and not Cond.check("ended:drowned_bell", ctx), "told, but lost")
+	eq(c.ending_of("drowned_bell"), "drowned", "the defeat is all there is")
+	c.record_tale("drowned_bell", "greed", true)
+	c.record_tale("drowned_bell", "drowned", false)
+	check(Cond.check("ended:drowned_bell and ending:drowned_bell==greed", ctx), "a later defeat doesn't overwrite how it ended")
+	check(Cond.check("standing:guild>=3 and standing:abbey<0", ctx), "Standing conditions")
+	check(Cond.check("season==spring and night<=1", ctx), "calendar conditions")
+	c.rumour_ids.append("tide_turn")
+	check(Cond.check("rumour:tide_turn and not rumour:kettle_lake", ctx), "rumour conditions")
+	c.missed.append("siege_holloway")
+	check(Cond.check("missed:siege_holloway", ctx), "missed conditions")
+	check(not Cond.check("cursed", ctx), "no cursed die yet")
+	c.pouch.collection.append(Dice.create("bellmetal_d20"))
+	c.pouch.add(c.pouch.collection[-1])
+	check(Cond.check("cursed", ctx), "carrying the Bellmetal is cursed")
+	# Patrons' offers follow the arcs.
+	c = Campaign.new()
+	c.new_campaign()
+	var ids: Array = Patrons.offers(c).map(func(h): return h.id)
+	eq(ids, ["drowned_bell", "last_watch"], "the first night, Wren and the captain each offer their first tale")
+	c.record_tale("drowned_bell", "rest", true)
+	c.record_tale("last_watch", "banner", true)
+	ids = Patrons.offers(c).map(func(h): return h.id)
+	eq(ids, ["bell_market", "pretender_road"], "then the second tale of each arc")
+	c.record_tale("bell_market", "rest", true)
+	c.record_tale("pretender_road", "joined", true)
+	c.mark("sided_harrow")
+	ids = Patrons.offers(c).map(func(h): return h.id)
+	eq(ids, [], "the Tide Court waits for autumn, and the siege won't come to a turncoat")
+	c.night = 13
+	ids = Patrons.offers(c).map(func(h): return h.id)
+	eq(ids, ["tide_court"], "in autumn the Tide Court sits")
+	check(Patrons.offer_note(c, _header("bell_market")) == "", "a done tale has nothing running out")
+	c.tales.erase("bell_market")
+	c.night = 15
+	eq(Patrons.offer_note(c, _header("bell_market")), "Before winter: 4 nights left.", "the expiry is shown in nights")
+	# Season events read earlier tales.
+	c = Campaign.new()
+	c.new_campaign()
+	c.mark("greed")
+	c.record_tale("pretender_road", "joined", true)
+	Patrons.pass_nights(c, 12)
+	check(c.has_mark("marrowmere_flooded"), "keeping the gold floods Marrowmere in autumn")
+	check(c.has_mark("hill_farms_burned"), "siding with the Pretender empties the hill farms")
+	# Sister Maud.
+	c = Campaign.new()
+	c.new_campaign()
+	c.coin = 20
+	check(not Patrons.can_heal(c, true).ok, "no Wounds, nothing to treat")
+	c.wounds = ["Broken Hand", "Fever"]
+	eq(Patrons.heal_cost(c), Patrons.HEAL_COST, "full price with no Abbey standing")
+	c.add_standing("abbey", 2)
+	eq(Patrons.heal_cost(c), 2, "the Abbey's friends pay less")
+	var r := Patrons.heal(c, true, 1)
+	check(r.ok and c.wounds == ["Broken Hand"], "Maud treats the Wound you pick")
+	eq(c.coin, 18, "for Coin")
+	eq(c.night, 2, "and a night")
+	c.coin = 0
+	r = Patrons.heal(c, false)
+	check(r.ok and c.wounds.is_empty(), "or for work")
+	eq(c.night, 4, "which takes two nights")
+	# Brannoc: trust, loading, rebinding, mending, prices.
+	c = Campaign.new()
+	c.new_campaign()
+	c.coin = 100
+	var six: Dictionary = c.pouch.collection.filter(func(d): return d.base == "oak_might")[0]
+	c.add_material("lead")
+	check(not Forge.can_load(c, six, 5).ok, "Brannoc won't load for a stranger")
+	check(not Forge.can_give(c, "lead").ok, "lead isn't rare")
+	c.add_material("heartwood")
+	check(Forge.give(c, "heartwood").ok and c.trust == 1, "a rare material earns his trust")
+	check(Forge.load_die(c, six, 5).ok, "then he loads a d6")
+	eq(int(six.loaded_face), 6, "to favour the face picked")
+	eq(c.material_count("lead"), 0, "using the lead")
+	check(Cond.check("loaded", Patrons.ctx(c)) == c.pouch.pouch.has(six), "the loaded condition reads the Pouch")
+	var lore: Dictionary = c.pouch.collection.filter(func(d): return d.base == "oak_lore")[0]
+	lore.notches = 5
+	c.add_material("binding_grace")
+	check(not Forge.can_rebind(c, lore, "grace").ok, "rebinding needs more trust")
+	c.trust = 2
+	check(Forge.rebind(c, lore, "grace").ok, "rebind")
+	eq(lore.aspect, "grace", "the aspect changes")
+	eq(int(lore.notches), 2, "half the notches are forgotten")
+	check(not Forge.can_rebind(c, lore, "might").ok, "only once")
+	var n0: int = int(lore.faces[5].n)
+	Dice.crack(lore, 5)
+	check(int(lore.faces[5].n) < n0 and Dice.cracked_faces(lore) == [5], "a cracked face loses its number")
+	check(Forge.mend(c, lore).ok and int(lore.faces[5].n) == n0, "Brannoc mends it")
+	c.standing["Thieves' Guild"] = 3
+	eq(Forge.price(c, Forge.STOCK[0]), int(Forge.STOCK[0].price) - 3, "the Guild's friends pay less at Hollis's shelf")
+	# Curses: lifted where the tale says.
+	var bell := Dice.create("bellmetal_d20")
+	Dice.lift_curse(bell, "The Tide Court")
+	check(not bell.cursed and not bell.faces.any(func(f): return f.rune == "bane"), "a lifted curse takes the bane runes with it")
+	check(String(bell.name).begins_with("Quiet "), "and the die is renamed")
+	# All of it survives a save.
+	c.night = 9
+	c.renown = 14
+	c.wounds = ["Frostbite"]
+	c.missed = ["siege_holloway"]
+	c.rumour_ids = ["harrow_traitor"]
+	c.events_seen = ["summer_fair"]
+	c.record_tale("last_watch", "letter", true)
+	var path := "user://test_campaign2.json"
+	c.save(path)
+	var c2 := Campaign.new()
+	c2.load_save(path)
+	eq([c2.night, c2.renown, c2.trust, c2.wounds, c2.missed, c2.rumour_ids, c2.events_seen], [9, 14, 2, ["Frostbite"], ["siege_holloway"], ["harrow_traitor"], ["summer_fair"]], "the campaign survives a save")
+	eq(c2.ending_of("last_watch"), "letter", "and so does how each tale ended")
+	eq(c2.pouch.weight_limit, Campaign.BASE_WEIGHT + c2.renown_level(), "Renown's weight comes back")
+	var lore2: Array = c2.pouch.collection.filter(func(d): return d.id == lore.id)
+	check(not lore2.is_empty() and lore2[0].aspect == "grace" and lore2[0].get("rebound", false), "a rebound die survives a save")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+func _header(id: String) -> Dictionary:
+	for h in Patrons.catalog():
+		if h.id == id:
+			return h
+	return {}
+
+
+## A whole year, played by bots: each night take a patron's tale (or see Maud, or wait), and check
+## that every tale gets told, nothing gets stuck, and what happened in one tale changes the words of
+## a later one (the M5 gate: choices in tale 1 visibly change tale 4).
+func test_year() -> void:
+	var years := maxi(10, runs / 6)
+	var told := {}
+	var endings := {}
+	var openings := {}      # "tale <- earlier:ending" -> {opening text: true}
+	var nights_used: Array = []
+	var cat := Patrons.catalog()
+	var stuck := 0
+	for y in years:
+		var c := Campaign.new()
+		c.new_campaign()
+		var rng := RandomNumberGenerator.new()
+		rng.seed = 4243 + y * 101
+		var arch: String = Bot.ARCHETYPES.keys()[y % Bot.ARCHETYPES.size()]
+		var guard := 0
+		while not c.year_over() and guard < 60:
+			guard += 1
+			if not c.wounds.is_empty() and rng.randf() < 0.6:
+				var pay: bool = c.coin >= Patrons.heal_cost(c) and rng.randf() < 0.7
+				Patrons.heal(c, pay, 0, cat)
+				continue
+			var offers := Patrons.offers(c, cat)
+			if offers.is_empty():
+				Patrons.pass_nights(c, Patrons.nights_to_next_season(c) if rng.randf() < 0.5 else 1, cat)
+				continue
+			var h: Dictionary = offers[rng.randi_range(0, offers.size() - 1)]
+			var r := Runner.new()
+			var bt := Bot.new()
+			bt.rng.seed = y * 7907 + guard
+			bt.archetype = arch
+			var first := []
+			r.said.connect(func(text, style):
+				if first.size() < 12 and r.scene.get("id", "") == r.tale.start and style != "scene":
+					first.append(text))
+			r.start(Tales.load_tale(h.path), c, y * 31 + guard)
+			bt.play(r)
+			if r.phase != "ending":
+				stuck += 1
+				check(false, "year %d: %s stuck in %s at %s" % [y, h.id, r.phase, r.scene.get("id", "?")])
+				break
+			told[h.id] = told.get(h.id, 0) + 1
+			var ek: String = "%s:%s" % [h.id, r.state.ending]
+			endings[ek] = endings.get(ek, 0) + 1
+			# Which earlier ending was this telling built on?
+			var prev := {"bell_market": "drowned_bell", "tide_court": "drowned_bell", "pretender_road": "last_watch", "siege_holloway": "last_watch"}
+			if prev.has(h.id):
+				var key: String = "%s <- %s:%s" % [h.id, prev[h.id], c.ending_of(prev[h.id])]
+				if not openings.has(h.id):
+					openings[h.id] = {}
+				if not openings[h.id].has(key):
+					openings[h.id][key] = {}
+				openings[h.id][key]["\n".join(first)] = true
+			Patrons.pass_nights(c, 1, cat)
+		nights_used.append(c.night)
+		check(c.year_over(), "year %d runs to the end (night %d)" % [y, c.night])
+	eq(stuck, 0, "no tale got stuck in a year of play")
+	for h in cat:
+		check(told.has(h.id), "%s is told in some year" % h.id)
+	# The gate: the opening of a later tale reads differently depending on how an earlier one ended.
+	for later in ["bell_market", "tide_court", "siege_holloway"]:
+		var by_ending: Dictionary = openings.get(later, {})
+		var texts := {}
+		for k in by_ending:
+			for t in by_ending[k]:
+				texts[t] = true
+		check(by_ending.size() >= 2, "%s is reached after different endings of the tale before (%s)" % [later, ", ".join(by_ending.keys())])
+		check(texts.size() >= 2, "and its opening reads differently for them")
+	report.append("## A year of play, by bots (%d years)\n" % years)
+	report.append("| Tale | Told | Endings |")
+	report.append("|---|---|---|")
+	for h in cat:
+		var es: Array = []
+		for k in endings:
+			if k.begins_with(h.id + ":"):
+				es.append("%s %d" % [k.substr(h.id.length() + 1), endings[k]])
+		report.append("| %s | %d | %s |" % [h.title, told.get(h.id, 0), ", ".join(es)])
+		print("  %-16s told %3d  %s" % [h.id, told.get(h.id, 0), ", ".join(es)])
+	report.append("")
 
 
 # ===================================================================== bots

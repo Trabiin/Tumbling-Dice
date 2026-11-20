@@ -9,7 +9,9 @@ This build covers **milestone M1** (the rules core and The Drowned Bell, playabl
 for the M2 playtest), **milestone M3: the tale runner** (tales as plain-text `.tale` files with a
 parser and linter, a text preview for writers, mid-tale saves and the Chronicle), plus graphics presets,
 and **milestone M4: the vertical slice staged** (the tale board with your figurine, carved foe figurines,
-and a minimal tavern with Hollis's shelf and Brannoc the Dicewright). Design doc: *Tales of the Tumbling Dice: Game Design* (Claude Doc).
+and a minimal tavern with Hollis's shelf and Brannoc the Dicewright), and **milestone M5: the campaign
+skeleton** (a year of nights and seasons, two patron arcs of six tales, Renown, Standing, Rumours,
+Wounds carried between tales, Sister Maud, materials, loading, rebinding and curses). Design doc: *Tales of the Tumbling Dice: Game Design* (Claude Doc).
 
 The dice, room, flames, tale board, UI widgets and sounds are generated in GDScript and shader code.
 Furniture, clutter, board landmarks and the painted miniatures come from free CC0 kits by
@@ -83,15 +85,39 @@ Drowned Abbess.
 ### The tavern
 
 **Into the tavern** on the title screen (and **Back to the tavern** after a tale) pulls the camera back
-into the room:
-- **Wren's table** begins (or continues) The Drowned Bell.
-- **Hollis's shelf**: your whole Collection stands on the shelf behind the bar. Buy plain dice for Coin,
-  sell the ones you don't need (Hollis won't let you go below 6 dice, and won't touch cursed ones).
-- **Brannoc's bench**, the Dicewright: **recarve** a face up or down by 1 (8 Coin; a die's faces can rise
-  by 4 in all), **inscribe** a rune on a plain face from a rune shard (10 Coin; common dice hold 1 rune
-  face, fine 2, masterwork 3, relics 4), or **melt** a die for a shard of each rune it carried. Loaded and
-  cursed dice can't be worked. Loading, Rebind and Mend come in M5 with materials and curses.
-- **The Chronicle**, as before.
+into the room. Under the title is the calendar: a tale takes one night, and the season turns every
+six nights (spring, summer, autumn, winter: a year is 24 nights).
+- **The patrons' tables.** Wren (a fisherman's daughter) and Captain Ashgrove (a disgraced knight) each
+  offer the next tale in their arc, with a line of pitch, and how long it will wait ("Before winter:
+  4 nights left"). A tale that runs out goes by without you, and the Chronicle says what happened.
+- **Hollis's shelf**: your whole Collection. Buy plain dice for Coin (friends of the Thieves' Guild pay
+  less), sell the ones you don't need. In summer the fair brings fine dice.
+- **Brannoc's bench**, the Dicewright: **recarve** (8 Coin), **inscribe** a rune from a shard (10 Coin),
+  **melt** a die for its runes' shards, **mend** a cracked face (4 Coin). Bring him rare materials to earn
+  his trust: at trust 1 he **loads** a d6 (Lead and 15 Coin; the face lands about 3 times in 4, and card
+  sharps can tell); at trust 2 he **rebinds** a die to another aspect, once in its life (a binding and
+  10 Coin; it forgets half its notches).
+- **Sister Maud's corner**: treat a Wound you carried home, for Coin (6, less 2 for each point of Abbey
+  standing) and a night, or for two nights' work in the infirmary. She can't lift curses, but she knows
+  who can.
+- **Sit by the fire tonight** lets one night pass; **Wait for autumn** skips to the next season.
+- **The Chronicle**: the calendar, every tale and how it ended, missed tales, Renown, standing, rumours.
+
+**Renown** comes from each ending (1 to 5) and raises your Pouch's weight at 3, 7, 12, 18, 25, 33, 42
+and 52 (and the Saddlebag's at the third and sixth step). **Wounds** taken in a tale come home with you
+(two at most) and are still on you when the next tale starts; the turning of a season mends one.
+**Curses** bite on their own rules (the Bellmetal tolls at Waystones; the Oath die at setting out) and
+are lifted in the tale they belong to.
+
+### The two arcs
+
+| Arc | Tales | What carries over |
+|---|---|---|
+| Wren | The Drowned Bell, The Bell Market, The Tide Court | Whether the Abbess was freed or destroyed, the bell sold or rung, the gold kept (Marrowmere floods in autumn), Ormond Vane dead or escaped. The Tide Court sits in autumn and can lift the Bellmetal's curse. |
+| Captain Ashgrove | The Last Watch, The Pretender's Road, Siege of Holloway | Sergeant Brask hanged, spared or taken along, the Oath die taken at the chapel, the letter burned or kept, the bridge held or burned or the captain joining the Pretender (then the siege never comes, and the hill farms empty in autumn). Both expire at winter. |
+
+The bots play a whole year (`--only=year`) and check that every tale gets told and that the later tales
+open differently depending on how the earlier ones ended.
 
 ### Saves, and the Chronicle
 
@@ -203,7 +229,8 @@ The rules never touch the scene tree, so the same code runs in the game, in test
 | `scripts/rules/teller.gd` | The Teller's reaction lines, keyed to events, with a cooldown |
 | `scripts/rules/conditions.gd` | The small condition language tales use (`rumour_smugglers or has:guile`) |
 | `scripts/rules/bot.gd` | Balance bots with archetype Pouches |
-| `tales/drowned_bell.tale` | The tale itself, as text ([format](docs/tale_format.md)) |
+| `tales/*.tale` | The tales, as text ([format](docs/tale_format.md)): The Drowned Bell and the five M5 tales |
+| `scripts/rules/patrons.gd` | The campaign around the tales: who offers what, the calendar, season events, missed tales, Sister Maud |
 | `scripts/rules/tale_parser.gd`, `tale_writer.gd` | Read a `.tale` file into the dictionary the runner plays, and write one back |
 | `scripts/rules/tale_lint.gd` | The linter: design rules and broken links, reported by file line |
 | `scripts/rules/tales.gd` | Finds and caches the shipped tales |
@@ -215,8 +242,8 @@ The rules never touch the scene tree, so the same code runs in the game, in test
 | `scripts/figures.gd` | Painted figurines, tiles and tokens from primitives, merged into one vertex-coloured mesh each, with an ink outline shell; with the kits on, KayKit miniatures, hex tiles and buildings take the place of most primitives |
 | `scripts/kits.gd` | Loads the CC0 kit models (`assets/kits/`) and repaints them: toon light bands, brush noise, colour washes, the ink outline shell on Low and on the board |
 | `tools/vendor_kits.py`, `tools/bake_minis.gd` | Copy kit models in (colour maps only) and bake the KayKit characters into posed static miniatures |
-| `scripts/rules/forge.gd` | Hollis's shelf (buy, sell) and Brannoc's bench (recarve, inscribe, melt) as rules |
-| `scripts/game/tavern_hub.gd` | The tavern between tales: the room, the shelf and the bench |
+| `scripts/rules/forge.gd` | Hollis's shelf (buy, sell, the fair) and Brannoc's bench (recarve, inscribe, melt, mend, load, rebind, materials and trust) as rules |
+| `scripts/game/tavern_hub.gd` | The tavern between tales: the room and the patrons, the shelf, the bench, Maud's corner, passing nights |
 | `scripts/game/table.gd` | Physical dice: spawns rules dice as rigid bodies, throws (tossed or held and released by hand), settles with a nudge, recovers strays, reads faces, freezes the foe's dice, finds the die under the cursor |
 | `scripts/game/settings.gd` | Graphics presets (Low, Medium, High) |
 | `scripts/game/preview_panel.gd` | The text preview on paper, inside the game |
@@ -232,7 +259,8 @@ UI autoplay through the practice table with simulated mouse drags and tray click
 `godot --headless --fixed-fps 60 -- --new --autoplay --practice --drag --quit-at-end`.
 
 ```
-godot --headless -s res://tests/run_tests.gd                                   # everything, quick bots
+godot --headless -s res://tests/run_tests.gd                                   # everything, quick bots (about 6 minutes)
+godot --headless -s res://tests/run_tests.gd -- --only=year                    # a year of campaign play, by bots
 godot --headless -s res://tests/run_tests.gd -- --runs=200 --report=media/balance.md
 godot --headless --fixed-fps 60 res://game.tscn -- --new --autoplay --quit-at-end --seed=4
 ```

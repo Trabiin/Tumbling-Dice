@@ -31,6 +31,7 @@ const Odds := preload("res://scripts/rules/odds.gd")
 const TaleState := preload("res://scripts/rules/tale_state.gd")
 const Teller := preload("res://scripts/rules/teller.gd")
 const Cond := preload("res://scripts/rules/conditions.gd")
+const Forge := preload("res://scripts/rules/forge.gd")
 
 const TIER_KEYS := ["fail", "mixed", "success", "triumph"]
 
@@ -65,6 +66,7 @@ func start(p_tale: Dictionary, p_campaign, seed_value := -1) -> void:
 	campaign = p_campaign
 	pouch = campaign.pouch
 	state = TaleState.new()
+	teller.extra = tale.get("teller", {})
 	if seed_value >= 0:
 		rng.seed = seed_value
 		teller.rng.seed = seed_value + 1
@@ -73,6 +75,10 @@ func start(p_tale: Dictionary, p_campaign, seed_value := -1) -> void:
 		teller.rng.randomize()
 	pouch.hand_penalty = 0
 	_say(tale.title, "title")
+	if campaign.get("wounds") != null and not campaign.wounds.is_empty():
+		state.carry_in(campaign.wounds)
+		_say("You carry %s from an earlier tale: %s" % ["a Wound" if campaign.wounds.size() == 1 else "%d Wounds" % campaign.wounds.size(),
+			"; ".join(campaign.wounds.map(func(w): return "%s (%s)" % [w, TaleState.WOUNDS.get(w, "")]))], "foe")
 	enter(tale.start)
 
 
@@ -94,6 +100,7 @@ func can_snapshot() -> bool:
 func resume(p_tale: Dictionary, p_campaign, snap: Dictionary) -> void:
 	tale = p_tale
 	campaign = p_campaign
+	teller.extra = tale.get("teller", {})
 	campaign.from_dict(snap.campaign)
 	pouch = campaign.pouch
 	pouch.tale_from_dict(snap.get("pouch", {}))
@@ -211,6 +218,7 @@ func pick_wager(die) -> void:
 func done_prepare() -> void:
 	pouch.start_tale(rng)
 	_say("You shoulder the Pouch: %d dice, weight %d of %d." % [pouch.pouch.size(), pouch.weight(), pouch.weight_limit], "system")
+	_curses("set_out")
 	enter(scene.goto)
 
 
@@ -345,7 +353,7 @@ func throw_ctx(kind := "") -> Dictionary:
 			"contest": kind = "contest"
 			"combat": kind = "combat"
 			_: kind = "test"
-	return {"kind": kind, "pity": state.pity(), "shaking": state.shaking()}
+	return {"kind": kind, "pity": state.pity(), "shaking": state.shaking(), "broken_hand": state.broken_hand()}
 
 
 ## The foe or opponent throws first. values: the faces the table read (or rolled).
@@ -676,6 +684,8 @@ func _start_combat() -> void:
 	var cb: Dictionary = option.combat
 	var foe := Foes.foe(cb.foe)
 	var mods := _mods(cb.get("mods", []))
+	if state.arrow():
+		mods["ambushed"] = int(mods.get("ambushed", 0)) + 1
 	var run = Combat.create(foe, mods)
 	active = {"type": "combat", "run": run, "stolen": null}
 	_say(foe.get("text", ""))
@@ -943,12 +953,65 @@ func _effect(e: Array) -> void:
 		"regard":
 			state.regard += int(e[1])
 		"standing":
-			state.standing[e[1]] = int(state.standing.get(e[1], 0)) + int(e[2])
-			_say("%s standing %+d." % [e[1], int(e[2])], "system")
+			var fname: String = campaign.faction_name(e[1]) if campaign.has_method("faction_name") else e[1]
+			state.standing[fname] = int(state.standing.get(fname, 0)) + int(e[2])
+			_say("%s standing %+d." % [fname, int(e[2])], "system")
 		"rumour":
-			if not state.rumours.has(e[1]):
-				state.rumours.append(e[1])
-				_say("Rumour: " + e[1], "system")
+			# rumour "text", or rumour id "text" (an id later tales can read: rumour:id)
+			var rtext: String = str(e[-1])
+			if e.size() >= 3 and not state.rumour_ids.has(str(e[1])):
+				state.rumour_ids.append(str(e[1]))
+			if not state.rumours.has(rtext):
+				state.rumours.append(rtext)
+				_say("Rumour: " + rtext, "system")
+		"material":
+			var mid := str(e[1])
+			var mn: int = int(e[2]) if e.size() > 2 else 1
+			for k in mn:
+				state.materials.append(mid)
+			_say("You gain %s." % Forge.material_text(mid, mn), "gain")
+		"renown":
+			state.set_flag("renown_bonus", state.num("renown_bonus") + int(e[1]))
+		"heal":
+			if not state.wounds.is_empty():
+				var hw: String = state.wounds.pop_back()
+				state.carried.erase(hw)
+				if hw == "Cracked Ribs":
+					state.grit_max += 4
+				elif hw == "Frostbite":
+					state.grit_max += 3
+				_say("Your %s is tended. It troubles you no more." % hw, "system")
+		"lift_curse":
+			for d in pouch.collection:
+				if d.get("cursed", false) and (e.size() < 2 or d.base == str(e[1])):
+					Dice.lift_curse(d, tale.get("title", "a tale"))
+					state.lifted.append(d.name)
+					_say("The curse goes out of it like heat from a stone. %s is yours now, and only yours." % d.name, "gain")
+					events.append({"type": "lifted", "die": d})
+		"give_up":
+			# Part with a die for good (sold, given, left behind), cursed or not: give_up bellmetal_d20
+			for d in pouch.collection.duplicate():
+				if d.base == str(e[1]):
+					pouch.lose(d)
+					state.lost.append(d)
+					_say("Your %s is gone. You feel lighter, one way or another." % d.name, "foe")
+					events.append({"type": "lost", "die": d})
+					break
+		"crack_best":
+			var cd = null
+			for t in last_thrown:
+				if t.die.get("ally", false):
+					continue
+				if cd == null or S.raw(t) > S.raw(cd):
+					cd = t
+			if cd == null:
+				for d in pouch.pouch:
+					if not d.get("ally", false) and (cd == null or Dice.mean_n(d) > Dice.mean_n(cd.die)):
+						cd = {"die": d, "face": d.sides - 1}
+			if cd != null:
+				var f2 := Dice.crack(cd.die, int(cd.face))
+				if f2 >= 0:
+					_say("Your %s cracks across its %d. Brannoc can mend it." % [cd.die.name, int(cd.die.faces[f2].n) + 1], "foe")
 		"chronicle": state.chronicle.append(e[1])
 		"shard":
 			state.shards.append(e[1])
@@ -980,6 +1043,7 @@ func _effect(e: Array) -> void:
 			state.grit = clampi(maxi(state.grit, int(e[1])), state.grit, state.grit_max)
 			pouch.rest(rng, 2)
 			_say(teller.line("rest"), "teller")
+			_curses("rest")
 			var grit_text := ("Grit back up to %d." % state.grit) if state.grit > before_rest else ("Grit stays at %d." % state.grit)
 			_say("%s Fatigue cleared. You may swap up to 2 dice with your Saddlebag." % grit_text, "system")
 		"practice_reset":
@@ -994,15 +1058,7 @@ func _effect(e: Array) -> void:
 			pouch.rest(rng, 0)
 			pouch.hand_penalty = 0
 		"toll":
-			for d in pouch.pouch:
-				if d.base == "bellmetal_d20":
-					var face := Dice.sample(d, rng)
-					var n := Dice.face_n(d, face)
-					if n <= 3:
-						state.add_fate(-1)
-						_say("The Bellmetal d20 tolls: %d. You lose 1 Fate." % n, "foe")
-					else:
-						_say("The Bellmetal d20 tolls: %d. Nothing happens. This time." % n, "system")
+			_curses("rest")
 		"lose_wager":
 			if state.wager != null:
 				pouch.lose(state.wager)
@@ -1016,6 +1072,32 @@ func _effect(e: Array) -> void:
 			campaign.add_coin(-60)
 		_:
 			push_error("Unknown effect %s" % str(e))
+
+
+## Cursed dice in the Pouch act up: at a rest (every Waystone) or when you set out. Each rule
+## throws the die; at or under its number, the curse takes its due.
+func _curses(when: String) -> void:
+	for d in pouch.pouch:
+		if not d.get("cursed", false):
+			continue
+		var rule: Dictionary = d.get("curse_rule", {})
+		if rule.is_empty() and d.base == "bellmetal_d20":
+			rule = Dice.BELLMETAL_RULE
+		if rule.get("when", "") != when:
+			continue
+		var n := Dice.face_n(d, Dice.sample(d, rng))
+		if n <= int(rule.get("at_most", 3)):
+			_say("%s %s: %d. %s" % [d.name, rule.get("verb", "stirs"), n, rule.get("text", "")], "foe")
+			for ef in rule.get("effects", []):
+				_effect(ef)
+		else:
+			_say("%s %s: %d. Nothing happens. This time." % [d.name, rule.get("verb", "stirs"), n], "system")
+
+
+## "the Drowned Bell" for a title like "The Drowned Bell".
+func _title_in_sentence() -> String:
+	var t: String = tale.get("title", "")
+	return ("the" + t.substr(3)) if t.begins_with("The ") else t
 
 
 func _gain(base: String, ally: bool, prefix := "") -> void:
@@ -1044,7 +1126,7 @@ func _finish_tale() -> void:
 		_say(line)
 	for e in chosen.effects:
 		_effect(e)
-	if state.wager != null and chosen.id != "drowned":
+	if state.wager != null and not state.defeated() and not state.flag("defeat"):
 		var bonus := coin_gained
 		if bonus > 0:
 			campaign.add_coin(bonus)
@@ -1057,19 +1139,44 @@ func _finish_tale() -> void:
 		_say(Teller.REGARD_ASIDE[-2], "teller")
 	var ep = state.epithet()
 	if ep != "":
-		_say("[i]That was the tale of the %s traveller, and the Drowned Bell.[/i]" % ep, "teller")
+		_say("[i]That was the tale of the %s traveller, and %s.[/i]" % [ep, _title_in_sentence()], "teller")
 	# Into the campaign
+	var tid: String = tale.get("id", "")
+	var won: bool = not state.defeated() and not state.flag("defeat")
 	campaign.tales_played += 1
-	if not campaign.endings_seen.has(chosen.id):
-		campaign.endings_seen.append(chosen.id)
+	var ekey := "%s:%s" % [tid, chosen.id]
+	if not campaign.endings_seen.has(ekey):
+		campaign.endings_seen.append(ekey)
+	if campaign.has_method("record_tale"):
+		campaign.record_tale(tid, chosen.id, won)
+		# Renown: 1 to 5, by the ending (renown: in the .tale, 2 if it doesn't say) and a Triumph.
+		var rn: int = int(chosen.get("renown", 2 if won else 0))
+		if won and state.triumphs > 0:
+			rn += 1
+		rn = clampi(rn + state.num("renown_bonus"), 0 if not won else 1, 5)
+		var up: int = campaign.add_renown(rn)
+		if rn > 0:
+			_say("Renown +%d%s." % [rn, (": your Pouch can carry weight %d now" % pouch.weight_limit) if up > 0 else ""], "gain")
+		# Wounds come home with you, two at most: Sister Maud can treat them at the tavern.
+		campaign.wounds = state.wounds.slice(0, campaign.MAX_CARRIED_WOUNDS) if state.wounds.size() > 0 else []
+		if state.wounds.size() > campaign.wounds.size():
+			_say("They carry you home. Some of it heals on the road.", "system")
+		for m in state.materials:
+			campaign.add_material(m, 1)
+		for rid in state.rumour_ids:
+			if not campaign.rumour_ids.has(rid):
+				campaign.rumour_ids.append(rid)
 	campaign.chronicle.append_array(state.chronicle)
 	for r in state.rumours:
 		if not campaign.rumours.has(r):
 			campaign.rumours.append(r)
 	for k in state.standing:
-		campaign.standing[k] = int(campaign.standing.get(k, 0)) + int(state.standing[k])
+		if campaign.has_method("add_standing"):
+			campaign.add_standing(k, int(state.standing[k]))
+		else:
+			campaign.standing[k] = int(campaign.standing.get(k, 0)) + int(state.standing[k])
 	campaign.shards.append_array(state.shards)
-	campaign.remember_map(tale.get("id", ""), state.visited)
+	campaign.remember_map(tid, state.visited)
 	for d in pouch.pouch:
 		if not d.ally:
 			d.history.append("Carried through %s (%s)." % [tale.title, chosen.title])

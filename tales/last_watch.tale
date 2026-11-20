@@ -1,0 +1,562 @@
+title: The Last Watch
+id: last_watch
+patron: Captain Ashgrove
+start: summons
+arc: ashgrove
+order: 1
+pitch: A knight with no spurs wants his company's banner back from the tower where his men broke and ran.
+teller: triumph :: They will tell that one in every barracks on the border, and get the numbers wrong.
+teller: triumph :: Even the wind on the ridge stopped to watch that.
+teller: mixed :: Through. The border takes its toll, as it always has.
+teller: mixed :: Done, and paid for. Soldiers know that bargain.
+teller: fail :: Wrong. The tower has seen worse nights. So, I suspect, have you.
+teller: rest :: A soldier's fire: small, smokeless, and the best thing in the world.
+
+// Captain Ashgrove's arc, tale 1 of 3. What you do with Sergeant Brask, the banner and the
+// Marshal's letter is read by The Pretender's Road and by Siege of Holloway.
+
+## summons: The Captain's Table
+act: 1
+tile: inn
+at: 0, 0
+token: swore_ashgrove => seal "Sworn to the captain"
+token: paid => coins "The captain's last coins"
+
+? seen:watch_lost :: [i]Another traveller sat in that chair, not long ago. The captain still sets out the same two cups.[/i]
+[i]Now. This one has no ghosts in it, or not the kind you think. Just men, and a tower, and a night nobody talks about.[/i]
+The man at the table by the door has sat with his back to the wall every night this season. Grey at the temples, a soldier's hands, a sword across his knees, and on his boots the pale marks where spurs used to be.
+"Ashgrove," he says. "I was captain of the Greyfell company, on the northern border. Two winters ago we held the watchtower on Greyfell ridge, and one night we left it. Every man. They took my spurs for that, and they were right to."
+He turns his cup round and round. "We left our banner on the wall. I want it back. And I want to know who opened the north gate that night, because it was not me."
+
+* oath: "I'll bring your banner home, Captain."
+  temper: duty +1
+  do: flag swore_ashgrove; regard 1
+  goto: prepare
+  reply: He stands, and for a moment you see the officer he was. He gives you his hand like a man sealing a contract in blood. [i]An oath to a disgraced man. That is either very noble or very foolish. The border will decide which.[/i]
+
+* truth: "I'll go. But I'll bring back the truth, whatever it turns out to be."
+  temper: honesty +1
+  do: flag seek_truth
+  goto: prepare
+  reply: Ashgrove looks at you for a long time. "That's what I'm afraid of," he says. "Go on, then." [i]Honest. It may not make you popular.[/i]
+
+* pay: "A knight with no spurs can still pay for a sword."
+  temper: duty -1
+  do: coin 15; flag paid
+  goto: prepare
+  reply: He counts it out without a word: fifteen coins, the last of a captain's pay. [i]Every soldier on the border has been paid for worse work. Few have been paid with that face watching them.[/i]
+
+## prepare: Packing for the Border
+act: 1
+type: prepare
+goto: road
+
+Hollis sets your Pouch on the bar beside your dice. "North," he says. "Take something heavy. The border doesn't care how clever you are."
+[i]Choose what you carry. The Saddlebag holds a little more, for the chapel in the tower, if you get that far.[/i]
+
+## road: The Border Road
+act: 1
+on enter: random_flag weather [mist, frost, clear]; if season==winter then flag weather snow
+tile: road
+at: 1.4, 0.2
+token: weather==snow => footprints "Your tracks in the snow"
+
+Two days north, the road climbs out of the farms and onto the moor, and the wind comes with it. At the end of the road the Greyfell watchtower stands on its ridge like a broken tooth.
+? weather==mist :: Mist sits in the hollows. The tower is there, then not there.
+? weather==frost :: Frost on everything. The heather crunches like glass.
+? weather==clear :: A clear cold sky, and you can see for miles: the tower, the village under it, and a thread of smoke from a camp in the valley.
+? weather==snow :: Snow, falling steady and silent. By morning the road will be gone.
+? seen:hill_farms_burned :: The farms you pass are empty, doors open, hearths cold. Harrow's men came through.
+Below the tower, a village: Greyfell, a dozen roofs. In the valley to the east, smoke from a camp that should not be there. And on the moor between you and the ridge, something howls, long and low.
+[i]Three ways to the tower. Choose the company you keep.[/i]
+
+* camp: Go down to the camp in the valley and see who's there.
+  goto: camp
+  reply: You leave the road and go down through the bracken toward the smoke. [i]Smoke means people. People mean answers, or knives. Usually both.[/i]
+
+* moor: Strike straight across the moor for the tower.
+  goto: moor
+  reply: You step off the road and into the heather. The howling stops. That is worse.
+
+* village: Go to the village first. Villages remember.
+  goto: village
+  reply: Greyfell's dogs bark you all the way down the lane. Shutters open a crack, and close.
+
+## camp: Brask's Camp
+act: 1
+type: encounter
+on enter: grit -2
+tile: camp
+at: 2.4, -1.2
+token: brask_spared => dove "Brask, let go"
+token: brask_hanged => grave "Brask, hanged"
+token: brask_ally => flag "Brask's men, with you"
+
+Five men round a fire in a hollow, in what is left of the Greyfell livery. Every badge has been cut off with a knife. The biggest of them stands up slowly, and you know the type: a sergeant, thirty years in, a face like a boot.
+"Brask," he says. "Sergeant, once. You've come from him, haven't you? From the captain." He spits in the fire. "Tell him we're not coming back."
+? swore_ashgrove :: You tell him you swore to bring the banner home. Something moves in his face.
+? seen:banner_home :: [i]You have been here before, haven't you? No. That was another telling. Never mind.[/i]
+
+* talk: Sit down at his fire and get the story out of him.
+  temper: mercy +1
+  contest: opponent=brask title="Sergeant Brask's story"
+  approach grace: Share your bread and your bottle, and let him talk in his own time.
+  approach ward: Sit across from him, unafraid, and wait him out.
+  approach lore: Name the battles on his old badges, one by one, until he softens.
+  > triumph: It comes out of him like poison from a wound. The north gate was opened from inside, by a courier with the Lord Marshal's seal. The company didn't run: Ashgrove ordered them out, to save their lives. "And I let them call him a coward," Brask says. "I let them." He offers you his hand and his old die. "I'll come. If he'll have me."
+    do: flag brask_ally; flag brask_spared; flag north_gate; ally brask_d6; material binding_might
+    goto: gate
+  > success: He tells it at last: a courier with the Marshal's seal, the north gate opened from inside, and Ashgrove ordering them out to save their skins. "Tell the captain," he says, "I'm sorry." He doesn't follow you, but he doesn't stop you either.
+    do: flag brask_spared; flag north_gate
+    goto: gate
+  > mixed: You get the story, but it costs you.
+    do: flag brask_spared; flag north_gate
+    goto: gate
+    cost: You drink with them until dawn (lose 4 Grit) :: grit -4
+    cost: One of them follows you, to see what you do (they'll be watching) :: flag deserters_watching
+  > fail: Brask hears you out and laughs in your face. "The captain's errand boy." By the time you're up the slope, his men have their weapons, and they're following you to the tower.
+    do: flag deserters_coming
+    goto: gate
+
+* fight: Arrest them, in the captain's name.
+  temper: duty +1
+  combat: foe=deserters
+  mod: swore_ashgrove => resolve=-2
+  > triumph: The last of them throws down his axe, and Brask goes to his knees in the ashes. "Do it, then," he says. A cut-badge die rolls out of his pack and stops at your boot.
+    goto: judgement
+  > success: They break and scatter into the bracken, and Brask is left on his knees by the fire, bleeding and furious. "Go on," he says.
+    goto: judgement
+  > mixed: They break, but not before Brask's men make you pay.
+    goto: judgement
+    cost: An axe opens your arm (lose 5 Grit) :: grit -5
+    cost: Two of them get away to the tower (they'll be waiting) :: flag deserters_coming
+  > fail: They beat you down into the bracken and leave you there. When you come to, they've gone up the ridge to the tower ahead of you.
+    do: flag deserters_coming; grit -3
+    goto: gate
+
+* shadow: Leave them to their fire. Lift their map while they argue.
+  temper: honesty -1
+  challenge: kind=test difficulty=standard tries=2 title="Lifting the map"
+  approach guile: Wait for the argument to get loud, then walk in and out like you belong.
+  approach grace: Crawl through the bracken to the packs at the edge of the firelight.
+  approach lore: Listen. Deserters always say where they're going next.
+  > triumph: You take the map, and their conversation with it: the north gate was opened from inside, by a courier with the Marshal's seal. They never miss the map. Brask never knows you were there.
+    do: flag tower_map; flag north_gate; flag brask_fled
+    goto: gate
+  > success: The map is a soldier's sketch of the tower, every stair and the broken place in the west wall. You're gone before anyone looks up.
+    do: flag tower_map; flag brask_fled
+    goto: gate
+  > mixed: You get it, but the bracken crackles.
+    do: flag tower_map; flag brask_fled
+    goto: gate
+    cost: A thrown knife finds you in the dark (lose 4 Grit) :: grit -4
+    cost: They know someone was there (they'll come to the tower) :: flag deserters_coming
+  > fail: A boot comes down on your hand. Brask hauls you up by the collar, looks at you, and lets you go. "Run to your captain," he says. "We'll be along." You go. They come.
+    do: flag deserters_coming; grit -2
+    goto: gate
+
+## judgement: Brask on His Knees
+act: 1
+
+Brask kneels in the trampled ashes with his hands empty. Behind him, his men are scattered across the bracken, watching from a distance to see what you do.
+"Desertion," he says. "In the face of the enemy. You know what the King's law says. Go on."
+? swore_ashgrove :: You swore to the captain. Whatever happened that night, these men left him to carry it alone.
+[i]Now this is a choice, and nothing in your Pouch will make it for you.[/i]
+
+* hang: "The King's law, then." Hang him from the hollow's one tree.
+  temper: mercy -1, duty +1
+  do: flag brask_hanged; gain deserter_d6; regard -1
+  goto: gate
+  reply: He doesn't struggle. His men watch from the bracken, and when it's done they melt away north and are not seen again. In his pack you find a die with its six recut to a seven. [i]The law is the law. I only note that the tree was there long before the law was.[/i]
+
+* spare: "Go home, Sergeant. Whatever home you have."
+  temper: mercy +1
+  do: flag brask_spared; flag north_gate
+  goto: gate
+  reply: He stares at you. Then, getting up, he tells you the one thing he never told anyone: the north gate was opened from inside, by a courier with the Lord Marshal's seal. "Tell the captain," he says, and goes.
+
+* recruit: "You owe your captain a debt. Come and pay it."
+  temper: duty +1
+  do: flag brask_spared; flag brask_ally; flag north_gate; ally brask_d6
+  goto: gate
+  reply: A long silence. Then he gets up and puts his old die in your hand. "The north gate was opened from inside," he says. "By the Marshal's courier. I'll show you where." His men come in from the bracken, one by one. [i]Well. A sergeant. Every tale should have one.[/i]
+
+## moor: The Moor of Cairns
+act: 1
+type: encounter
+on enter: grit -2
+tile: forest
+at: 2.6, 1.2
+token: wolf_driven => fire "The wolves, driven off with fire"
+
+The moor is cairns and heather and black pools, and the old boundary stones of two kingdoms. Halfway across, the howling starts again, close, and from behind a cairn the leader comes: a wolf as big as a pony, grey and scarred, with its pack spreading out behind it.
+? weather==mist :: In the mist you can hear them all round you, and see none of them.
+? weather==snow :: Their tracks are everywhere in the snow. They've been circling you for an hour.
+[i]They have eaten well since the soldiers left. They'd like to keep eating.[/i]
+
+* fight: Stand and fight.
+  temper: duty +1
+  combat: foe=mire_wolf
+  > triumph: The great wolf goes down and the pack melts into the heather. Under a cairn where it laired, among old bones, you find a soldier's pack with the Greyfell badge, and in it a scrap of black iron from the tower's bell-cage.
+    do: material black_iron; flag tower_quiet
+    goto: gate
+  > success: The leader limps away into the mist and the pack goes with it. The moor is quiet. The tower is close.
+    do: flag tower_quiet
+    goto: gate
+  > mixed: They go, but they took a piece of you with them.
+    do: flag tower_quiet
+    goto: gate
+    cost: Teeth in your leg (lose 5 Grit) :: grit -5
+    cost: Your best die is lost in the heather until the chapel :: exhaust_best
+  > fail: They drag you down. You fight free and run, and you reach the tower walls with the whole pack at your heels and blood in your boot.
+    do: grit -4; flag wolves_follow
+    goto: gate
+
+* fire: Light the heather and drive them off with fire.
+  temper: mercy +1
+  challenge: kind=test difficulty=standard tries=2 title="A wall of fire"
+  approach lore: Read the wind, and light a line that burns away from you.
+  approach ward: Hold a burning brand and stand your ground until they break.
+  approach might: Drag dry gorse into a ring round you and fire it all at once.
+  > triumph: The heather goes up with a roar and the wolves scatter howling. When the smoke clears, the burnt ground has uncovered a dead soldier's pack: a Greyfell badge, and a scrap of black iron from the tower's bell-cage.
+    do: flag wolf_driven; flag tower_quiet; material black_iron
+    goto: gate
+  > success: The pack won't come through the smoke. You walk the rest of the way to the tower behind a wall of fire, very pleased with yourself.
+    do: flag wolf_driven; flag tower_quiet
+    goto: gate
+  > mixed: The fire works. It also works on you.
+    do: flag wolf_driven; flag tower_quiet
+    goto: gate
+    cost: The wind turns (lose 4 Grit) :: grit -4
+    cost: The smoke can be seen for miles (anyone at the tower knows you're coming) :: flag deserters_coming
+  > fail: The heather is too wet to burn. The wolves come through the smoke, and you run for the tower with them snapping at your heels.
+    do: grit -4; flag wolves_follow
+    goto: gate
+
+* around: Go the long way round, by the boundary stones.
+  temper: duty -1
+  challenge: kind=trial progress=17 danger=3 danger_text="The pack closes in." title="The long way round"
+  approach grace: Keep to the stones, moving fast and low.
+  approach lore: Follow the old boundary line: wolves don't cross it, or so they say.
+  approach guile: Leave your scent on a false trail, and double back.
+  > triumph: The pack follows your false trail halfway to the next kingdom. You reach the tower at dusk, unseen, and find the broken place in the west wall all by yourself.
+    do: flag tower_quiet; flag tower_map
+    goto: gate
+  > success: A long cold walk, but the wolves lose interest. The tower rises over you at last.
+    do: flag tower_quiet
+    goto: gate
+  > mixed: You make it, but the moor wears you down.
+    do: flag tower_quiet
+    goto: gate
+    cost: Hours in the cold (1 Fatigue) :: fatigue 1
+    cost: A black pool takes your boots and your temper (lose 4 Grit) :: grit -4
+  > fail: Lost in the cairns until dark, and then they find you. You reach the tower walls running, with the pack at your heels.
+    do: grit -4; flag wolves_follow
+    goto: gate
+
+## village: Greyfell Village
+act: 1
+tile: village
+at: 3.0, 0
+token: village_fed => lamp "Greyfell, fed"
+
+Greyfell is a dozen cottages and a chapel without a priest. The old reeve, a woman called Tamsin with a face like a walnut, comes out to meet you with a pitchfork.
+"Soldiers," she says. "Two winters ago they left in the night and the wolves came down the next day. Now there are deserters in the valley, wolves on the moor, and you. Which are you?"
+? seen:banner_home :: Over her door, somebody has painted the Greyfell company's colours, very badly.
+? standing:holloway>=1 :: "You're the one who helped the captain," she says. "Holloway sends word up the road, now and then."
+
+* help: Help with the wolf-killed sheep, and listen while you work.
+  temper: mercy +1
+  challenge: kind=test difficulty=easy tries=2 title="A day's work in Greyfell"
+  approach might: Dig, lift and carry until the job is done.
+  approach ward: Mend the broken fold so it stays mended.
+  approach lore: Find what's been killing the ewes by the marks it leaves.
+  > triumph: By dusk the fold is mended and Tamsin is talking. The night the company left, she saw a rider come down from the tower with a sealed letter, riding hard for the south. "Black and gold," she says. "The Marshal's colours." She gives you a loaf, and the key to the tower's chapel.
+    do: flag north_gate; flag chapel_key; flag village_fed
+    goto: gate
+  > success: The work loosens her tongue. A rider in the Marshal's black and gold came down from the tower that night, riding south as if the wolves were after him.
+    do: flag north_gate; flag village_fed
+    goto: gate
+  > mixed: She talks, but the work takes it out of you.
+    do: flag north_gate
+    goto: gate
+    cost: A long day's labour (1 Fatigue) :: fatigue 1
+    cost: Your hands are blistered raw (lose 3 Grit) :: grit -3
+  > fail: You do more harm than good, and Tamsin sends you off with a flea in your ear. As you go, a boy tugs your sleeve and whispers: "There's a way in through the west wall. The broken bit."
+    do: flag tower_map
+    goto: gate
+
+* share: Leave half your supplies for the village, and go on.
+  temper: mercy +1
+  do: flag village_fed; fatigue 1
+  goto: gate
+  reply: Tamsin looks at the food, then at you. "There's a key," she says. "To the chapel in the tower. My husband kept it." She gives it to you. You go on hungrier. [i]A bad trade, a soldier would say. Soldiers are often wrong about trades.[/i]
+
+* ask: Ask her straight out what happened the night the company left.
+  temper: honesty +1
+  challenge: kind=test difficulty=standard tries=2 title="Tamsin's memory"
+  approach grace: Sit with her by her fire, and let her come to it.
+  approach guile: Tell her the captain is dying, and wants to know. It's nearly true.
+  approach lore: Ask about the tower's history first, the long way round.
+  > triumph: "The north gate," she says. "I saw it open, from my window. Somebody let a rider in, and out again, in the Marshal's colours. An hour later the soldiers came down the road, quiet as ghosts, and your captain last, walking backwards, watching." She gives you the chapel key.
+    do: flag north_gate; flag chapel_key
+    goto: gate
+  > success: "I saw the north gate open," she says, "and a rider go out in black and gold. Then the soldiers came down. Your captain walked last."
+    do: flag north_gate
+    goto: gate
+  > mixed: She tells you, but it's not free.
+    do: flag north_gate
+    goto: gate
+    cost: She wants paying for her memory (Tamsin takes 6 coins) :: coin -6
+    cost: Word gets round that someone's asking about that night :: flag deserters_coming
+  > fail: Tamsin shuts the door in your face. The tower, then, without a story. [i]The story will be there when you arrive. They always are.[/i]
+    goto: gate
+
+## gate: The Tower Gate
+act: 2
+type: challenge
+on enter: grit -2
+tile: tower
+at: 4.3, 0.1
+token: north_gate => rune "The north gate, opened from inside"
+token: black_iron_found => chest "The bell-cage"
+
+The watchtower of Greyfell: four storeys of grey stone on a ridge with nothing but wind around it. The main gate is barred from inside. Round the north side, the postern gate stands open, and has for two years.
+? north_gate :: You look at the north gate for a long time. Opened from inside, by someone carrying the Lord Marshal's seal.
+? tower_map :: You know about the broken place in the west wall.
+? wolves_follow :: Behind you, on the moor, the howling starts up again. They've followed you.
+? deserters_coming :: Up the ridge path behind you, torches: Brask's men are coming.
+? brask_ally :: Brask stands at your shoulder, looking up at the tower he left. "Never thought I'd see her again," he says.
+[i]In you go, then. Mind the stair.[/i]
+
+* postern: Go in by the north gate, the way the traitor came.
+  if: north_gate
+  challenge: kind=test difficulty=easy tries=2 title="The traitor's gate"
+  approach lore: Follow the courier's way: there will be marks.
+  approach guile: Go in quiet, as he did, and see what he saw.
+  > triumph: In the dust of the guardroom, under the postern's bar, you find what the courier dropped two winters ago: a broken seal of black wax, stamped with Harrow's own arms. And above you, through the trapdoor, the old bell-cage of black iron.
+    do: flag broken_seal; flag black_iron_found; material black_iron
+    goto: chapel
+  > success: The postern swings open on dry hinges. Somebody has oiled them, recently. You're inside.
+    goto: chapel
+  > mixed: Inside, but not cleanly.
+    goto: chapel
+    cost: A rotten stair gives way under you (lose 4 Grit) :: grit -4
+    cost: The hinges scream (whoever's inside knows you're here) :: flag deserters_coming
+  > fail: The postern slams behind you, and the bar drops on the outside. Someone's been waiting. You find another way up, slowly, in the dark.
+    do: grit -3; fatigue 1
+    goto: chapel
+
+* wall: Climb the broken west wall.
+  if: tower_map or has:grace
+  challenge: kind=trial progress=16 danger=3 danger_text="Stones shift under your hands." title="The broken wall"
+  approach grace: Climb light and fast, before the wall notices.
+  approach might: Haul yourself up hand over hand.
+  approach ward [progress=18 danger=4]: Test every hold, and take all the time in the world.
+  > triumph: You come over the parapet into the old bell-cage. Black iron, dwarf-forged, cold as the moon. You pry a piece loose for Brannoc.
+    do: flag black_iron_found; material black_iron
+    goto: chapel
+  > success: Up and over, into the dark of the tower. Nobody saw. Probably.
+    goto: chapel
+  > mixed: You're up, but the wall made you pay for every stone.
+    goto: chapel
+    cost: You fall the last few feet (lose 4 Grit) :: grit -4
+    cost: The stones come down with a crash (anyone inside knows you're here) :: flag deserters_coming
+  > fail: Halfway up, the wall gives. You land hard in the ditch and go in by the front gate after all, limping, an hour later.
+    do: grit -5
+    goto: chapel
+
+* gate: Break the main gate down.
+  challenge: kind=test difficulty=standard tries=2 title="The main gate"
+  approach might: Put your shoulder to it, again and again.
+  approach ward: Brace a beam against it and lever the bar out.
+  approach lore: Find the soldiers' trick: there's always a trick.
+  > triumph: The bar splits, the gate swings, and you walk into the Greyfell watchtower like its captain coming home. On the gatehouse wall, carved into the stone, a soldier's tally of days. It stops at the night they left.
+    do: regard 1
+    goto: chapel
+  > success: The gate gives with a groan. You're in.
+    goto: chapel
+  > mixed: It gives, eventually.
+    goto: chapel
+    cost: Your shoulder takes the worst of it (lose 4 Grit) :: grit -4
+    cost: It's loud enough to wake the dead (anyone inside knows you're here) :: flag deserters_coming
+  > fail: It won't move. You end up going round to the north gate after all, cold, sore and in a temper.
+    do: grit -3
+    goto: chapel
+
+## chapel: The Tower Chapel
+act: 2
+type: waystone
+on enter: rest 11
+tile: shrine
+at: 5.6, -0.6
+token: took_oath => skull "The company's oath die, taken up"
+
+The tower's little chapel, two floors up, out of the wind. The altar is bare except for a wooden bowl, and in the bowl, a single die carved from bone, black with old handling. Above it, scratched into the stone: [i]WE SHALL NOT LEAVE THE WATCH.[/i] Under it, a hundred soldiers' marks.
+? chapel_key :: Tamsin's key turns in the chapel's inner door. Behind it, a soldier's cache: dry bread, a flask, clean bandages.
+? brask_ally :: Brask touches one of the marks on the wall. His. He doesn't say anything.
+A Waystone. You light a candle and empty your Pouch on the altar step.
+[i]The company swore on that die. Then the company left. An oath like that doesn't just go away. It waits for someone to pick it up.[/i]
+
+* take: Take up the company's oath die. Somebody should keep the watch.
+  temper: duty +1
+  do: flag took_oath; gain oath_d10; if chapel_key then grit 3
+  goto: top
+  reply: It's warm in your hand, and heavier than bone should be. Somewhere in the stones, something settles, satisfied. [i]Brave. The oath will hold you to it, mind. It has been waiting a long time for someone to hold.[/i]
+
+* leave: Leave it in its bowl. It isn't your oath.
+  do: if chapel_key then grit 3
+  goto: top
+  reply: You leave it where it lies. [i]Wise, perhaps. Somebody will have to answer that oath eventually. It needn't be you.[/i]
+
+## top: The Top of the Tower
+act: 3
+type: challenge
+tile: keep
+at: 7, 0
+token: got_banner => flag "The Greyfell banner"
+token: got_letter => seal "The Marshal's letter"
+token: tower_burned => fire "The tower top, burned"
+
+The top of the tower is open to the sky, and on fire. Somebody lit the old beacon tonight, and the wind took it into the roof timbers.
+? deserters_coming and not brask_ally :: Brask's men lit it. You hear them on the stair below, coming up.
+? not deserters_coming :: The beacon caught in the wind, or someone wanted it to. The timbers roar.
+On the north wall, the Greyfell banner, grey and gold, scorched at the edges, still nailed where the company left it. On the south wall, an iron strongbox with the Lord Marshal's arms on the lid, the lock already smoking.
+? north_gate :: Whatever the courier brought that night, whatever he left, it's in that box.
+[i]Time for one of them. Choose what you carry down.[/i]
+
+* stair: Hold the stair against Brask's men first.
+  if: deserters_coming and not brask_ally and not stair_held
+  temper: duty +1
+  combat: foe=deserters
+  mod: broken_seal => resolve=-4
+  mod: wolves_follow => ambushed=1
+  > triumph: They go back down the stair faster than they came up. On the landing, Brask's own die rolls to your feet.
+    do: flag stair_held; gain deserter_d6
+    goto: top
+  > success: They break and run, back down into the dark. The stair is yours.
+    do: flag stair_held
+    goto: top
+  > mixed: You hold it, but you're bleeding, and the fire has spread.
+    do: flag stair_held
+    goto: top
+    cost: An axe-cut across the ribs (lose 5 Grit) :: grit -5
+    cost: The fire takes the north wall (the banner is harder to reach) :: flag banner_burning
+  > fail: They drive you back into the smoke and go down the stair laughing, with everything worth carrying. Only the banner and the box are left, and the fire.
+    do: flag stair_held; grit -3
+    goto: top
+
+* banner: Tear down the banner, before the fire takes it.
+  temper: duty +1
+  challenge: kind=trial progress=17 danger=3 danger_text="The fire reaches the banner." title="Saving the banner"
+  mod: banner_burning => progress=3
+  mod: deserters_coming and not stair_held and not brask_ally => progress=2
+  approach grace: Run along the burning wall walk and cut it free.
+  approach might: Wrench the whole banner pole out of the stone.
+  approach ward [progress=19 danger=4]: Soak your cloak, wrap yourself in it, and walk through.
+  > triumph: You come down the stair with the banner over your shoulder and your eyebrows smoking, and you do not stop until you're out on the ridge, where you plant it in the heather and look at it a long time.
+    do: flag got_banner; regard 1
+    goto: ending
+  > success: You get it down, scorched but whole. Behind you the strongbox goes into the fire and the roof comes down on it.
+    do: flag got_banner
+    goto: ending
+  > mixed: You have it. The fire had a share.
+    do: flag got_banner
+    goto: ending
+    cost: Burnt hands (take a Wound) :: wound ""
+    cost: Half the banner burns away (it comes home in rags) :: flag banner_ragged
+  > fail: The banner goes up like paper in your hands. You get out with your life, and nothing else.
+    do: grit -4; flag tower_burned
+    goto: ending
+
+* box: Break open the strongbox and take what's inside.
+  temper: honesty +1
+  challenge: kind=test difficulty=standard tries=2 title="The Marshal's strongbox"
+  mod: deserters_coming and not stair_held and not brask_ally => progress=2
+  approach guile: Pick the half-melted lock, fast.
+  approach might: Smash it open with the beacon's iron poker.
+  approach lore: Read the lock's maker's mark and work the trick of it.
+  > triumph: Inside, a letter in Lord Marshal Harrow's own hand, ordering the north gate opened to the enemy on a certain night, for a certain sum. And under it, the sum itself, never collected.
+    do: flag got_letter; coin 25
+    goto: ending
+  > success: A letter, sealed with Harrow's arms, ordering the north gate opened. Proof. You put it inside your shirt, next to your skin, and run.
+    do: flag got_letter
+    goto: ending
+  > mixed: You have the letter. The fire nearly had you.
+    do: flag got_letter
+    goto: ending
+    cost: The roof comes down as you run (take a Wound) :: wound ""
+    cost: The letter is half burned (the seal survives, the signature doesn't) :: flag letter_burned
+  > fail: The box won't open, and the roof comes down. You get out. Nothing else does.
+    do: grit -4; flag tower_burned
+    goto: ending
+
+* both: "Brask, the banner. I'll take the box."
+  if: brask_ally
+  temper: duty +1
+  challenge: kind=test difficulty=hard tries=2 title="Both at once"
+  approach ward: Hold the stair and the smoke back while he works.
+  approach grace: Run for the box while he runs for the banner.
+  approach might: Tear the box out of the wall and carry it down whole.
+  > triumph: Brask comes down the stair with the banner wrapped round him like a cloak, and you come down behind him with the Marshal's letter, and the two of you stand on the ridge and watch the tower burn, and neither says anything for a long while.
+    do: flag got_banner; flag got_letter; regard 1
+    goto: ending
+  > success: Both. Brask has the banner, scorched, and you have the letter. Neither of you has eyebrows.
+    do: flag got_banner; flag got_letter
+    goto: ending
+  > mixed: Both, but at a price.
+    do: flag got_banner; flag got_letter
+    goto: ending
+    cost: Brask is badly burned getting the banner down (he won't fight again for a while) :: flag brask_burned
+    cost: You take the worst of the roof (take a Wound) :: wound ""
+  > fail: The roof comes down between you. Brask gets out with the banner. You get out with nothing but smoke in your lungs.
+    do: flag got_banner; grit -4
+    goto: ending
+
+## ending: How It Ended
+act: 3
+type: ending
+
++ fallen: The Last Watch
+  if: defeat or wounds>=3
+  [i]And so the tower kept one more.[/i]
+  They found you at dawn on the ridge, the shepherds of Greyfell, and carried you down to Tamsin's fire. The tower burned all night. The banner, the box, whatever truth was in it: ash, on the wind, over the border.
+  [i]Ashgrove still sits at his table. He doesn't blame you. That's the worst of it. Come back when you're mended. The tower isn't going anywhere, and neither is he.[/i]
+  do: mark watch_lost; chronicle "The Greyfell watchtower burned with everything in it."
+
++ both: Banner and Letter
+  if: got_banner and got_letter
+  renown: 4
+  You walk into the tavern with the Greyfell banner over your shoulder and Harrow's letter in your hand, and set them both on the captain's table.
+  Ashgrove reads the letter twice. Then he stands, takes the banner, and hangs it on the wall above his table himself, and nobody in the room says a word.
+  ? brask_ally :: Brask comes in behind you, cap in hand. The captain looks at him a long time, then pulls out a chair.
+  "Harrow," he says at last. "Lord Marshal Harrow. He's raising men in the north, they say. Calling himself the rightful king." He folds the letter very carefully. "This will interest the Crown."
+  [i]A banner and a truth. Most soldiers get neither.[/i]
+  do: gain banner_d8; standing Holloway 1; chronicle "The Greyfell banner hangs in the tavern again."; chronicle "Harrow's letter: the Lord Marshal sold the Greyfell pass."; mark banner_home; mark harrow_letter; rumour harrow_traitor "Lord Marshal Harrow sold the Greyfell pass to the enemy."; if north_gate then mark north_gate; if brask_spared then mark brask_spared; if brask_hanged then mark brask_hanged; if brask_ally then mark brask_ally; if took_oath then mark took_oath
+
++ banner: The Banner Comes Home
+  if: got_banner
+  renown: 3
+  The banner goes up on the wall above the captain's table, scorched, smelling of smoke.
+  ? banner_ragged :: What's left of it. Rags of grey and gold. Ashgrove hangs them anyway.
+  Ashgrove doesn't speak for a long time. Then he says, "Thank you," as if it costs him something, and buys you a drink with money he doesn't have.
+  ? north_gate :: You tell him about the north gate, and the courier in black and gold. His jaw goes tight. "Harrow," he says. "I knew it. I could never prove it."
+  [i]A banner on a wall. Some would say it's only cloth. Those people have never stood under one.[/i]
+  do: gain banner_d8; standing Holloway 1; chronicle "The Greyfell banner hangs in the tavern again."; mark banner_home; if north_gate then mark north_gate; if brask_spared then mark brask_spared; if brask_hanged then mark brask_hanged; if brask_ally then mark brask_ally; if took_oath then mark took_oath
+
++ letter: The Letter
+  if: got_letter
+  renown: 3
+  You give Ashgrove the Marshal's letter. He reads it standing up, and his hands do not shake until the very end.
+  ? letter_burned :: The signature is gone, but the seal is Harrow's. It'll do.
+  "Harrow," he says. "Lord Marshal Harrow sold the pass, and let them call me the coward." He puts the letter inside his coat. "The banner?" You tell him. He nods. "Better to burn than to hang over a lie."
+  [i]The truth, then. It rarely goes on a wall. It has other uses.[/i]
+  do: material binding_ward; if letter_burned then mark letter_burned; chronicle "Harrow's letter: the Lord Marshal sold the Greyfell pass."; mark harrow_letter; rumour harrow_traitor "Lord Marshal Harrow sold the Greyfell pass to the enemy."; if north_gate then mark north_gate; if brask_spared then mark brask_spared; if brask_hanged then mark brask_hanged; if brask_ally then mark brask_ally; if took_oath then mark took_oath
+
++ ashes: Ashes
+  Nothing comes back from the tower but you and the smell of smoke.
+  Ashgrove listens to the whole story without a word. When you've finished, he pours two cups and pushes one across. "You went," he says. "That's more than anyone else did."
+  ? north_gate :: You tell him about the north gate. He closes his eyes. "So I wasn't wrong," he says. "Small comfort. I'll take it."
+  [i]Not every tale gives you something to carry home. This one gave you a captain who owes you a drink.[/i]
+  renown: 1
+  do: chronicle "The Greyfell watchtower burned. Nothing came back from it."; mark tower_burned; if north_gate then mark north_gate; if brask_spared then mark brask_spared; if brask_hanged then mark brask_hanged; if brask_ally then mark brask_ally; if took_oath then mark took_oath

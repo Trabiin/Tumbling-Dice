@@ -9,11 +9,16 @@ const Dice := preload("res://scripts/rules/dice.gd")
 const Foes := preload("res://scripts/rules/foes.gd")
 const Cond := preload("res://scripts/rules/conditions.gd")
 const Board := preload("res://scripts/rules/board.gd")
+const Forge := preload("res://scripts/rules/forge.gd")
+const Campaign := preload("res://scripts/rules/campaign.gd")
+## Condition prefixes that read the campaign (checked against what exists, where possible).
+const SEASONS := ["spring", "summer", "autumn", "winter"]
 
 const TIERS := ["fail", "mixed", "success", "triumph"]
 const EFFECTS := ["if", "flag", "add", "random_flag", "grit", "fate", "coin", "fatigue", "wound", "gain", "ally",
 	"temper", "regard", "standing", "rumour", "chronicle", "shard", "mark", "exhaust_best", "lose_lowest",
-	"rest", "practice_reset", "toll", "lose_wager", "return_gold", "wager_pick"]
+	"rest", "practice_reset", "toll", "lose_wager", "return_gold", "wager_pick", "material", "renown", "heal",
+	"lift_curse", "crack_best", "give_up"]
 const BUILTIN_FLAGS := ["climax", "defeat", "weather"]
 const TEMPER := ["mercy", "honesty", "duty"]
 
@@ -46,9 +51,44 @@ class _Lint:
 		for f in Cond.flags_read(expr):
 			if not read_flags.has(f):
 				read_flags[f] = where
+		campaign_reads(expr, where)
+
+	## Campaign conditions: known factions, seasons and condition words.
+	func campaign_reads(expr: String, where: String) -> void:
+		for alt in expr.split(" or "):
+			for term in alt.split(" and "):
+				var a := term.strip_edges()
+				if a.begins_with("not "):
+					a = a.substr(4).strip_edges()
+				if a.begins_with("standing:"):
+					var f := a.substr(9)
+					for op in Cond.OPS:
+						var at := f.find(op)
+						if at > 0:
+							f = f.substr(0, at)
+							break
+					if not Campaign.FACTIONS.has(f):
+						add(where, "Unknown faction '%s' in a condition. Use one of: %s." % [f, ", ".join(Campaign.FACTIONS.keys())])
+				elif a.begins_with("season"):
+					var v := a.substr(a.find("==") + 2) if a.contains("==") else ""
+					if not v in SEASONS:
+						add(where, "season== takes a season (spring, summer, autumn, winter).")
+				elif a.contains(":"):
+					var pre := a.substr(0, a.find(":"))
+					if not pre in ["has", "mat", "seen", "rumour", "told", "ended", "missed", "ending", "standing", "temper"]:
+						add(where, "Unknown condition '%s:'." % pre)
 
 	func check_tale(tale: Dictionary) -> void:
 		var scenes: Dictionary = tale.get("scenes", {})
+		# A tale with an arc is offered by a patron: it needs a pitch, and expires: names a season.
+		if tale.get("arc", "") != "":
+			if tale.get("pitch", "") == "":
+				add("", "A tale in an arc needs a pitch: (what the patron says when offering it).")
+			if tale.get("expires", "") != "" and not tale.expires in SEASONS:
+				add("", "expires: takes a season (spring, summer, autumn, winter), not '%s'." % tale.expires)
+			if tale.get("expires", "") != "" and tale.get("missed", "") == "":
+				add("", "A tale that expires needs a missed: line, told when it goes by without you.")
+			campaign_reads(tale.get("offer", ""), "")
 		if not scenes.has(tale.get("start", "")):
 			add("", "The start scene '%s' does not exist." % tale.get("start", ""))
 		var edges := {}
@@ -217,3 +257,17 @@ class _Lint:
 			"temper":
 				if e.size() < 3 or not e[1] in TEMPER or not e[2] is int:
 					add(where, "temper takes a track (mercy, honesty, duty) and a number.")
+			"material":
+				if e.size() < 2 or not Forge.MATERIALS.has(str(e[1])):
+					add(where, "Unknown material '%s'. Known: %s." % [str(e[1]) if e.size() > 1 else "", ", ".join(Forge.MATERIALS.keys())])
+			"renown":
+				if e.size() < 2 or not e[1] is int:
+					add(where, "renown takes a number.")
+			"lift_curse", "give_up":
+				if (e.size() > 1 or e[0] == "give_up") and (e.size() < 2 or not e[1] in Dice.ALL_IDS):
+					add(where, "Unknown die '%s'." % str(e[1]))
+			"standing":
+				if e.size() < 3 or not e[2] is int:
+					add(where, "standing takes a faction and a number.")
+				elif not Campaign.FACTIONS.has(str(e[1]).to_lower()) and not Campaign.FACTIONS.values().has(str(e[1])):
+					add(where, "Unknown faction '%s'. Use one of: %s." % [str(e[1]), ", ".join(Campaign.FACTIONS.values())])

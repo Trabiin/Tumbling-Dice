@@ -47,6 +47,7 @@ const BoardRules := preload("res://scripts/rules/board.gd")
 const Fig := preload("res://scripts/figures.gd")
 const Kits := preload("res://scripts/kits.gd")
 const Hub := preload("res://scripts/game/tavern_hub.gd")
+const Patrons := preload("res://scripts/rules/patrons.gd")
 
 const PANEL_W := 392.0
 const CARD_W := 856.0
@@ -125,6 +126,9 @@ var bot = Bot.new()
 var practice = null              # PracticeLog while at the practice table
 var practice_reason := ""
 var home_campaign = null         # the real campaign, set aside during practice
+var opt_tale := ""
+var opt_night := 0
+var night_lines: Array = []      # what happened while the night passed, told back at the tavern
 
 
 func _ready() -> void:
@@ -162,6 +166,10 @@ func _ready() -> void:
 	campaign = Campaign.new()
 	if opt_new or not campaign.load_save():
 		campaign.new_campaign()
+	if opt_night > 0:
+		# For screenshots and testing: jump the calendar (tales that ran out are missed on the way).
+		Patrons.pass_nights(campaign, maxi(0, opt_night - campaign.night))
+	Mats.set_window_season(campaign.season())
 	_build_ui()
 	hub = Hub.new(self)
 	_show_title()
@@ -217,6 +225,9 @@ func _ready() -> void:
 			hub.sel_face = 7
 			campaign.shards.append("Guard")
 			hub.show_bench()
+		elif opt_hub == "maud":
+			campaign.wounds = ["Cracked Ribs", "Arrow in the Shoulder"]
+			hub.show_maud()
 		await _wait(40)
 		await _shot("hub_" + opt_hub)
 		get_tree().quit()
@@ -229,7 +240,12 @@ func _ready() -> void:
 			print("CONTINUE from ", _read_tale_save().scene)
 			_continue_tale(_read_tale_save())
 		else:
-			_begin_tale()
+			_begin_tale(opt_tale_path())
+
+
+## --tale=bell_market picks a tale by id for autoplay and board tests.
+func opt_tale_path() -> String:
+	return "res://tales/%s.tale" % opt_tale if opt_tale != "" else ""
 
 
 func _parse_args() -> void:
@@ -254,6 +270,8 @@ func _parse_args() -> void:
 		elif a.begins_with("--seed="): opt_seed = int(a.substr(7))
 		elif a.begins_with("--board-test="): opt_board_test = a.substr(13)
 		elif a.begins_with("--hub="): opt_hub = a.substr(6)
+		elif a.begins_with("--tale="): opt_tale = a.substr(7)
+		elif a.begins_with("--night="): opt_night = int(a.substr(8))
 		elif a == "--figures": opt_figures = true
 		elif a.begins_with("--shot-phases="): opt_shot_phases = Array(a.substr(14).split(","))
 	if opt_shots != "":
@@ -295,10 +313,25 @@ func _show_chronicle() -> void:
 	v.add_theme_constant_override("separation", 6)
 	sc.add_child(v)
 	var c = campaign
-	var ending_names := {"rest": "Rest", "silence": "Silence", "greed": "Greed", "bargain": "The Bargain", "drowned": "Drowned"}
-	v.add_child(UI.label("Tales told: %d.   Coin: %d.   Endings found in The Drowned Bell: %d of 5%s" % [c.tales_played, c.coin,
-		c.endings_seen.size(), (" (" + ", ".join(c.endings_seen.map(func(e): return ending_names.get(e, e))) + ")") if not c.endings_seen.is_empty() else ""], 15, UI.INK))
+	v.add_child(UI.label("%s.   Tales told: %d.   Renown: %d.   Coin: %d." % [c.calendar_text(), c.tales_played, c.renown, c.coin], 15, UI.INK))
+	# Every tale in the two arcs: how it ended, or that it went by.
+	var tale_lines: Array = []
+	for h in Patrons.catalog():
+		var ends := _tale_endings(Tales.load_tale(h.path))
+		var names: Array = []
+		for en in ends:
+			if c.endings_seen.has("%s:%s" % [h.id, en.id]):
+				names.append(en.title)
+		var status := ""
+		if c.missed.has(h.id):
+			status = "went by without you"
+		elif c.told(h.id):
+			status = "endings found %d of %d: %s" % [names.size(), ends.size(), ", ".join(names)]
+		else:
+			status = "not yet told"
+		tale_lines.append("%s (%s): %s" % [h.title, Patrons.patron_of(h).get("name", ""), status])
 	var sections := [
+		["Tales", tale_lines, ""],
 		["What the Teller remembers", c.chronicle, "Nothing yet. Tell a tale."],
 		["Rumours", c.rumours, "None heard."],
 	]
@@ -493,7 +526,7 @@ func _place_foe_figure(kind: String) -> void:
 ## For screenshots and checking layouts: put the figurine somewhere in the tale with some flags
 ## set, show the board and quit. --board-test=plea,arrival,tolls,fork+climax=freed+gold_taken
 func _board_test() -> void:
-	_begin_tale()
+	_begin_tale(opt_tale_path())
 	await _wait(5)
 	var parts := opt_board_test.split("+")
 	runner.state.visited = Array(parts[0].split(","))
@@ -842,14 +875,14 @@ func _show_title() -> void:
 	var t := UI.label("Tales of the Tumbling Dice", 28, Color("#6a1010"), "title")
 	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(t)
-	var st := UI.label("The Drowned Bell", 20, UI.INK, "ui")
+	var st := UI.label(campaign.calendar_text().capitalize() if campaign.tales_played > 0 else "A year at the tavern", 20, UI.INK, "ui")
 	st.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(st)
 	v.add_child(UI.rule())
 	var intro := "Pull up a stool by the fire. Your dice are yours: what you carry, what you throw, and what they have been through."
 	if campaign.tales_played > 0:
-		intro = "You have told %d tale%s at this table. Endings found: %s." % [campaign.tales_played,
-			"" if campaign.tales_played == 1 else "s", ", ".join(campaign.endings_seen) if not campaign.endings_seen.is_empty() else "none yet"]
+		intro = "You have told %d tale%s at this table and found %d ending%s. Renown %d." % [campaign.tales_played,
+			"" if campaign.tales_played == 1 else "s", campaign.endings_seen.size(), "" if campaign.endings_seen.size() == 1 else "s", campaign.renown]
 	v.add_child(UI.wrap_label(intro, 17))
 	if not campaign.chronicle.is_empty():
 		var ch := UI.wrap_label("Chronicle: " + " ".join(campaign.chronicle.slice(-3)), 14, UI.INK_SOFT, "italic")
@@ -861,12 +894,12 @@ func _show_title() -> void:
 		cb.pressed.connect(func(): _continue_tale(snap))
 		v.add_child(cb)
 	var hb := UI.seal_button("Into the tavern", 18 if snap.is_empty() else 15)
-	hb.tooltip_text = "Wren's table, Hollis's shelf with your dice, and old Brannoc the Dicewright."
+	hb.tooltip_text = "The patrons' tables, Hollis's shelf with your dice, old Brannoc the Dicewright, and Sister Maud's corner."
 	hb.pressed.connect(_show_tavern)
 	v.add_child(hb)
 	if not snap.is_empty():
 		var b := UI.seal_button("Begin the tale again from the start", 13, Color("#5a4a3a"))
-		b.pressed.connect(_begin_tale)
+		b.pressed.connect(func(): _begin_tale(str(snap.tale_path)))
 		v.add_child(b)
 	var pb := UI.seal_button("Practice table: 20 challenges", 14, Color("#2a5a6a"))
 	pb.tooltip_text = "No story, no stakes: twenty challenges to learn the dice. Your choices are logged for playtesting."
@@ -908,9 +941,12 @@ func _show_title() -> void:
 	v.add_child(help)
 
 
-func _begin_tale() -> void:
+func _begin_tale(path := "") -> void:
 	_clear_tale_save()
-	tale_path = Tales.DROWNED_BELL
+	if path == "":
+		var offers := Patrons.offers(campaign)
+		path = offers[0].path if not offers.is_empty() else Tales.DROWNED_BELL
+	tale_path = path
 	_start_runner(Tales.load_tale(tale_path))
 
 
@@ -1876,6 +1912,8 @@ func _show_ending() -> void:
 	if practice != null:
 		_show_practice_summary()
 		return
+	# The tale took the night.
+	night_lines = Patrons.pass_nights(campaign, 1)
 	campaign.save()
 	_clear_tale_save()
 	UI.clear(overlay)
@@ -1894,9 +1932,17 @@ func _show_ending() -> void:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 6)
 	p.add_child(v)
-	var names := {"rest": "Rest", "silence": "Silence", "greed": "Greed", "bargain": "The Bargain", "drowned": "Drowned"}
-	v.add_child(UI.label("Ending: %s" % names.get(st.ending, st.ending), 26, Color("#6a1010"), "title"))
-	v.add_child(UI.label("Endings found: %d of 5   ·   Tales told: %d   ·   Coin %d" % [campaign.endings_seen.size(), campaign.tales_played, campaign.coin], 14, UI.INK_SOFT))
+	var all_endings: Array = _tale_endings(runner.tale)
+	var etitle: String = st.ending
+	for en in all_endings:
+		if en.id == st.ending:
+			etitle = en.title
+	var tid: String = runner.tale.get("id", "")
+	var found: int = campaign.endings_seen.filter(func(e): return String(e).begins_with(tid + ":")).size()
+	v.add_child(UI.label("Ending: %s" % etitle, 26, Color("#6a1010"), "title"))
+	v.add_child(UI.label("Endings found in %s: %d of %d   ·   Renown %d   ·   Coin %d" % [runner.tale.get("title", ""), found, all_endings.size(), campaign.renown, campaign.coin], 14, UI.INK_SOFT))
+	if not campaign.wounds.is_empty():
+		v.add_child(UI.wrap_label("You carry home: %s. Sister Maud can treat them." % ", ".join(campaign.wounds), 14, Color("#8a2a1a")))
 	if not st.gained.is_empty():
 		v.add_child(UI.label("Dice you came home with", 15, UI.INK))
 		var row := HBoxContainer.new()
@@ -1928,6 +1974,13 @@ func _show_ending() -> void:
 		await _wait(20)
 		await _shot("ending_final")
 		get_tree().quit()
+
+
+static func _tale_endings(t: Dictionary) -> Array:
+	for id in t.get("scenes", {}):
+		if t.scenes[id].get("type", "") == "ending":
+			return t.scenes[id].get("endings", [])
+	return []
 
 
 func _show_practice_summary() -> void:

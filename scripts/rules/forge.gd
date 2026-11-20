@@ -4,8 +4,10 @@ extends RefCounted
 ## the campaign, checks it can be done, changes it and returns a line for the parchment, so the
 ## table and the tests use exactly the same calls.
 ##
-## M4 has the forging the slice can feed: Recarve (Coin), Inscribe (a rune shard + Coin) and
-## Melt (gives shards back). Loading, Rebind and Mend come with M5's materials and curses.
+## Recarve (Coin), Inscribe (a rune shard + Coin), Melt (gives shards back), and since M5 the
+## forging that needs materials found in tales: Load (lead + Coin), Rebind (a binding + Coin),
+## Mend (Coin, for a cracked face), and giving Brannoc rare materials to earn his trust. Load
+## needs trust 1 and Rebind trust 2: he won't weight a die for a stranger.
 ##
 ## Every action returns {ok: bool, text: String}.
 
@@ -25,6 +27,39 @@ const STOCK := [
 	{"base": "oak_grace", "price": 9}, {"base": "oak_ward", "price": 9}, {"base": "brass_d4", "price": 12},
 	{"base": "bone_d4", "price": 12},
 ]
+const LOAD_COST := 15
+const REBIND_COST := 10
+const MEND_COST := 4
+const LOAD_TRUST := 1
+const REBIND_TRUST := 2
+## Forging materials. Rare ones can be given to Brannoc for his trust.
+const MATERIALS := {
+	"lead": {"name": "Lead", "plural": "Lead", "text": "A slug of soft lead. Brannoc can sink it behind a face."},
+	"binding_might": {"name": "a Binding of Might", "plural": "Bindings of Might", "text": "A strip of a warrior's oath-cord. It can rebind a die to Might."},
+	"binding_guile": {"name": "a Binding of Guile", "plural": "Bindings of Guile", "text": "A card sharp's ribbon. It can rebind a die to Guile."},
+	"binding_lore": {"name": "a Binding of Lore", "plural": "Bindings of Lore", "text": "A page of a lost book. It can rebind a die to Lore."},
+	"binding_grace": {"name": "a Binding of Grace", "plural": "Bindings of Grace", "text": "A dancer's ribbon. It can rebind a die to Grace."},
+	"binding_ward": {"name": "a Binding of Ward", "plural": "Bindings of Ward", "text": "A link of an old shield-chain. It can rebind a die to Ward."},
+	"bellmetal": {"name": "Bellmetal scrap", "plural": "Bellmetal scrap", "rare": true, "text": "A sliver of the drowned abbey's bronze. Brannoc would give a lot to work it."},
+	"heartwood": {"name": "Heartwood", "plural": "Heartwood", "rare": true, "text": "From the centre of a lightning-struck oak. Rare, and Brannoc knows it."},
+	"black_iron": {"name": "Black iron", "plural": "Black iron", "rare": true, "text": "From the old watchtower's bell-cage. Dwarf-forged, they say."},
+	"tide_pearl": {"name": "a Tide Pearl", "plural": "Tide Pearls", "rare": true, "text": "Grey and cold, from the Tide Court's floor."},
+}
+
+## The midsummer fair brings fine dice in from the river traders (summer only).
+const FAIR_STOCK := [
+	{"base": "jade_d8", "price": 24}, {"base": "bone_d6", "price": 22}, {"base": "amethyst_d6", "price": 22},
+	{"base": "brass_d8", "price": 24},
+]
+
+
+static func stock(campaign) -> Array:
+	var out: Array = STOCK.duplicate()
+	if campaign.has_method("season") and campaign.season() == "summer" and not campaign.year_over():
+		out.append_array(FAIR_STOCK)
+	return out
+
+
 ## Runes Brannoc can cut (Bane is never inscribed on purpose).
 const INSCRIBABLE := ["strike", "guard", "mend", "spark", "echo", "keen", "kin"]
 
@@ -54,6 +89,149 @@ static func unworkable(d: Dictionary) -> String:
 	if d.has("loaded_face"):
 		return "Loaded. Brannoc says recarving it would throw the weight off."
 	return ""
+
+
+static func material_name(m: String, n := 1) -> String:
+	var info: Dictionary = MATERIALS.get(m, {"name": m, "plural": m})
+	return info.name if n == 1 else "%d %s" % [n, info.plural]
+
+
+static func material_text(m: String, n := 1) -> String:
+	return material_name(m, n)
+
+
+static func is_rare(m: String) -> bool:
+	return MATERIALS.get(m, {}).get("rare", false)
+
+
+static func materials_text(campaign) -> String:
+	var parts: Array[String] = []
+	for m in campaign.materials:
+		parts.append(material_name(m, int(campaign.materials[m])) if int(campaign.materials[m]) > 1 else MATERIALS.get(m, {"name": m}).name)
+	return ", ".join(parts) if not parts.is_empty() else "none"
+
+
+# ------------------------------------------------------------------ trust
+
+## Give Brannoc a rare material: he keeps it, and trusts you a little more.
+static func can_give(campaign, m: String) -> Dictionary:
+	if not is_rare(m):
+		return _r(false, "Brannoc only wants rare stuff.")
+	if campaign.material_count(m) < 1:
+		return _r(false, "You have none.")
+	return _r(true, "")
+
+
+static func give(campaign, m: String) -> Dictionary:
+	var c := can_give(campaign, m)
+	if not c.ok:
+		return c
+	campaign.add_material(m, -1)
+	campaign.trust += 1
+	var lines := {1: "\"Now that's something.\" He turns it in the lamplight a long time. \"Bring me a d6 and some lead sometime. I'll show you a trick.\"",
+		2: "He wraps it in a cloth like it's a sleeping child. \"You can bring me bindings now. I'll turn a die for you.\""}
+	return _r(true, "You give Brannoc %s. %s (Brannoc's trust: %d)" % [material_name(m), lines.get(campaign.trust, "He nods, and puts it on the high shelf with his good tools."), campaign.trust])
+
+
+# ------------------------------------------------------------------ loading
+
+## Load: sink lead behind the face opposite the one you want, so that face lands about three
+## times in four (measured: dice.gd LOADED_HIT). Only d6s: Brannoc has only ever weighted
+## sixes true, and the odds shown must be measured, never guessed.
+static func can_load(campaign, d: Dictionary, face: int) -> Dictionary:
+	var why := unworkable(d)
+	if why != "":
+		return _r(false, why)
+	if int(d.sides) != 6:
+		return _r(false, "\"Only sixes. I've never weighted anything else true, and I won't guess.\"")
+	if campaign.trust < LOAD_TRUST:
+		return _r(false, "\"Loading? For you?\" Brannoc laughs. \"Bring me something rare first, and we'll see.\"")
+	if face < 0 or face >= d.faces.size():
+		return _r(false, "Pick the face you want it to favour.")
+	if campaign.material_count("lead") < 1:
+		return _r(false, "You need Lead.")
+	if campaign.coin < LOAD_COST:
+		return _r(false, "Loading costs %d Coin." % LOAD_COST)
+	return _r(true, "")
+
+
+static func load_die(campaign, d: Dictionary, face: int) -> Dictionary:
+	var c := can_load(campaign, d, face)
+	if not c.ok:
+		return c
+	campaign.add_material("lead", -1)
+	campaign.coin -= LOAD_COST
+	campaign.forged += 1
+	d.loaded_face = face + 1
+	d.load = 0.3
+	d.history.append("Loaded by Brannoc to favour its %d." % int(d.faces[face].n))
+	return _r(true, "Brannoc drills, pours, plugs and sands until you can't see where. \"It'll favour the %d. Card sharps can tell, mind.\" (-%d Coin, -1 Lead)" % [int(d.faces[face].n), LOAD_COST])
+
+
+# ------------------------------------------------------------------ rebinding
+
+static func can_rebind(campaign, d: Dictionary, aspect: String) -> Dictionary:
+	var why := unworkable(d)
+	if why != "" and not d.has("loaded_face"):
+		return _r(false, why)
+	if d.get("ally", false) or d.get("cursed", false):
+		return _r(false, why)
+	if d.get("rebound", false):
+		return _r(false, "It has been rebound once already. It won't take another.")
+	if campaign.trust < REBIND_TRUST:
+		return _r(false, "\"Rebinding is old work. I'd want to know you better.\"")
+	if not aspect in Dice.ASPECTS or aspect == d.aspect:
+		return _r(false, "Pick another aspect.")
+	if campaign.material_count("binding_" + aspect) < 1:
+		return _r(false, "You need %s." % material_name("binding_" + aspect))
+	if campaign.coin < REBIND_COST:
+		return _r(false, "Rebinding costs %d Coin." % REBIND_COST)
+	return _r(true, "")
+
+
+## Rebind: the die changes aspect, once in its life, and forgets half its notches.
+static func rebind(campaign, d: Dictionary, aspect: String) -> Dictionary:
+	var c := can_rebind(campaign, d, aspect)
+	if not c.ok:
+		return c
+	campaign.add_material("binding_" + aspect, -1)
+	campaign.coin -= REBIND_COST
+	campaign.forged += 1
+	var before: String = d.aspect
+	d.aspect = aspect
+	d.rebound = true
+	var lost := int(d.get("notches", 0)) - int(d.get("notches", 0)) / 2
+	d.notches = int(d.get("notches", 0)) / 2
+	d.name = String(d.name).replace(Dice.ASPECT_NAMES[before], Dice.ASPECT_NAMES[aspect])
+	d.history.append("Rebound by Brannoc from %s to %s." % [Dice.ASPECT_NAMES[before], Dice.ASPECT_NAMES[aspect]])
+	return _r(true, "Brannoc wraps the binding round the die and holds it in the coals until the cord is ash. It is a die of %s now%s. (-%d Coin)" % [
+		Dice.ASPECT_NAMES[aspect], ", and it has forgotten %d notch%s" % [lost, "" if lost == 1 else "es"] if lost > 0 else "", REBIND_COST])
+
+
+# ------------------------------------------------------------------ mending
+
+static func can_mend(campaign, d: Dictionary) -> Dictionary:
+	if d.get("ally", false):
+		return _r(false, "It isn't yours to mend.")
+	if Dice.cracked_faces(d).is_empty():
+		return _r(false, "Nothing to mend.")
+	if campaign.coin < MEND_COST:
+		return _r(false, "Mending costs %d Coin a face." % MEND_COST)
+	return _r(true, "")
+
+
+static func mend(campaign, d: Dictionary) -> Dictionary:
+	var c := can_mend(campaign, d)
+	if not c.ok:
+		return c
+	var i: int = Dice.cracked_faces(d)[0]
+	var f: Dictionary = d.faces[i]
+	f.n = int(f.n) + int(f.get("crack", 1))
+	f.erase("crack")
+	campaign.coin -= MEND_COST
+	campaign.forged += 1
+	d.history.append("Mended by Brannoc.")
+	return _r(true, "A little glue, a pin, a lot of muttering. The %s's %d is whole again. (-%d Coin)" % [d.name, int(f.n), MEND_COST])
 
 
 # ------------------------------------------------------------------ the Dicewright
@@ -190,9 +368,19 @@ static func sell(campaign, d: Dictionary) -> Dictionary:
 	return _r(true, "Hollis weighs the %s in his palm and counts out %d Coin." % [d.name, price])
 
 
+## Kettle's fences keep Hollis's shelf stocked: friends of the Thieves' Guild pay less, its
+## enemies more. 1 Coin per point of standing, never below half price.
+static func price(campaign, item: Dictionary) -> int:
+	var st := 0
+	if campaign.has_method("standing_of"):
+		st = campaign.standing_of("guild")
+	return maxi(int(item.price) / 2, int(item.price) - st)
+
+
 static func can_buy(campaign, item: Dictionary) -> Dictionary:
-	if campaign.coin < int(item.price):
-		return _r(false, "That's %d Coin." % int(item.price))
+	var p := price(campaign, item)
+	if campaign.coin < p:
+		return _r(false, "That's %d Coin." % p)
 	return _r(true, "")
 
 
@@ -202,6 +390,7 @@ static func buy(campaign, item: Dictionary) -> Dictionary:
 		return c
 	var d := Dice.create(item.base)
 	d.history.append("Bought from Hollis's shelf.")
-	campaign.coin -= int(item.price)
+	var p := price(campaign, item)
+	campaign.coin -= p
 	campaign.pouch.collection.append(d)
-	return _r(true, "Hollis sets a %s on the bar. (-%d Coin)" % [d.name, int(item.price)])
+	return _r(true, "Hollis sets a %s on the bar. (-%d Coin)" % [d.name, p])

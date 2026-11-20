@@ -1,0 +1,428 @@
+title: The Bell Market
+id: bell_market
+patron: Wren
+start: plea
+arc: wren
+order: 2
+pitch: A collector at the Saltreach river market is buying everything that came out of Marrowmere lake, and Wren thinks she knows why.
+offer: ended:drowned_bell
+expires: winter
+missed: The river froze, and the market went south for the winter, and Ormond Vane went with it, with everything he had bought.
+teller: triumph :: They'll talk about that on the river until the ice comes.
+teller: triumph :: The whole market stopped haggling to watch. That has never happened before.
+teller: mixed :: Through, and the river takes its cut. It always does.
+teller: mixed :: Bought, and paid for. Everything at Saltreach has a price.
+teller: fail :: No sale. The market goes on without you, as markets do.
+teller: loaded_caught :: Pell's eyes go to {die}, and his smile gets wider. Oh dear.
+teller: rest :: A chapel on a bridge, a candle for the drowned, and the river going by underneath.
+
+// Wren's arc, tale 2 of 3. Reads how The Drowned Bell ended (the bell, the gold, the Abbess),
+// Mother Kettle's favour, and sends Ormond Vane on to The Tide Court, or not.
+
+## plea: Wren's News
+act: 1
+tile: inn
+at: 0, 0
+token: wren_along => handbell "Wren, coming with you"
+
+? seen:market_lost :: [i]You've heard this one before. Ormond is still buying. Wren is still asking.[/i]
+? ending:drowned_bell==rest :: Wren sits down at your table as if it were hers, which these days it nearly is.
+? ending:drowned_bell==bargain :: Wren comes to your table, but doesn't sit. She hasn't forgiven you for selling the bell. She's come anyway.
+? ending:drowned_bell==silence :: Wren sits down across from you. She still wears a sliver of the broken bell on a cord round her neck.
+? ending:drowned_bell==greed :: Wren comes to your table and looks at your Pouch, where the Bellmetal hums, before she looks at you.
+"There's a man at the Saltreach river market," she says. "Ormond Vane. He calls himself a collector. He's been buying everything that came out of the lake: nets, boats, rings off drowned fingers. Gran's neighbour sold him her husband's boots."
+"And now he's bought the Register. The book from the abbey, with all their names in it." Her voice drops. "You can call the drowned by name, Gran used to say. If you know it, they come."
+? ending:drowned_bell==bargain :: "And he's bought the bell," she says. "From Mother Kettle. Your partner."
+? ending:drowned_bell==greed :: "He's asking after the abbey's gold, too," she says, not looking at you. "Says he'll pay double what anyone else would."
+[i]A collector of the drowned, with a book of their names. I don't care for the sound of that, and I've heard most things.[/i]
+
+* promise: "Then we take the names back."
+  temper: duty +1
+  do: flag promised_wren; regard 1
+  goto: prepare
+  reply: Wren nods once, the fisherman's nod. [i]Another promise. You do collect them.[/i]
+
+* along: "Come with me. They're your people."
+  temper: mercy +1
+  do: flag wren_along
+  goto: prepare
+  reply: She's up and fetching her coat before you finish. "I'll bring Gran's bell," she says.
+
+* why: "What does a man want with a book of drowned names?"
+  temper: honesty +1
+  do: flag asked_why
+  goto: prepare
+  reply: Wren hesitates. "Servants," she says. "Gran said there was a man in her mother's time who raised the drowned from the river, and dressed them up, and sold them as footmen to rich houses. They don't eat, you see. They don't complain." [i]Well. Now we know what we're dealing with.[/i]
+
+## prepare: Packing for the River
+act: 1
+type: prepare
+goto: quay
+
+Hollis has your Pouch on the bar. "Saltreach," he says, and makes a face. "Watch your purse, and watch your dice. Half the river's card sharps."
+[i]Choose what you carry. There's a chapel on the bridge at Saltreach, for the Saddlebag.[/i]
+
+## quay: Saltreach Market
+act: 1
+on enter: random_flag weather [fog, rain, bright]; if season==winter then flag weather frost; if wren_along then ally wren_bell_d4
+tile: market
+at: 1.4, 0.2
+token: pell_won => coins "Pell the fence, bought"
+token: lots_found => rune "Lots from Marrowmere"
+
+Saltreach is a town built on the river and half of it floating: barges lashed together into streets, stalls on rafts, a market that moves with the tide. You can buy anything here, the saying goes, and most of it was somebody else's last week.
+? weather==fog :: River fog, thick and yellow. Lanterns float in it like drowned moons.
+? weather==rain :: Rain on the river, and every stall-keeper under an awning, shouting.
+? weather==bright :: Bright and cold, and the river glittering, and the whole market loud.
+? weather==frost :: Ice at the edges of the river. The market will move south soon.
+At the far end of the market, moored apart from the rest, a long black barge with green lanterns and a cabin like a hearse: Ormond Vane's. Two men in good black coats stand at its gangplank, perfectly still, not breathing.
+? wren_along :: Wren stares at the men on the gangplank. "That's Tam Fisher," she whispers. "He drowned at midsummer."
+? ending:drowned_bell==bargain :: On the barge's deck, under a tarpaulin, something big and bell-shaped.
+[i]Everybody here is selling something. Find out what Ormond's buying.[/i]
+
+* stalls: Walk the stalls and look for things that came out of the lake.
+  challenge: kind=test difficulty=standard tries=2 title="Lots from Marrowmere"
+  approach lore: Read the abbey marks on things: the sisters scratched them on everything.
+  approach guile: Pretend to be a buyer, and see what they bring out from under the counter.
+  approach grace: Chat, browse, charm, and let the stall-keepers tell you.
+  > triumph: You find three stalls selling Marrowmere goods, and the third keeper, drunk, shows you Ormond's buying list: every name in the Register, and against each one, a price. He's having an auction tomorrow night. And on his stall, a lump of bellmetal no one wants.
+    do: flag lots_found; flag auction_known; flag buying_list; material bellmetal
+    goto: auction
+  > success: The stalls are full of drowned things, and every keeper says the same: Ormond Vane holds his auction tomorrow night, in the old customs house.
+    do: flag lots_found; flag auction_known
+    goto: auction
+  > mixed: You find out. The market finds out about you, too.
+    do: flag lots_found; flag auction_known
+    goto: auction
+    cost: You buy something to look like a buyer (lose 8 coins) :: coin -8
+    cost: Ormond hears someone's asking (his men watch you) :: flag ormond_warned
+  > fail: Nobody will talk to a stranger who looks at things too closely. At dusk you notice the black barge's lanterns are lit, and men are carrying boxes aboard.
+    do: flag ormond_warned
+    goto: barge
+
+* pell: Find the man who fences for the river. Pell, they call him.
+  contest: opponent=pell title="Pell the fence"
+  mod: seen:smugglers_allied or standing:guild>=1 => resolve=-4
+  mod: seen:kettle_grudge => resolve=3
+  approach guile: Bluff him: you're buying for someone richer than Ormond.
+  approach grace: Buy him a drink, and another, and listen.
+  approach lore: Know the value of what he's selling better than he does.
+  > triumph: Pell likes you, God help you. He tells you everything: Ormond keeps the Register on his barge, in a box of black iron, and he means to call the drowned up out of the river at midnight after his auction. He sells you a slug of good lead for your trouble, cheap.
+    do: flag pell_won; flag register_on_barge; flag midnight_known; material lead
+    goto: barge
+  > success: "The Register's on his barge," Pell says. "In a box. He's calling them up tomorrow, midnight, off the end of the quay. Don't say where you heard it."
+    do: flag pell_won; flag register_on_barge
+    goto: barge
+  > mixed: He tells you. He wants paying.
+    do: flag register_on_barge
+    goto: barge
+    cost: Pell's fee (lose 10 coins) :: coin -10
+    cost: Pell sells Ormond the news that you were asking :: flag ormond_warned
+  > fail: Pell takes your money and laughs. "The Register? Ormond's selling it tomorrow, at the customs house, to the highest bidder. Bring a fat purse."
+    do: flag auction_known
+    goto: auction
+  > caught: Pell's eyes go to your loaded die. "Oh, I like you," he says, and sells everything you told him to Ormond within the hour.
+    do: flag ormond_warned; flag caught_cheating
+    goto: barge
+
+* kettle: Say Mother Kettle's name in the right ear.
+  if: seen:smugglers_allied or standing:guild>=1 or seen:bell_market
+  temper: honesty -1
+  do: flag pell_won; flag register_on_barge; flag midnight_known
+  goto: barge
+  reply: The right ear belongs to Pell the fence, who goes pale and then very helpful. "Mother's friend? Why didn't you say?" Ormond keeps the Register on his barge, he tells you, and means to call the drowned up at midnight. [i]Names open doors in Saltreach. Some names open them faster than others.[/i]
+
+## barge: Ormond's Barge
+act: 2
+type: challenge
+on enter: grit -2
+tile: jetty
+at: 2.8, -0.7
+token: register_taken => chest "The Register, stolen back"
+token: drowned_freed => dove "The bound drowned, set free"
+
+Night. The black barge rides low at its mooring, green lanterns burning. The men in black coats stand on deck, one at each corner, as still as posts. They don't blink. They have no reason to.
+? register_on_barge :: The Register is aboard, in a black iron box.
+? ormond_warned :: There are more of them than there should be. Ormond's expecting someone.
+? wren_along :: Wren's hand finds yours in the dark. "Tam Fisher," she whispers again. "And that's Old Bet, from the mill."
+? weather==fog :: The fog is your friend tonight. Probably.
+
+* steal: Get aboard and steal the Register back.
+  challenge: kind=trial progress=17 danger=3 danger_text="A Hollowman turns its head." title="Aboard the black barge"
+  mod: ormond_warned => progress=3
+  mod: weather==fog => progress=-2
+  approach guile: Walk up the gangplank with a crate on your shoulder, like a porter.
+  approach grace: Swim round to the stern and climb the anchor chain.
+  approach lore [progress=19]: The Hollowmen obey names. Learn the right one and tell them to look away.
+  > triumph: The Register is under your arm before anyone knows you were there, and under it, in the iron box, a purse of Ormond's gold. Back on the quay, Wren opens the book to a page and puts her finger on a name. Her father's.
+    do: flag register_taken; coin 15
+    goto: chapel
+  > success: You come off the barge soaked, with the Register wrapped in your coat. Ormond won't know until morning.
+    do: flag register_taken
+    goto: chapel
+  > mixed: You have the book. You don't have your dignity.
+    do: flag register_taken
+    goto: chapel
+    cost: A Hollowman's grip on your ankle (lose 5 Grit) :: grit -5
+    cost: Ormond knows it was you (he'll come for it) :: flag ormond_warned
+  > fail: Cold hands close on you in the dark, and you're thrown into the river. You come out downstream, empty-handed and half-drowned yourself. Ormond's lanterns move off toward the end of the quay.
+    do: grit -5
+    goto: chapel
+
+* fight: Take the barge by force.
+  temper: duty +1
+  combat: foe=hollowmen
+  mod: ormond_warned => ambushed=1
+  mod: wren_along => resolve=-2
+  > triumph: The Hollowmen go down and lie still on the deck, and when you look closely they are only drowned men again, at peace. In the iron box, the Register, and a purse of Ormond's gold.
+    do: flag register_taken; flag drowned_freed; coin 15
+    goto: chapel
+  > success: The last Hollowman topples into the river. The Register is in the box in the cabin.
+    do: flag register_taken
+    goto: chapel
+  > mixed: You take the barge. It takes a share of you.
+    do: flag register_taken
+    goto: chapel
+    cost: Drowned hands at your throat (lose 5 Grit) :: grit -5
+    cost: The box is smashed in the fight (pages of the Register are lost) :: flag register_torn
+  > fail: They throw you off the barge. You crawl out of the river and watch the green lanterns go downstream toward the end of the quay.
+    do: grit -4
+    goto: chapel
+
+* free: Free the bound drowned first. They didn't ask for this.
+  temper: mercy +1
+  challenge: kind=test difficulty=standard tries=2 title="Unbinding the drowned"
+  approach lore: Find the binding mark on each of them and scratch it out.
+  approach ward: Hold each one still while Wren, or you, speaks their name.
+  approach grace: Cut the black thread sewn into their collars, one by one, before they notice.
+  > triumph: One by one the Hollowmen sit down on the deck, and sigh, and are only drowned men. The last of them, before he goes, points to the cabin where the Register is. You take it.
+    do: flag drowned_freed; flag register_taken; regard 1
+    goto: chapel
+  > success: You free six of them. The rest Ormond takes with him, but six are at rest.
+    do: flag drowned_freed
+    goto: chapel
+  > mixed: Some go free. It costs you.
+    do: flag drowned_freed
+    goto: chapel
+    cost: One of them fights the unbinding (lose 5 Grit) :: grit -5
+    cost: Ormond notices his servants are missing :: flag ormond_warned
+  > fail: You can't find the binding. The Hollowmen throw you off the deck, gently, as if they're sorry.
+    do: grit -3
+    goto: chapel
+
+## auction: The Customs House
+act: 2
+type: challenge
+tile: market
+at: 2.8, 0.8
+token: register_bought => coins "The Register, bought"
+
+The old customs house, lit with green candles, full of rich buyers in masks. Lot after lot: a drowned bride's veil, a fisherman's knife, a child's shoe. Ormond Vane conducts it himself, a thin man in river-green with a silver-headed cane. Two Hollowmen hold up the lots.
+Lot forty: the Register of the Drowned.
+? ending:drowned_bell==bargain :: Lot forty-one, under a velvet cloth: the bell of Marrowmere.
+? buying_list :: You know what's in that book better than anyone here.
+[i]Everybody here has a price, the saying goes. Find Ormond's.[/i]
+
+* bid: Bid against Ormond for the Register.
+  temper: honesty +1
+  contest: opponent=ormond_bid title="Lot forty"
+  mod: coin>=40 => resolve=-4
+  mod: coin>=80 => resolve=-4
+  mod: buying_list => resolve=-2
+  approach guile: Bid like you have a bottomless purse, and let him wonder.
+  approach lore: Point out, loudly, every flaw in the lot until the other buyers drop out.
+  approach grace: Charm the room until they'd rather see you win.
+  > triumph: The room goes quiet. Ormond looks at you over his spectacles, and then, very slowly, lowers his cane. "Sold," he says, "to the traveller," and smiles a smile that doesn't reach anything. The Register is yours, for a song.
+    do: flag register_taken; flag register_bought
+    goto: chapel
+  > success: Sold, to you. It costs everything in your purse that isn't nailed down.
+    do: flag register_taken; flag register_bought; coin -15
+    goto: chapel
+  > mixed: You win the book. At a price.
+    do: flag register_taken; flag register_bought
+    goto: chapel
+    cost: Every coin you brought (lose 25 coins) :: coin -25
+    cost: Ormond lets you have it, and has you followed :: flag ormond_warned
+  > fail: Ormond outbids you without blinking, and bows. "Better luck at the next one," he says. "There won't be one, I'm afraid. I'm calling them up tonight."
+    do: flag midnight_known
+    goto: chapel
+
+* expose: Stand up and tell the room what Ormond's selling.
+  temper: honesty +1
+  challenge: kind=test difficulty=standard tries=2 title="Before the buyers"
+  mod: wren_along => progress=-3
+  approach grace: Speak to them plainly: these are people's fathers, sold like coats.
+  approach lore: Read them names from the lots, and the dates they drowned.
+  approach ward: Walk up to the front, take the lot out of the Hollowman's hands, and hold it.
+  > triumph: Somebody's mother, it turns out, is in that book. The room turns on Ormond, and he leaves by the back door with his Hollowmen and nothing else, and the Register stays on the table. You pick it up.
+    do: flag register_taken; flag ormond_shamed; regard 1
+    goto: chapel
+  > success: The buyers leave in disgust. The auction's over. Ormond takes the Register with him, furious, out of the back door.
+    do: flag ormond_shamed
+    goto: chapel
+  > mixed: They listen. Ormond makes sure they don't listen for long.
+    do: flag ormond_shamed
+    goto: chapel
+    cost: His Hollowmen throw you out into the street (lose 5 Grit) :: grit -5
+    cost: He marks your face (he'll know you at midnight) :: flag ormond_warned
+  > fail: The room laughs at you. Ormond's Hollowmen walk you to the door very politely and throw you down the steps.
+    do: grit -3
+    goto: chapel
+
+## chapel: The Bridge Chapel
+act: 2
+type: waystone
+on enter: rest 11
+tile: shrine
+at: 4.3, 0
+token: sold_gold => coins "The bell's gold, sold to Ormond"
+
+A tiny chapel built into the middle of Saltreach bridge, with the river roaring through the arches under it, and a candle for everyone the river ever took. There's room to sit, and a dry corner, and nobody watching.
+? register_taken :: The Register lies on the altar. It's heavier than a book should be.
+? register_torn :: Pages are missing. Some of the names are gone.
+? cursed and seen:greed :: A man in a good black coat is waiting in the chapel doorway when you come in. "My master Ormond," he says, "would pay a great deal for the gold in your Pouch."
+[i]A Waystone. Midnight is coming, and so is Ormond.[/i]
+
+* sell: Sell Ormond the Bellmetal die. Let it be his curse.
+  if: cursed and seen:greed
+  temper: honesty -1
+  do: give_up bellmetal_d20; coin 60; flag sold_gold
+  goto: quayend
+  reply: The man in the black coat takes the d20 with a gloved hand, and doesn't flinch when it hums. "My master thanks you," he says. Sixty coins, counted out on the altar. Your Pouch is lighter. You feel lighter. [i]Well. It's off your hands. Whose hands it's in now, we'll find out at midnight.[/i]
+
+* names: Read the Register by candlelight. Learn the names.
+  if: register_taken
+  temper: mercy +1
+  do: flag names_learned; fatigue 1
+  goto: quayend
+  reply: You read until the candles burn down: Hobb, Aldous, Tam Fisher, Old Bet from the mill, Ysolde. Four hundred names. Some you say aloud. [i]That is a kindness, saying them. It's also a weapon. You'll see.[/i]
+
+* rest: Rest, and be ready for midnight.
+  goto: quayend
+  reply: You sit with your back to the wall and listen to the river. At a quarter to midnight, from the end of the quay, a bell.
+
+## quayend: Midnight at the Quay's End
+act: 3
+type: challenge
+tile: bell
+at: 5.8, 0
+token: climax==rest => beacon "The drowned, at rest"
+token: climax==beaten => foe "Ormond Vane, beaten"
+token: climax==fled => boat "The black barge, gone south"
+
+Midnight. At the end of Saltreach quay, where the river runs deep and black, Ormond Vane stands with his cane raised. Behind him, his Hollowmen, and the green lanterns of his barge.
+? ending:drowned_bell==bargain :: He has the bell of Marrowmere hung from a crane over the water, and he's ringing it.
+? not ending:drowned_bell==bargain :: He has a little silver hand-bell, and he's ringing it.
+? register_taken :: He doesn't have the Register. He's furious. He's calling them anyway, by the names he remembers.
+? not register_taken :: He reads from the Register, name after name, and the river answers.
+? sold_gold :: In his other hand, humming like a hive, the Bellmetal d20 you sold him. The water boils round his feet.
+Out of the river, one by one, the drowned come up, and stand dripping on the quay, and wait for orders.
+? wren_along :: "Dad," Wren says, very quietly. One of them has turned his head toward her.
+
+* names: Call them by their names, and tell them to go home.
+  if: register_taken or names_learned
+  temper: mercy +1
+  challenge: kind=test difficulty=standard tries=3 title="Calling them home"
+  mod: names_learned => progress=-3
+  mod: register_torn => progress=3
+  mod: wren_along => progress=-2
+  approach lore: Read the names from the Register, clear and slow, every one.
+  approach grace: Sing them, the way the sisters would have.
+  approach ward: Walk out among them, and say each name to its face.
+  > triumph: Name by name, the drowned turn from Ormond and walk back down into the river, and the last of them stops at the water's edge and looks back at Wren, and lifts a hand. Ormond's bell falls silent. So does Ormond. He sits down on the quay and doesn't get up.
+    do: flag climax rest; regard 1
+    goto: ending
+  > success: They hear their names, and go home, one by one, into the dark water. Ormond's bell is ringing to nobody.
+    do: flag climax rest
+    goto: ending
+  > mixed: Most of them go home. Most.
+    do: flag climax rest
+    goto: ending
+    cost: Ormond keeps the ones you couldn't name (he escapes with them) :: flag ormond_escaped
+    cost: Reading four hundred names leaves you hollow (take a Wound) :: wound ""
+  > fail: You stumble over a name, then another, and Ormond laughs and rings louder. The drowned turn toward you.
+    goto: quayend
+    retry: fight
+
+* fight: Go through the drowned to Ormond, and end it.
+  temper: duty +1
+  combat: foe=ormond
+  mod: sold_gold => resolve=6
+  mod: drowned_freed => no_wardens=true
+  mod: ormond_shamed => resolve=-3
+  mod: ormond_warned => ambushed=1
+  > triumph: Ormond goes into the river with his cane and his bell, and the river, which has its own opinion of him, does not give him back. The drowned stand on the quay for a moment, free, and then walk home.
+    do: flag climax beaten; flag ormond_dead
+    goto: ending
+  > success: Ormond falls on the quay, and his bell rolls into the water, and the drowned go back to the river.
+    do: flag climax beaten; flag ormond_dead
+    goto: ending
+  > mixed: He falls. Not before the river had its say.
+    do: flag climax beaten
+    goto: ending
+    cost: He gets away on the barge, broken (he'll be back) :: flag ormond_escaped
+    cost: The river pulls you under (take a Wound) :: wound ""
+  > fail: The drowned close round you, and Ormond steps onto his barge and is gone downstream with his lanterns, and his servants, and his bell.
+    do: flag climax fled; flag ormond_escaped
+    goto: ending
+
+* bell: Take the bell from him, and ring the morning bell.
+  if: ending:drowned_bell==bargain or ending:drowned_bell==rest
+  temper: honesty +1
+  challenge: kind=test difficulty=hard tries=2 title="The morning bell"
+  approach grace: Run up the crane's arm to the bell.
+  approach lore: Remember the note the Abbess rang: the morning call, not the drowning toll.
+  approach might: Haul the bell rope out of Ormond's hands.
+  > triumph: One clear high note, the morning bell of Marrowmere, and the drowned lift their faces to it as if it were sunlight, and then they are gone, all of them, home. Ormond stands alone on the quay with nothing in his hands.
+    do: flag climax rest; flag ormond_broken; regard 1
+    goto: ending
+  > success: The morning bell rings over Saltreach, and the drowned go home. Ormond flees.
+    do: flag climax rest; flag ormond_escaped
+    goto: ending
+  > mixed: It rings. Not cleanly.
+    do: flag climax rest
+    goto: ending
+    cost: The crane gives way under you (take a Wound) :: wound ""
+    cost: Ormond gets away with half his Hollowmen :: flag ormond_escaped
+  > fail: The bell gives the drowning toll. The drowned turn toward you, and Ormond laughs.
+    goto: quayend
+    retry: fight
+
+## ending: How It Ended
+act: 3
+type: ending
+
++ fallen: Bought and Sold
+  if: defeat or wounds>=3
+  [i]And so Ormond Vane went south with the river, and four hundred servants who never complain.[/i]
+  You wake in the bridge chapel with a candle burning beside you and Pell the fence sitting at your feet, of all people. "You owe me for the candle," he says.
+  [i]Come back when you're mended. The market will still be there. So, I'm afraid, will Ormond.[/i]
+  do: mark market_lost; chronicle "Ormond Vane went south with the drowned of Marrowmere."
+
++ rest: Called Home
+  if: climax==rest
+  renown: 4
+  The drowned go home, and Ormond Vane leaves Saltreach the next morning with an empty barge.
+  ? ormond_broken :: They say he sold the barge at the next town and went into a monastery. They say a lot of things on the river.
+  ? ormond_escaped :: But he left with some of them still, and his eyes on you as the barge went by.
+  ? register_taken :: You bring the Register home to Wren, and she reads her father's name in it, and closes it, and gives it to the chapel in Marrowmere. The smith there cuts the black boards of its cover into a die for you. "So you'll remember them," Wren says.
+  [i]Four hundred people went home tonight. I don't know a better thing to have done with a night.[/i]
+  do: coin 20; standing Abbey 1; standing Marrowmere 1; if register_taken then gain register_d10; chronicle "The drowned of Marrowmere were called home from Saltreach quay."; mark drowned_home; if ormond_escaped then mark ormond_escaped; if sold_gold then mark sold_gold
+
++ beaten: The Collector Falls
+  if: climax==beaten
+  renown: 3
+  Ormond Vane is finished, one way or another, and his barge sits empty at the end of the quay until the river traders strip it.
+  ? ormond_dead :: The river never gives him back.
+  ? ormond_escaped :: He got away, broken, on his barge. He won't be buying anything for a while.
+  In his cabin you find his purse, and a crate of things from Marrowmere you send home to Wren's village. And a lump of bellmetal, which Brannoc will want.
+  [i]A collector, collected. There's a kind of justice in it, if you like that kind.[/i]
+  do: coin 30; material bellmetal; standing Marrowmere 1; chronicle "Ormond Vane fell at the end of Saltreach quay."; if ormond_escaped then mark ormond_escaped; if sold_gold then mark sold_gold
+
++ fled: The Barge Goes South
+  renown: 1
+  Ormond's barge slides away downstream into the dark with its green lanterns and its silent crew, and the river takes it round the bend.
+  ? wren_along :: Wren stands on the quay until the lanterns are gone. She doesn't cry. She says, "We'll find him," and you believe her.
+  ? register_taken :: You still have the Register. Without it, Ormond only knows the names he remembers. It's something.
+  [i]Not every tale ends at the end of the quay. Some of them go south for the winter.[/i]
+  do: if register_taken then gain register_d10; chronicle "Ormond Vane escaped down the river with the drowned."; mark ormond_escaped; if sold_gold then mark sold_gold
