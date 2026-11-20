@@ -15,6 +15,8 @@ extends RefCounted
 ##   ambush     your Effort is 1 lower in the first round
 ##   relentless unblocked damage hits 1 harder
 
+const FOE_IDS := ["mire_wolf", "drowned_pair", "kettle_knives", "abbess"]
+const OPPONENT_IDS := ["odile", "kettle", "kettle_threat", "abbess_name"]
 const CANCELLABLE := ["hamstring", "ghostly", "relentless"]
 const TRAIT_TEXT := {
 	"hamstring": "Hamstring: if its damage lands unblocked, your Effort drops by 1 next round.",

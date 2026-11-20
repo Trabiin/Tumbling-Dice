@@ -4,9 +4,10 @@ A dice-collecting RPG told at a tavern table. An unseen storyteller, the Teller,
 deed in it is decided by real dice you own, pack and throw into a physical tray. Your Pouch of dice is your
 character: no stats, no classes, only the dice you carry and what they have been through.
 
-This build covers **milestone M1** (the rules core and The Drowned Bell, playable start to finish) and
+This build covers **milestone M1** (the rules core and The Drowned Bell, playable start to finish),
 **milestone M2: dice on the table** (throwing by hand, picking dice in the tray, and the Practice Table
-for the M2 playtest). Design doc: *Tales of the Tumbling Dice: Game Design* (Claude Doc).
+for the M2 playtest), and **milestone M3: the tale runner** (tales as plain-text `.tale` files with a
+parser and linter, a text preview for writers, mid-tale saves and the Chronicle), plus graphics presets. Design doc: *Tales of the Tumbling Dice: Game Design* (Claude Doc).
 
 Everything is generated in GDScript and shader code: dice, tavern, UI widgets and sounds. The only assets
 are two free fonts (SIL Open Font License): Cinzel for headings and dice, and IM Fell English for the
@@ -28,10 +29,37 @@ Teller's narration (`fonts/OFL.txt`, `fonts/OFL-IMFellEnglish.txt`).
 | Space | Throw (tossed in from your side of the table) |
 | Enter | Confirm / continue |
 | F | Fast dice: skip the physics (same odds, results drawn from each die's measured faces) |
+| F4 | Show or hide the frame rate |
 | Esc | Quit |
 
 The campaign (your dice, Coin, Chronicle, endings found) is saved to `user://campaign.json` when a tale
 ends. Run with `-- --new` to start fresh. The old dice-tray sandbox is still there: `main.tscn`.
+
+### Graphics quality
+
+**Graphics** on the title screen cycles Low, Medium and High. The choice is saved to `user://settings.cfg`.
+The first run picks Low on Android, ChromeOS, and anything using the Compatibility renderer. Everything
+else starts on High. **Frame rate** on the title screen (or F4) shows the fps in the corner.
+
+| Preset | Meant for | What changes |
+|---|---|---|
+| Low | Tablets and Chromebooks (Lenovo Duet class) | 3D at 60% resolution, no MSAA, no screen-space effects, no glow, no dust or embers, no painterly screen pass, cheaper shaders (no per-pixel relief, fewer noise octaves), 2048 shadow map with hard edges, 30 fps cap |
+| Medium | A mid laptop | 85% resolution with FSR, 2x MSAA, ambient occlusion, glow, depth of field, painterly pass, 4096 soft shadows, 60 fps cap |
+| High | A strong laptop or desktop | The full look: native resolution, 8x MSAA, bounced light, volumetric haze, 8192 soft shadows, no cap |
+
+Physics runs at 120 Hz on every preset. At 60 Hz the dice measurably favour some faces (see
+`tests/physics_check.gd`), and a few dice cost little next to rendering. On Android, Godot uses the
+Compatibility renderer (`rendering_method.mobile`), and Low has been checked under it.
+
+### Saves, and the Chronicle
+
+The tale saves itself whenever a scene is waiting for your choice (`user://tale_save.json`). The title
+screen then offers **Continue the tale**. The save goes away when the tale ends, and the campaign is
+saved then as before. **The Chronicle** on the title screen shows:
+- tales told and endings found;
+- what the Teller remembers;
+- rumours and standing;
+- every die you own, with its notches, any grudge, and its history.
 
 ### The Practice Table (M2 playtest)
 
@@ -72,6 +100,41 @@ Challenge kinds: **Tests** (one moment), **Trials** (a Danger clock; throwing yo
 it twice), **social Contests** (they throw first; split your dice between Press and Hold), and **Combat**
 (the foe throws first and its dice freeze in the tray; five stances: Strike, Guard, Evade, Trick, Read).
 
+## Writing tales
+
+Tales live in `tales/*.tale`, as plain text. The format is in [docs/tale_format.md](docs/tale_format.md), and
+`tales/drowned_bell.tale` is the full example. A scene looks like this:
+
+```
+## shore: The Shore at Dusk
+? weather==fog :: Fog lies on the water so thick the tower comes and goes.
+
+* walk: Walk the shore alone at dusk.
+  challenge: kind=test difficulty=standard tries=2 title="Reading the shore"
+  approach lore: Read the carved stones half-sunk along the waterline.
+  approach grace: Climb out along the broken causeway.
+  > success: You learn enough.
+    goto: tolls
+  ...
+```
+
+**The text preview** plays a tale with no dice:
+- At every throw you pick Fail, Mixed, Success, Triumph or Caught, or let the bot roll for real.
+- You can jump to any scene, set flags (`flag climax=freed`), and test conditions (`check has:lore`).
+- **Reload file** picks up your edits while staying in the same scene.
+- It shows the linter's findings with line numbers, and which options and outcomes you haven't seen yet.
+
+Open it from the title screen (**Tale preview**), or in a terminal:
+
+```
+godot --headless -s res://tools/preview.gd -- res://tales/drowned_bell.tale             # interactive
+godot --headless -s res://tools/preview.gd -- res://tales/drowned_bell.tale --walk=300  # coverage
+```
+
+To edit `.tale` files inside the Godot editor (desktop or Android), add `tale` to **Editor Settings >
+Docks > FileSystem > TextFile Extensions**. Exporting the game needs `*.tale` in the export preset's
+non-resource filter, so the tales are packed.
+
 ## The Drowned Bell
 
 14 scenes over three acts, three Act II routes that rejoin at the Waystone and the Bell Chamber, five endings
@@ -98,10 +161,16 @@ The rules never touch the scene tree, so the same code runs in the game, in test
 | `scripts/rules/teller.gd` | The Teller's reaction lines, keyed to events, with a cooldown |
 | `scripts/rules/conditions.gd` | The small condition language tales use (`rumour_smugglers or has:guile`) |
 | `scripts/rules/bot.gd` | Balance bots with archetype Pouches |
-| `scripts/tale/drowned_bell.gd` | The tale itself, as data |
+| `tales/drowned_bell.tale` | The tale itself, as text ([format](docs/tale_format.md)) |
+| `scripts/rules/tale_parser.gd`, `tale_writer.gd` | Read a `.tale` file into the dictionary the runner plays, and write one back |
+| `scripts/rules/tale_lint.gd` | The linter: design rules and broken links, reported by file line |
+| `scripts/rules/tales.gd` | Finds and caches the shipped tales |
+| `scripts/rules/preview.gd` | The writers' text preview (used by the in-game panel and `tools/preview.gd`) |
 | `scripts/tale/practice.gd` | The Practice Table: twenty challenges in the same tale format |
 | `scripts/game/game.gd` | The playable table: parchment, cards, Hand, Pouch screen, ending; turns clicks into runner calls |
 | `scripts/game/table.gd` | Physical dice: spawns rules dice as rigid bodies, throws (tossed or held and released by hand), settles with a nudge, recovers strays, reads faces, freezes the foe's dice, finds the die under the cursor |
+| `scripts/game/settings.gd` | Graphics presets (Low, Medium, High) |
+| `scripts/game/preview_panel.gd` | The text preview on paper, inside the game |
 | `scripts/game/practice_log.gd` | The Practice Table's log: picks against the table's suggestion, odds, reasons, outcomes, saved as JSON |
 | `scripts/game/ui_kit.gd` | Paper-and-wax UI styles plus code-drawn widgets (die tiles, odds bar, pips) |
 | `tests/run_tests.gd` | Unit tests, the tale linter and the balance bots |

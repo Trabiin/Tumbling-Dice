@@ -68,6 +68,8 @@ const PHYSICS := {
 ## Measured by stats.gd over 2,000 physical throws: the prototype's loaded d6 (load 0.3)
 ## lands on its favoured face 75.5% of the time. Odds use this, never an assumption.
 const LOADED_HIT := 0.755
+## Every die base create() knows (the linter checks gain/ally effects against it).
+const ALL_IDS := ["oak_might", "oak_guile", "oak_lore", "oak_grace", "oak_ward", "dragon_d10", "brass_d8", "jade_d8", "bone_d6", "amethyst_d6", "loaded_d6", "bone_d4", "jade_d10", "dragon_d12", "brass_d4", "knuckle_d4", "brine_d6", "fisher_bone_d6", "hobb_oak_d6", "hook_d6", "kettle_knife_d8", "bellmetal_d20", "rosary_d12", "bellshard_d8", "wild_d4"]
 
 static var _serial := 0
 

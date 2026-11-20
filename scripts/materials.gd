@@ -24,7 +24,7 @@ float vnoise(vec3 x) {
 float fbm(vec3 p) {
 	float a = 0.5;
 	float s = 0.0;
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < FBM_OCTAVES; i++) {
 		s += a * vnoise(p);
 		p = p * 2.03 + vec3(1.7, 9.2, 3.1);
 		a *= 0.5;
@@ -34,7 +34,7 @@ float fbm(vec3 p) {
 float fbm3(vec3 p) {
 	float a = 0.5;
 	float s = 0.0;
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < FBM3_OCTAVES; i++) {
 		s += a * vnoise(p);
 		p = p * 2.07 + vec3(4.1, 1.3, 7.7);
 		a *= 0.5;
@@ -59,6 +59,9 @@ vec2 cells(vec3 p) {
 }
 // Per-pixel relief from a height value (Mikkelsen surface-gradient bump mapping).
 vec3 bump(vec3 n, vec3 pos, float h, float strength) {
+#ifdef LITE
+	return n;  // Low quality: no per-pixel relief
+#endif
 	vec3 dpdx = dFdx(pos);
 	vec3 dpdy = dFdy(pos);
 	float dhdx = dFdx(h) * strength;
@@ -88,7 +91,11 @@ float toon_steps(float a) {
 }
 void light() {
 	vec3 wp = toon_wp;
+#ifdef LITE
+	float brush = vnoise(wp * 0.4) - 0.5;
+#else
 	float brush = (vnoise(wp * 0.4) * 0.7 + vnoise(wp * 1.4) * 0.3) - 0.5;
+#endif
 	float ndl = dot(NORMAL, LIGHT);
 	float d;
 	if (LIGHT_IS_DIRECTIONAL) {
@@ -659,9 +666,13 @@ void fragment() {
 static var _cache := {}
 ## Set false to compare against the smooth, realistic lighting.
 static var toon := true
+## Low quality: fewer noise octaves and no per-pixel relief (for weak mobile GPUs).
+## Set before building the scene; the shader cache is keyed by it.
+static var lite := false
 
 
 static func _shader(key: String, body: String) -> Shader:
+	key = key + ("#lite" if lite else "")
 	if not _cache.has(key):
 		var s := Shader.new()
 		# Splice the shared noise helpers in right after the shader_type line.
@@ -669,7 +680,8 @@ static func _shader(key: String, body: String) -> Shader:
 		if anchor == -1:
 			anchor = body.find("shader_type")
 		var nl := body.find("\n", anchor)
-		var code := body.substr(0, nl + 1) + NOISE_LIB + body.substr(nl + 1)
+		var defs := "#define LITE\n#define FBM_OCTAVES 2\n#define FBM3_OCTAVES 2\n" if lite else "#define FBM_OCTAVES 5\n#define FBM3_OCTAVES 3\n"
+		var code := body.substr(0, nl + 1) + defs + NOISE_LIB + body.substr(nl + 1)
 		# Every lit shader gets the painterly light unless it brings its own.
 		if toon and not body.contains("unshaded") and not body.contains("void light()"):
 			var wp := "toon_wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;"

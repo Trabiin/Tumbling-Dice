@@ -18,12 +18,17 @@ var _noise := FastNoiseLite.new()
 
 
 var _gust := 0.0
+static var _gust_added := false
+var environment: Environment
+var particles: Array = []          # dust and embers, switched off at low quality
 
 
 func _ready() -> void:
 	# Flames read this to lean and flutter when dice slam into the tray.
-	if not "gust" in RenderingServer.global_shader_parameter_get_list():
+	# (global_shader_parameter_get_list() is editor-only, so remember it ourselves.)
+	if not _gust_added:
 		RenderingServer.global_shader_parameter_add("gust", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0)
+		_gust_added = true
 	_noise.frequency = 1.0
 	_build_environment()
 	_build_table()
@@ -66,6 +71,7 @@ func _build_dust() -> void:
 	p.color_ramp = ramp
 	p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(p)
+	particles.append(p)
 
 
 ## The painterly screen pass (brush smear + ink outlines). Needs Forward+ for the
@@ -82,6 +88,21 @@ func _build_post() -> void:
 	post.custom_aabb = AABB(Vector3(-1e5, -1e5, -1e5), Vector3(2e5, 2e5, 2e5))
 	post.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(post)
+
+
+## Graphics quality (see scripts/game/settings.gd). Screen-space effects only exist in Forward+.
+func apply_quality(q: Dictionary) -> void:
+	var fwd := RenderingServer.get_current_rendering_method() == "forward_plus"
+	if environment != null:
+		environment.ssao_enabled = fwd and q.ssao
+		environment.ssil_enabled = fwd and q.ssil
+		environment.volumetric_fog_enabled = fwd and q.vfog
+		environment.glow_enabled = q.glow
+	if post != null:
+		post.visible = q.post
+	for p in particles:
+		p.emitting = q.particles
+		p.visible = q.particles
 
 
 func _process(delta: float) -> void:
@@ -199,6 +220,7 @@ func _build_environment() -> void:
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
+	environment = env
 
 	# Lantern overhead: a warm pool of light on the tray.
 	var spot := SpotLight3D.new()
@@ -544,6 +566,7 @@ func _build_fireplace(base: Vector3) -> void:
 	_build_fire(base + Vector3(0, 4, z))
 
 	var embers := CPUParticles3D.new()
+	particles.append(embers)
 	embers.amount = 24
 	embers.lifetime = 2.5
 	var eq := QuadMesh.new()

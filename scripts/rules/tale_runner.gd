@@ -76,6 +76,49 @@ func start(p_tale: Dictionary, p_campaign, seed_value := -1) -> void:
 	enter(tale.start)
 
 
+## A mid-tale save, taken when a scene is waiting for a choice. tale_path says where the tale
+## came from, so resume() can read it again.
+func snapshot(tale_path: String) -> Dictionary:
+	return {"version": 1, "tale_path": tale_path, "tale_id": tale.get("id", ""), "scene": scene.get("id", ""),
+		"scene_title": scene.get("title", ""), "campaign": campaign.to_dict(), "pouch": pouch.tale_to_dict(),
+		"state": state.to_dict(), "transcript": transcript.slice(-300), "coin_gained": coin_gained,
+		"rng": str(rng.state), "saved_at": Time.get_datetime_string_from_system()}
+
+
+func can_snapshot() -> bool:
+	return phase == "choose" and active.is_empty()
+
+
+## Pick a saved tale back up at the scene it was saved in. The scene's on-enter effects have
+## already happened, so they are not run again.
+func resume(p_tale: Dictionary, p_campaign, snap: Dictionary) -> void:
+	tale = p_tale
+	campaign = p_campaign
+	campaign.from_dict(snap.campaign)
+	pouch = campaign.pouch
+	pouch.tale_from_dict(snap.get("pouch", {}))
+	var by_id := {}
+	for d in pouch.collection:
+		by_id[d.id] = d
+	state = TaleState.new()
+	state.from_dict(snap.state, by_id)
+	coin_gained = int(snap.get("coin_gained", 0))
+	rng.randomize()
+	if snap.has("rng"):
+		rng.state = int(snap.rng)
+	teller.rng.randomize()
+	transcript = snap.get("transcript", [])
+	var id: String = snap.get("scene", tale.start)
+	if not tale.scenes.has(id):
+		id = tale.start
+	scene = tale.scenes[id]
+	option = {}
+	approach = {}
+	active = {}
+	_say("The tale picks up again: %s." % scene.get("title", id), "system")
+	_set_phase("choose" if scene.get("type", "choice") != "prepare" else "prepare")
+
+
 func ctx() -> Dictionary:
 	return {"state": state, "pouch": pouch, "campaign": campaign}
 
@@ -734,6 +777,29 @@ func _finish_last_stand(ok: bool) -> void:
 		if state.defeated():
 			pending_goto = "ending"
 		_set_phase("outcome")
+
+
+# ------------------------------------------------------------------ writers' preview
+
+## Skip the dice and resolve whatever is being thrown for at this tier (the text preview uses it
+## to read every outcome without having to roll for it). caught = spotted with a loaded die.
+func force_outcome(t: int, caught := false) -> void:
+	if active.is_empty():
+		return
+	last_thrown = []
+	thrown = []
+	match active.type:
+		"laststand":
+			_finish_last_stand(t >= S.SUCCESS)
+		"flee":
+			active = active.combat
+			force_outcome(t, caught)
+		"combat":
+			active.run.over = true
+			active.run.outcome = "won" if t >= S.SUCCESS else "lost"
+			_finish(t)
+		_:
+			_finish(t, caught)
 
 
 # ------------------------------------------------------------------ outcomes

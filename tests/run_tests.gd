@@ -3,7 +3,7 @@ extends SceneTree
 ##
 ##   godot --headless -s res://tests/run_tests.gd                       unit tests + linter + quick bots
 ##   godot --headless -s res://tests/run_tests.gd -- --runs=400 --report=media/balance.md
-##   options: --only=<suite>  (pouch, scoring, odds, combat, contest, challenges, lint, save, practice, bots)
+##   options: --only=<suite>  (pouch, scoring, odds, combat, contest, challenges, lint, format, preview, save, practice, bots)
 ##
 ## Exit code is the number of failed checks.
 
@@ -19,7 +19,11 @@ const Cond := preload("res://scripts/rules/conditions.gd")
 const Campaign := preload("res://scripts/rules/campaign.gd")
 const Runner := preload("res://scripts/rules/tale_runner.gd")
 const Bot := preload("res://scripts/rules/bot.gd")
-const Tale := preload("res://scripts/tale/drowned_bell.gd")
+const Tales := preload("res://scripts/rules/tales.gd")
+const Parser := preload("res://scripts/rules/tale_parser.gd")
+const Writer := preload("res://scripts/rules/tale_writer.gd")
+const Lint := preload("res://scripts/rules/tale_lint.gd")
+const Preview := preload("res://scripts/rules/preview.gd")
 const Practice := preload("res://scripts/tale/practice.gd")
 
 var failures := 0
@@ -36,7 +40,7 @@ func _init() -> void:
 		elif a.begins_with("--report="): report_path = a.substr(9)
 		elif a.begins_with("--only="): only = a.substr(7)
 	var t0 := Time.get_ticks_msec()
-	var suites := ["pouch", "scoring", "odds", "combat", "contest", "challenges", "lint", "save", "practice", "bots"]
+	var suites := ["pouch", "scoring", "odds", "combat", "contest", "challenges", "lint", "format", "preview", "save", "practice", "bots"]
 	for s in suites:
 		if only == "" or only == s:
 			print("== ", s)
@@ -441,105 +445,110 @@ func test_challenges() -> void:
 # ===================================================================== linter
 
 func test_lint() -> void:
-	print("  The Drowned Bell")
-	_lint(Tale.tale())
-	print("  The Practice Table")
-	_lint(Practice.tale())
+	for path in Tales.all_paths():
+		var res: Dictionary = Tales.parsed(path)
+		eq(res.errors.size(), 0, "%s parses cleanly %s" % [path, str(res.errors)])
+		var issues: Array = Lint.run(res.tale, res.lines)
+		for i in issues:
+			print("    %s:%d: %s" % [path.get_file(), i.line, i.msg])
+		eq(issues.size(), 0, "%s passes the linter" % path)
+		print("  %s: %d scenes" % [path.get_file(), res.tale.scenes.size()])
+	var pr: Array = Lint.run(Practice.tale())
+	for i in pr:
+		print("    practice: ", i.msg)
+	eq(pr.size(), 0, "the practice table passes the linter")
 	eq(Practice.challenges().size(), 20, "the practice table has 20 challenges")
 
 
-func _lint(tale: Dictionary) -> void:
-	var scenes: Dictionary = tale.scenes
-	var set_flags := {}
-	var read_flags := {}
-	var edges := {}
-	for id in scenes:
-		var sc: Dictionary = scenes[id]
-		edges[id] = []
-		var all_effects: Array = sc.get("on_enter", []).duplicate()
-		for line in sc.get("text", []):
-			if line is Array:
-				for f in Cond.flags_read(line[0]):
-					read_flags[f] = id
-		if sc.has("goto"):
-			edges[id].append(sc.goto)
-		for o in sc.get("options", []):
-			for f in Cond.flags_read(o.get("cond", "")):
-				read_flags[f] = id
-			check(o.has("text") and o.text != "", "%s.%s has text" % [id, o.id])
-			# Character choices never name an aspect or preview numbers.
-			for asp in Dice.ASPECT_NAMES.values():
-				check(not o.text.contains(asp + " "), "%s.%s does not name an aspect" % [id, o.id])
-			check(not o.text.contains("Coin"), "%s.%s does not preview a reward" % [id, o.id])
-			all_effects.append_array(o.get("effects", []))
-			if o.has("goto"):
-				edges[id].append(o.goto)
-			if o.has("challenge") or o.has("contest") or o.has("combat"):
-				var outs: Dictionary = o.get("outcomes", {})
-				for k in ["fail", "mixed", "success", "triumph"]:
-					check(outs.has(k), "%s.%s has an outcome for %s" % [id, o.id, k])
-				for k in outs:
-					var oc: Dictionary = outs[k]
-					all_effects.append_array(oc.get("effects", []))
-					for c in oc.get("costs", []):
-						all_effects.append_array(c.effects)
-					check(oc.has("goto"), "%s.%s.%s goes somewhere" % [id, o.id, k])
-					if oc.has("goto"):
-						edges[id].append(oc.goto)
-				if outs.has("mixed") and outs.mixed.get("goto", "") != "ending":
-					check(outs.mixed.get("costs", []).size() >= 2, "%s.%s Mixed offers 2+ costs" % [id, o.id])
-				if o.has("contest") and Foes.opponent(o.contest.opponent).get("traits", []).has("card_sharp"):
-					check(outs.has("caught"), "%s.%s handles being caught cheating" % [id, o.id])
-			if o.has("challenge") or o.has("contest"):
-				var asp := {}
-				for ap in o.get("approaches", []):
-					asp[ap.aspect] = true
-				check(asp.size() >= 2, "%s.%s can be done with 2+ aspects" % [id, o.id])
-				for m in o.get("challenge", o.get("contest", {})).get("mods", []):
-					for f in Cond.flags_read(m[0]):
-						read_flags[f] = id
-			if o.has("combat"):
-				for m in o.combat.get("mods", []):
-					for f in Cond.flags_read(m[0]):
-						read_flags[f] = id
-		for en in sc.get("endings", []):
-			for f in Cond.flags_read(en.cond):
-				read_flags[f] = id
-			all_effects.append_array(en.effects)
-			for line in en.text:
-				if line is Array:
-					for f in Cond.flags_read(line[0]):
-						read_flags[f] = id
-		for e in all_effects:
-			_collect_set(e, set_flags, read_flags, id)
-	for g in edges.values():
-		for target in g:
-			check(scenes.has(target), "goto target %s exists" % target)
-	# reachability
-	var seen := {tale.start: true}
-	var queue := [tale.start]
-	while not queue.is_empty():
-		var cur = queue.pop_front()
-		for nx in edges.get(cur, []):
-			if not seen.has(nx):
-				seen[nx] = true
-				queue.append(nx)
-	for id in scenes:
-		check(seen.has(id), "scene %s is reachable" % id)
-	var builtins := ["climax", "defeat", "weather"]
-	for f in read_flags:
-		check(set_flags.has(f) or f in builtins, "flag %s (read in %s) is set somewhere" % [f, read_flags[f]])
-	print("  %d scenes, %d flags set, %d flags read" % [scenes.size(), set_flags.size(), read_flags.size()])
+## The .tale format: the parser, the writer, and error messages that point at the right line.
+func test_format() -> void:
+	var path := Tales.DROWNED_BELL
+	var text := FileAccess.get_file_as_string(path)
+	var res := Parser.parse(text)
+	eq(res.errors.size(), 0, "drowned_bell.tale parses without errors")
+	eq(Writer.write(res.tale), text, "writing the parsed tale gives back the same file")
+	var pt: Dictionary = Practice.tale()
+	var back: Dictionary = Parser.parse(Writer.write(pt)).tale
+	check(_norm(back) == _norm(pt), "the practice table survives a write and parse unchanged")
+	# The parsed tale plays: a bot reaches an ending.
+	var camp := Campaign.new()
+	camp.new_campaign()
+	var r := Runner.new()
+	var bt := Bot.new()
+	bt.rng.seed = 11
+	r.start(res.tale, camp, 3)
+	bt.play(r)
+	eq(r.phase, "ending", "a bot plays the parsed tale to an ending")
+	# Values and effects.
+	var t: Dictionary = Parser.parse("title: T\nid: t\nstart: a\n\n## a: A\non enter: flag x 3; standing \"Thieves' Guild\" -2; random_flag w [fog, rain]; if x>=2 then grit -1\n\n* go: Go.\n  goto: a\n").tale
+	eq(t.scenes.a.on_enter, [["flag", "x", 3], ["standing", "Thieves' Guild", -2], ["random_flag", "w", ["fog", "rain"]], ["if", "x>=2", ["grit", -1]]], "effects parse with numbers, quotes, lists and if")
+	var t2: Dictionary = Parser.parse("title: T\nid: t\nstart: a\n## a: A\n* f: Fight.\n  challenge: kind=test second.aspect=ward second.target=6 title=\"A b\"\n  mod: x => progress=-4\n  approach might [progress=19]: Hit it.\n  > mixed: Hm.\n    It continues.\n    cost: Lose 3 Grit :: grit -3\n").tale
+	var o: Dictionary = t2.scenes.a.options[0]
+	eq(o.challenge, {"kind": "test", "second": {"aspect": "ward", "target": 6}, "title": "A b", "mods": [["x", {"progress": -4}]]}, "challenge key=values, dotted keys and mods")
+	eq(o.approaches[0], {"aspect": "might", "text": "Hit it.", "set": {"progress": 19}}, "approach with overrides")
+	eq(o.outcomes.mixed.text, "Hm. It continues.", "outcome text continues over lines")
+	eq(o.outcomes.mixed.costs[0], {"label": "Lose 3 Grit", "effects": [["grit", -3]]}, "costs")
+	# Errors carry line numbers.
+	var bad := Parser.parse("title: T\nid: t\nstart: a\n## a: A\n* x: X\n  goto: a\n  this is stray text\n  > perhaps: no\n")
+	eq(bad.errors.size(), 2, "two mistakes, two errors")
+	if bad.errors.size() == 2:
+		eq(bad.errors[0].line, 7, "stray text after an option is reported on its line")
+		eq(bad.errors[1].line, 8, "an unknown tier is reported on its line")
+	# The linter points at lines too.
+	var lt := Parser.parse("title: T\nid: t\nstart: a\n## a: A\n* x: Fight it.\n  combat: foe=dragon\n  > fail: F\n    goto: nowhere\n  > mixed: M\n    goto: a\n    cost: One :: grit -1\n  > success: S\n    goto: a\n")
+	var li: Array = Lint.run(lt.tale, lt.lines)
+	var msgs := " | ".join(li.map(func(i): return "%d %s" % [i.line, i.msg]))
+	check(msgs.contains("5 Unknown foe 'dragon'"), "unknown foe is reported at the option's line (%s)" % msgs)
+	check(msgs.contains("No outcome for triumph"), "missing tier is reported")
+	check(msgs.contains("9 A Mixed outcome offers 2"), "one-cost Mixed is reported at the outcome's line")
+	check(msgs.contains("'nowhere' is not a scene"), "a bad goto is reported")
 
 
-func _collect_set(e: Array, set_flags: Dictionary, read_flags: Dictionary, id: String) -> void:
-	match e[0]:
-		"flag", "add", "random_flag":
-			set_flags[e[1]] = true
-		"if":
-			for f in Cond.flags_read(e[1]):
-				read_flags[f] = id
-			_collect_set(e[2], set_flags, read_flags, id)
+## The M3 gate: The Drowned Bell plays start to finish in the text preview, every ending is
+## reachable, and the walks see (nearly) every option and outcome.
+func test_preview() -> void:
+	var p := Preview.new()
+	p.open(Tales.DROWNED_BELL)
+	eq(p.errors.size(), 0, "the preview opens the tale")
+	eq(p.issues.size(), 0, "the preview's linter is clean")
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	var endings := {}
+	var n := maxi(120, runs)
+	for k in n:
+		p.seed_value = k + 1
+		p.archetype = ["balanced", "bruiser", "sage", "swindler"][k % 4]
+		p.restart()
+		p.walk(rng)
+		check(p.runner.phase == "ending", "walk %d reaches an ending (stopped in %s at %s)" % [k, p.runner.phase, p.scene_id()])
+		endings[p.runner.state.ending] = true
+	for e in ["rest", "silence", "greed", "bargain", "drowned"]:
+		check(endings.has(e), "the preview reaches the %s ending" % e)
+	var all: Array = p.all_targets()
+	var seen := all.filter(func(k): return p.seen.has(k)).size()
+	print("  " + p.coverage_text())
+	check(seen >= all.size() * 0.95, "walks see 95%% of options and outcomes (%d of %d)" % [seen, all.size()])
+	# Commands.
+	p.restart()
+	p.command("goto chamber")
+	eq(p.scene_id(), "chamber", "goto jumps to a scene")
+	p.command("flag climax=freed")
+	eq(p.runner.state.flags.get("climax"), "freed", "flag sets a word value")
+	check(p.command("check climax==freed").ends_with("true"), "check evaluates a condition")
+
+
+func _norm(v):
+	if v is Dictionary:
+		var d := {}
+		for k in v:
+			var x = _norm(v[k])
+			if (x is Array or x is Dictionary) and x.is_empty():
+				continue
+			d[k] = x
+		return d
+	if v is Array:
+		return v.map(func(x): return _norm(x))
+	return v
 
 
 # ===================================================================== save
@@ -561,6 +570,44 @@ func test_save() -> void:
 	check(c2.has_mark("drowned_before"), "marks survive")
 	eq(typeof(c2.pouch.collection[0].faces[0].n), TYPE_INT, "face numbers come back as ints")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	# Mid-tale saves: stop at every scene of several runs, save through JSON, resume, finish.
+	var resumed := 0
+	for k in 12:
+		var camp := Campaign.new()
+		camp.new_campaign()
+		var r := Runner.new()
+		var bt := Bot.new()
+		bt.rng.seed = 900 + k
+		r.start(Tales.drowned_bell(), camp, 50 + k)
+		var stop_at := 3 + k % 6
+		var guard := 0
+		while guard < 2000 and r.phase != "ending" and not (r.can_snapshot() and r.state.visited.size() >= stop_at):
+			guard += 1
+			bt.step(r)
+		if r.phase == "ending":
+			continue
+		var snap = JSON.parse_string(JSON.stringify(r.snapshot(Tales.DROWNED_BELL)))
+		var camp2 := Campaign.new()
+		var r2 := Runner.new()
+		r2.resume(Tales.drowned_bell(), camp2, snap)
+		resumed += 1
+		eq(r2.scene.id, r.scene.id, "resume %d returns to the same scene" % k)
+		eq(r2.phase, "choose", "resume %d waits for a choice" % k)
+		eq(r2.state.grit, r.state.grit, "resume %d keeps Grit" % k)
+		eq(r2.state.fate, r.state.fate, "resume %d keeps Fate" % k)
+		eq(r2.state.wounds, r.state.wounds, "resume %d keeps Wounds" % k)
+		eq(JSON.stringify(r2.state.flags), JSON.stringify(r.state.flags), "resume %d keeps flags" % k)
+		eq(r2.pouch.pouch.map(func(d): return d.id), r.pouch.pouch.map(func(d): return d.id), "resume %d keeps the Pouch" % k)
+		eq(r2.pouch.draw_pile.size() + r2.pouch.discard.size(), r.pouch.draw_pile.size() + r.pouch.discard.size(), "resume %d keeps the draw pile" % k)
+		eq(r2.pouch.fatigue, r.pouch.fatigue, "resume %d keeps Fatigue" % k)
+		eq(r2.visible_options().size(), r.visible_options().size(), "resume %d shows the same options" % k)
+		if r.state.wager != null:
+			check(r2.state.wager != null and r2.pouch.collection.has(r2.state.wager), "resume %d keeps the wager as the same die" % k)
+		var bt2 := Bot.new()
+		bt2.rng.seed = 77 + k
+		bt2.play(r2)
+		eq(r2.phase, "ending", "resumed run %d plays on to an ending" % k)
+	check(resumed >= 8, "most runs were saved and resumed mid-tale (%d)" % resumed)
 
 
 # ===================================================================== bots
@@ -636,7 +683,7 @@ func test_bots() -> void:
 					per_option[key2][ti] += 1
 					if ti < 4:
 						tiers[ti] += 1)
-			r.start(Tale.tale(), camp, k * 31 + 1)
+			r.start(Tales.drowned_bell(), camp, k * 31 + 1)
 			var steps := bt.play(r)
 			check(r.phase == "ending", "%s run %d reaches an ending (stuck in %s at %s after %d steps)" % [arch, k, r.phase, r.scene.get("id", "?"), steps])
 			var e: String = r.state.ending

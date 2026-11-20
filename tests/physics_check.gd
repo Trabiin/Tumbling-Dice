@@ -2,6 +2,9 @@ extends SceneTree
 ## Physics checks for throwing by hand: real Jolt dice in the real tray.
 ##
 ##   godot --headless --fixed-fps 120 -s res://tests/physics_check.gd [-- --throws=60]
+##   godot --headless --fixed-fps 60 -s res://tests/physics_check.gd -- --hz=60
+##       (another tick rate; at 60 Hz the faces are measurably unfair, which is why every
+##        graphics preset keeps physics at 120 Hz)
 ##
 ## 1. Every drag-throw, from a gentle drop to the hardest flick, settles inside the tray in time.
 ## 2. The gesture never decides the face: the same flick repeated gives fair faces (chi-square).
@@ -28,6 +31,9 @@ func _initialize() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--throws="):
 			throws = int(a.substr(9))
+		elif a.begins_with("--hz="):
+			# Try another physics rate (see the note at the top).
+			Engine.physics_ticks_per_second = int(a.substr(5))
 	_run.call_deferred()
 
 
