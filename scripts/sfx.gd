@@ -10,7 +10,8 @@ const RATE := 22050
 static var _bank := {}
 
 
-## Returns a random variant of `kind`: "wood", "felt", "dice", or "crackle" (a seamless loop).
+## Returns a random variant of `kind`: "wood", "felt", "dice", or the seamless loops "crackle"
+## and "wind".
 static func get_sound(kind: String) -> AudioStreamWAV:
 	if _bank.is_empty():
 		_build()
@@ -32,6 +33,7 @@ static func _build() -> void:
 		# Die against die: a sharp, glassy click.
 		_bank.dice.append(_strike(rng, 0.07, [[3400.0, 0.012, 0.7], [5600.0, 0.008, 0.6], [8200.0, 0.005, 0.4]], 0.35, 0.002, 9000.0))
 	_bank.crackle = [_crackle(rng, 6.0)]
+	_bank.wind = [_wind(rng, 16.0)]
 
 
 ## modes: [frequency Hz, decay seconds, amplitude]; noise: amount; noise_t: noise decay;
@@ -80,6 +82,48 @@ static func _crackle(rng: RandomNumberGenerator, seconds: float) -> AudioStreamW
 			var idx := (at + j) % n  # wrap round, keeping the loop seamless
 			buf[idx] += (rng.randf_range(-1, 1) * 0.7 + sin(TAU * f * t) * 0.3) * amp * exp(-t / dec)
 	var wav := _to_wav(buf, 0.7)
+	wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	wav.loop_begin = 0
+	wav.loop_end = n
+	return wav
+
+
+## A winter wind outside the window: noise through a soft band-pass whose pitch and loudness
+## rise and fall in slow gusts, with a faint whistle at the top of each gust. The gusts run in
+## whole cycles and the tail is cross-faded into the head, so the loop has no seam.
+static func _wind(rng: RandomNumberGenerator, seconds: float) -> AudioStreamWAV:
+	var n := int(seconds * RATE)
+	var xf := int(1.5 * RATE)
+	var raw := PackedFloat32Array()
+	raw.resize(n + xf)
+	var low := 0.0
+	var band := 0.0
+	var ph := 0.0
+	var dark := 0.0
+	for i in n + xf:
+		var u := float(i % n) / n
+		# Three slow gusts and a quicker flutter, all whole cycles over the loop.
+		var gust := 0.5 + 0.3 * sin(TAU * u * 3.0) + 0.15 * sin(TAU * u * 7.0 + 1.3) + 0.05 * sin(TAU * u * 23.0)
+		gust = clampf(gust, 0.0, 1.0)
+		var fc := 180.0 + 520.0 * gust * gust
+		var f := 2.0 * sin(PI * fc / RATE)
+		var q := 0.35
+		var w := rng.randf_range(-1, 1)
+		low += f * band
+		var high := w - low - q * band
+		band += f * high
+		ph += TAU * (600.0 + 500.0 * gust) / RATE
+		var whistle := sin(ph) * smoothstep(0.75, 1.0, gust) * 0.04
+		dark += ((band * 0.6 + low * 0.15) - dark) * 0.25   # roll off the hiss above ~1 kHz
+		raw[i] = dark * (0.25 + 0.75 * gust) + whistle
+	var buf := PackedFloat32Array()
+	buf.resize(n)
+	for i in n:
+		buf[i] = raw[i]
+	for i in xf:
+		var a := float(i) / xf
+		buf[i] = raw[n + i] * (1.0 - a) + raw[i] * a
+	var wav := _to_wav(buf, 0.6)
 	wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	wav.loop_begin = 0
 	wav.loop_end = n

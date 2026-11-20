@@ -635,7 +635,8 @@ void fragment() {
 
 
 # ---------------------------------------------------------------- night window
-# Diamond leaded panes of wobbly glass, a moon with a halo, stars, and a dark treeline.
+# Diamond leaded panes of wobbly glass, a moon with a halo, stars, a dark treeline, snow
+# drifting past outside and a rime of frost creeping in from the frame.
 const WINDOW := """
 shader_type spatial;
 render_mode unshaded, fog_disabled;
@@ -643,28 +644,42 @@ uniform vec2 size = vec2(30.0, 40.0);
 void fragment() {
 	vec2 p = vec2(UV.x, 1.0 - UV.y) * size;
 	// diamond leading
-	vec2 d = vec2(p.x + p.y, p.x - p.y) / 7.0;
+	vec2 d = vec2(p.x + p.y, p.x - p.y) / 10.0;
 	vec2 f = abs(fract(d) - 0.5);
 	float lead = smoothstep(0.44, 0.47, max(f.x, f.y));
 	// each pane bends the view a little (old crown glass)
 	vec2 cellid = floor(d);
-	vec2 wob = (vec2(hash3(vec3(cellid, 1.0)), hash3(vec3(cellid, 2.0))) - 0.5) * 1.2 + (fract(d) - 0.5) * 1.5;
+	vec2 wob = (vec2(hash3(vec3(cellid, 1.0)), hash3(vec3(cellid, 2.0))) - 0.5) * 0.6 + (fract(d) - 0.5) * 0.8;
 	vec2 q = p + wob;
-	vec3 sky = mix(vec3(0.10, 0.16, 0.32), vec3(0.03, 0.04, 0.12), smoothstep(0.0, size.y, q.y));
+	vec3 sky = mix(vec3(0.07, 0.11, 0.24), vec3(0.02, 0.03, 0.09), smoothstep(0.0, size.y, q.y));
 	vec2 mc = vec2(size.x * 0.3, size.y * 0.72);
 	float md = length(q - mc);
-	sky += vec3(0.35, 0.45, 0.7) * exp(-md * 0.12) * 0.8;                       // halo
+	sky += vec3(0.35, 0.45, 0.7) * exp(-md * 0.25) * 0.4;                       // halo
 	float moon = smoothstep(4.2, 3.8, md);
 	float crater = smoothstep(0.55, 0.7, vnoise(vec3((q - mc) * 0.9, 3.0)));
-	sky = mix(sky, vec3(1.0, 0.97, 0.85) * (1.0 - crater * 0.15) * 1.6, moon);
+	sky = mix(sky, vec3(1.0, 0.97, 0.85) * (1.0 - crater * 0.2) * 1.05, moon);   // under 1: no bloom smear
 	float star = step(0.985, hash3(vec3(floor(q * 1.6), 5.0))) * (1.0 - moon);
 	sky += vec3(0.9, 0.9, 1.0) * star * 0.8;
 	// distant treeline and hills
 	float hill = size.y * 0.18 + vnoise(vec3(q.x * 0.08, 1.0, 1.0)) * 4.0 + smoothstep(0.4, 0.9, vnoise(vec3(q.x * 0.6, 2.0, 1.0))) * 3.0;
 	sky = mix(sky, vec3(0.02, 0.03, 0.06), step(q.y, hill));
+	// Snow drifting down past the glass: two layers, the near one bigger and faster.
+	for (int l = 0; l < 2; l++) {
+		float fl = float(l);
+		float cell = 5.0 - fl * 1.6;
+		vec2 sp = q / cell + vec2(sin(TIME * 0.35 + q.y * 0.15 + fl * 2.0) * 0.35, TIME * (0.35 + fl * 0.3));
+		vec2 id = floor(sp);
+		vec2 c = fract(sp) - 0.5 - (vec2(hash3(vec3(id, 7.0 + fl)), hash3(vec3(id, 9.0 + fl))) - 0.5) * 0.6;
+		float on = step(0.55, hash3(vec3(id, 11.0 + fl)));
+		sky += vec3(0.75, 0.8, 0.95) * on * smoothstep(0.2 + fl * 0.05, 0.06, length(c)) * (0.55 + fl * 0.2);
+	}
 	float pane_edge = smoothstep(0.3, 0.46, max(f.x, f.y));
-	sky *= 1.0 - pane_edge * 0.25;
-	sky += vec3(0.3, 0.35, 0.5) * smoothstep(0.25, 0.0, length(fract(d) - vec2(0.35, 0.65))) * 0.25;  // glint on each pane
+	sky *= 1.0 - pane_edge * 0.15;
+	// Frost: thickest along the bottom and in the corners of the frame, feathered by noise.
+	vec2 e = min(UV, 1.0 - UV);
+	float edge_d = min(min(e.x, e.y) * 1.4, (1.0 - UV.y) * 0.9 + 0.02);
+	float frost = smoothstep(0.16, 0.0, edge_d + (vnoise(vec3(p * 0.9, 4.0)) - 0.5) * 0.12);
+	sky = mix(sky, vec3(0.55, 0.62, 0.78), frost * 0.55);
 	ALBEDO = mix(sky, vec3(0.03, 0.025, 0.02), lead);
 }
 """

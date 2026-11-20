@@ -705,6 +705,14 @@ func _window(c: Vector3) -> void:
 	var cnd := Props.candle(1.4, 3.0, rng)
 	cnd.node.position = c + Vector3(8, 0, 4)
 	add_child(cnd.node)          # burnt out, unlit
+	# the wind outside, quiet under the fire
+	var wind := AudioStreamPlayer3D.new()
+	wind.stream = Sfx.get_sound("wind")
+	wind.position = c + Vector3(0, 20, -4)
+	wind.unit_size = 120.0
+	wind.volume_db = -14.0
+	wind.autoplay = true
+	add_child(wind)
 	# cool moonlight spilling in around the window: blue against the warm room
 	var moon := OmniLight3D.new()
 	moon.position = c + Vector3(0, h * 0.5, 14)
