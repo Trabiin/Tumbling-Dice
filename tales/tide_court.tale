@@ -1,0 +1,497 @@
+title: The Tide Court
+id: tide_court
+patron: Wren
+start: tidings
+arc: wren
+order: 3
+pitch: The lake is rising at Marrowmere, and Wren says the drowned are holding court under it. Somebody is going to be judged.
+offer: ended:bell_market and not season==spring and not season==summer
+teller: triumph :: Even the lake goes quiet for that one.
+teller: triumph :: Somewhere under the water, a drowned bell rings once, approving.
+teller: mixed :: Through, and the lake takes its tithe. It always has.
+teller: fail :: The water closes over it, cold and patient.
+teller: loaded_caught :: The Judge's drowned eyes rest on {die}. The court murmurs. Nobody lies to the lake.
+teller: rest :: The abbey under the water, and the long green light, and no sound at all.
+
+// Wren's arc, tale 3 of 3. Sits on the autumn tide, so it waits for autumn. Reads both earlier
+// tales: the Abbess (freed or destroyed), the gold (taken, sold to Ormond), the drowned (called
+// home or not), Ormond (dead, broken, escaped), and whether Marrowmere flooded. Lifts the
+// Bellmetal's curse, if you carry it and make your peace.
+
+## tidings: The Lake Is Rising
+act: 1
+tile: inn
+at: 0, 0
+token: wren_along => handbell "Wren, coming with you"
+
+? seen:lake_lost :: [i]The lake is still rising. The court is still sitting. Wren is still waiting for you.[/i]
+? seen:drowned_home :: Wren comes in out of the rain with lake water in her hair and puts a wet hand on your shoulder, which is how she says hello now.
+? not seen:drowned_home :: Wren comes in out of the rain and sits down across from you without a word, and for a while doesn't say anything at all.
+"The lake's rising," she says. "Not like a flood. Like it's breathing in. And at night the drowned come up and stand in the shallows, all of them, facing the abbey, like they're waiting for something."
+"Gran says it's the Tide Court. Once in a long while, on the autumn tide, the drowned sit in judgement over whoever wronged the lake. And then the lake gives its verdict." She looks at you. "She says this time they've summoned someone."
+? seen:marrowmere_flooded :: [i]Marrowmere is half under water already. The woman by the fire tonight came from there.[/i]
+? cursed and seen:greed and not seen:sold_gold :: The Bellmetal in your Pouch hums, low and steady, like it knows where you're going.
+? seen:sold_gold :: "Ormond's back," Wren says. "They've seen his barge on the lake. With your gold aboard."
+? seen:ormond_escaped and not seen:sold_gold :: "And Ormond's back," Wren says. "His barge is on the lake, with the green lanterns. He wants what's under the water."
+[i]A court of the drowned. I've heard of it, the way you hear of most things that nobody comes back to tell properly.[/i]
+
+* along: "You've been with me this far. Come and see it end."
+  temper: mercy +1
+  do: flag wren_along; regard 1
+  goto: prepare
+  reply: "I was coming whether you asked or not," Wren says, and finishes your ale.
+
+* duty: "If someone's been summoned, someone ought to speak for them."
+  temper: duty +1
+  do: flag advocate
+  goto: prepare
+  reply: Wren looks at you a long moment. "It might be you, you know," she says. "Who they've summoned." [i]It might. You'd better speak well.[/i]
+
+* ask: "What does the lake count as a wrong?"
+  temper: honesty +1
+  do: flag asked_wrong; rumour lake_law "The Tide Court judges three wrongs: taking from the drowned, binding them, and lying to the lake."
+  goto: prepare
+  reply: "Taking from the drowned," Wren says, counting on her fingers. "Binding them. And lying to the water." She looks at your Pouch, and then at you. [i]Three wrongs. Let's see how many of them we're carrying.[/i]
+
+## prepare: Packing for the Water
+act: 1
+type: prepare
+goto: shore
+
+Hollis puts your Pouch on the bar and doesn't let go of it straight away. "I knew a man who went down to the Tide Court," he says. "He came back. He never said what they asked him." He lets go.
+[i]Choose what you carry. The old abbey stands under the lake, and its chapel is a Waystone still, for the Saddlebag.[/i]
+
+## shore: Marrowmere Shore
+act: 1
+on enter: if season==winter then flag lake_frozen
+tile: shore
+at: 1.4, 0.3
+token: drowned_guide => footprints "The drowned, showing the way"
+token: kettle_boat => boat "Mother Kettle's boat"
+
+? seen:marrowmere_flooded :: Marrowmere is under water to the window sills. Boats tied to doorknobs. The chapel bell, up in its tower, is the only dry thing in the village.
+? not seen:marrowmere_flooded :: Marrowmere is dry, just. The water has come up to the last row of houses and stopped, as if it's thinking.
+? lake_frozen :: The lake has frozen, early and hard, in one night. Under the ice, all the way out, a green light.
+? not lake_frozen :: Out on the lake, over the place where the abbey sank, the water is perfectly still, and green, and lit from underneath.
+The drowned stand in the shallows in their hundreds, facing the light. None of them looks at you.
+? seen:drowned_home :: Then one does. A man in a fisherman's smock, with Wren's chin. He lifts a hand, and turns, and starts walking out into the lake.
+? seen:ormond_escaped :: Far out, near the light, green lanterns: Ormond Vane's barge, at anchor.
+[i]Everyone's going to the court tonight. Find your way down.[/i]
+
+* follow: Follow the drowned man out into the water.
+  if: seen:drowned_home
+  temper: mercy +1
+  do: flag drowned_guide; regard 1
+  goto: gate
+  reply: He walks, and you walk after him, and the water comes up to your knees and your chest and over your head, and you find you are still breathing. [i]A kindness, repaid. The lake keeps accounts, like everybody else.[/i]
+
+* kettle: Find Mother Kettle. If anyone has a boat out there tonight, she does.
+  if: seen:smugglers_allied or standing:guild>=1
+  do: flag kettle_boat; coin -5
+  goto: gate
+  reply: Mother Kettle rows you out herself, saying nothing, and drops you over the abbey with a diving bell and a length of rope. "For old times' sake," she says. "And five coins." [i]Even old times have a price, with Kettle.[/i]
+
+* ice: Walk out on the ice to the light, and break through.
+  if: lake_frozen
+  challenge: kind=test difficulty=standard tries=2 title="Across the ice"
+  approach might: Walk straight out, and smash through where the light is brightest.
+  approach lore: Read the ice: where it's thick, where it's black, where it sings.
+  approach grace: Run, light and fast, before it notices you.
+  > triumph: The ice holds all the way, and at the light you crack it with your heel, and the lake opens for you like a door. In the ice at the edge, frozen, a pearl as big as a thumb.
+    do: material tide_pearl
+    goto: gate
+  > success: You reach the light, and break through, and go down.
+    goto: gate
+  > mixed: You get there. Not dry.
+    goto: gate
+    cost: You go through the ice too early (take Frostbite) :: wound "Frostbite"
+    cost: It's a long, cold walk (lose 4 Grit) :: grit -4
+  > fail: The ice gives under you halfway out, and you go down into black water, and come up, somehow, under the green light.
+    do: grit -4
+    goto: gate
+
+* swim: Swim out to the light and dive.
+  if: not lake_frozen
+  challenge: kind=trial progress=16 danger=3 danger_text="The cold gets into your chest." title="Out to the light"
+  mod: seen:marrowmere_flooded => progress=2
+  approach might: Strong strokes, straight out, and don't stop.
+  approach grace: Float, and let the drowned's tide carry you.
+  approach lore: Swim where the green light is, where the old abbey road ran under the water.
+  > triumph: You reach the light with breath to spare, and go down through it like a stone, and on the lake bed among the weeds, a grey pearl, perfectly round.
+    do: material tide_pearl
+    goto: gate
+  > success: You reach the light, take one great breath, and dive.
+    goto: gate
+  > mixed: You make it. The lake makes you pay for the swim.
+    goto: gate
+    cost: The cold sinks into your bones (lose 5 Grit) :: grit -5
+    cost: The lake fills your chest (take a Fever) :: wound "Fever"
+  > fail: Halfway out your strength goes, and the lake pulls you under. When you open your eyes you are standing on the lake floor, coughing water, in the green light.
+    do: grit -4
+    goto: gate
+
+## gate: The Abbey Gate
+act: 2
+type: challenge
+tile: dive
+at: 2.8, -0.5
+token: guard_saluted => flag "The Tide Guard's salute"
+
+The lake floor, in green light. The old abbey road, paved and weedy, runs to the abbey gate, and the drowned walk along it in silence. You can breathe here. You don't ask how.
+At the gate stand the Tide Guard: drowned soldiers in green bronze from some war nobody remembers, spears grounded, faces behind their visors long gone to the fish.
+? drowned_guide :: Your guide walks past them, and they let him. They lower their spears in front of you.
+? kettle_boat :: Your diving bell settles on the road behind you, and the Guard turn their visors toward the sound.
+"Who comes to the court?" says the captain of the Guard, in a voice like a wave on shingle.
+
+* name: Give your name, and say you've come to answer for what you've done.
+  temper: honesty +1
+  challenge: kind=test difficulty=standard tries=2 title="Before the Tide Guard"
+  mod: drowned_guide => progress=-3
+  mod: seen:abbess_freed => progress=-2
+  approach ward: Stand still, spears at your chest, and answer plainly.
+  approach lore: Give the old forms, the way the sisters would have spoken to the lake.
+  approach grace: Bow to the captain as to a knight, and ask leave to pass.
+  > triumph: The captain lifts his spear, and the whole Guard salute you, bronze on bronze, and one of them presses something into your hand as you pass: a die cut from his breastplate.
+    do: flag guard_saluted; gain tide_d8
+    goto: abbey
+  > success: "Pass, and answer," says the captain, and the spears part.
+    do: flag guard_saluted
+    goto: abbey
+  > mixed: They let you through. They take a toll.
+    do: flag guard_saluted
+    goto: abbey
+    cost: A spear-butt in the ribs, for your manners (lose 5 Grit) :: grit -5
+    cost: The captain will remember you to the Judge :: flag court_cold
+  > fail: "Not yet," says the captain, and the spears push you back up the road. You go round, by the broken wall, and it takes a long time.
+    do: grit -3; flag court_cold
+    goto: abbey
+
+* fight: They're dead men. Go through them.
+  temper: duty -1
+  combat: foe=tide_guard
+  mod: kettle_boat => resolve=-3
+  > triumph: The Guard go down in a clatter of old bronze, and lie still, and are only bones in armour. One breastplate has come apart in the fight, and the piece in your hand is cut like a die.
+    do: gain tide_d8; flag court_cold
+    goto: abbey
+  > success: You go through them. The court will have heard.
+    do: flag court_cold
+    goto: abbey
+  > mixed: You go through. Not cleanly.
+    do: flag court_cold
+    goto: abbey
+    cost: A drowned spear in your shoulder (take an Arrow in the Shoulder) :: wound "Arrow in the Shoulder"
+    cost: Word runs ahead of you (the court is angry) :: flag court_angry
+  > fail: They throw you down on the road, and stand over you, and then, without a word, drag you inside to the court. You're going either way.
+    do: grit -4; flag court_cold; flag court_angry
+    goto: abbey
+
+* slip: Walk in among the drowned, head down, as if you belonged.
+  temper: honesty -1
+  challenge: kind=trial progress=15 danger=3 danger_text="A visor turns toward you." title="Among the drowned"
+  mod: drowned_guide => progress=-3
+  approach guile: Shuffle like them, stare like them, don't breathe where they can see.
+  approach grace: Keep to the middle of the crowd, always moving.
+  approach lore: Walk the way the drowned walk: towards the bell, never looking back.
+  > triumph: Nobody sees you. Inside the gate, a drowned sister who isn't fooled at all catches your eye, and smiles, and puts a grey pearl in your hand before she drifts on.
+    do: material tide_pearl
+    goto: abbey
+  > success: You pass the Guard in the crowd, and nobody stops you.
+    goto: abbey
+  > mixed: You pass. Somebody noticed.
+    goto: abbey
+    cost: The captain saw you lie your way in (the court is cold) :: flag court_cold
+    cost: You had to hold your breath a long while (lose 4 Grit) :: grit -4
+  > fail: A bronze hand closes on your collar. "Liar," says the captain, and hauls you in to the court himself.
+    do: flag court_cold; flag court_angry; grit -3
+    goto: abbey
+
+## abbey: The Drowned Abbey
+act: 2
+type: waystone
+on enter: rest 11
+tile: abbey
+at: 4.2, 0.4
+token: abbess_counsel => candle "The Abbess's counsel"
+
+The abbey chapel, under the lake, still standing. Weed hangs from the rafters like banners, and a candle burns on the altar, under water, and does not go out.
+? seen:abbess_freed :: In the front pew sits the Abbess, the way you last saw her, at peace now, with her hands folded. She looks up when you come in. "I hoped it would be you," she says.
+? seen:abbess_destroyed :: The front pew is empty. Where the Abbess used to sit there is only a black stain on the stone, and the candle burns lower there.
+? not seen:abbess_freed and not seen:abbess_destroyed :: The pews are full of the drowned, waiting, very still.
+[i]A Waystone, at the bottom of a lake. Rest, if you can. The court sits at the turn of the tide.[/i]
+
+* counsel: Sit with the Abbess, and ask her how to stand before the court.
+  if: seen:abbess_freed
+  temper: mercy +1
+  do: flag abbess_counsel; heal
+  goto: court
+  reply: "Tell the truth," she says. "The lake has heard every lie there is, and it's tired of them. And don't be afraid of the Judge. He was a ferryman. He only wants everybody home." She puts her cold hand on yours, and an old hurt eases. [i]Advice from the dead. I'd take it. She's been where you're going.[/i]
+
+* pray: Light a candle for the drowned, and say what names you know.
+  temper: mercy +1
+  do: flag prayed; regard 1
+  goto: court
+  reply: Your candle burns under the water beside the other, and the drowned in the pews turn to look at you, one by one, as you say their names. [i]Every name you said, they heard. They'll be in the court tonight.[/i]
+
+* search: Search the abbey for anything the court might want to see.
+  temper: honesty -1
+  challenge: kind=test difficulty=standard tries=1 title="The abbey's records"
+  approach lore: The sisters kept a chapter book. Find it.
+  approach guile: Search the Abbess's cell, quickly, before anyone stops you.
+  > triumph: In the chapter house, the abbey's charter, still sealed in wax: the lake gave the abbey its gold, freely, on condition it was used for the poor. Someone broke that condition long before you. And in the reliquary, a pearl.
+    do: flag charter_found; material tide_pearl
+    goto: court
+  > success: You find the abbey's charter: the gold was the lake's gift, for the poor. You'll need that.
+    do: flag charter_found
+    goto: court
+  > mixed: You find the charter, wet through and half legible. Enough, perhaps.
+    do: flag charter_found
+    goto: court
+    cost: The sisters don't like you in their cells (the court is cold) :: flag court_cold
+    cost: Silt in your lungs (lose 4 Grit) :: grit -4
+  > fail: Nothing but weed and silt. You sit down, and a drowned sister gives you a look you'll remember.
+    do: fatigue 1
+    goto: court
+
+## court: The Tide Court
+act: 3
+type: challenge
+tile: drowned
+at: 5.5, -0.3
+token: verdict_kind => dove "The verdict: mercy"
+
+The chapter house of the drowned abbey, and every drowned soul of Marrowmere in it, standing, and on the abbot's chair the Judge: a ferryman, by his coat, with river weed for a beard and eyes like the lake on a dull day.
+? court_angry :: The court is angry. The water in the room is colder than it was.
+? court_cold :: The Judge has heard about you from the Guard. He doesn't look pleased.
+"The lake has three complaints," the Judge says. "Something was taken from it. Its people were bound. And it was lied to." He looks at you.
+? seen:greed and not seen:sold_gold :: "You took the drowned bell's gold," he says, "and you carry it still. We can hear it."
+? seen:sold_gold :: "You took the drowned bell's gold," he says, "and sold it to a binder of the drowned. That is two wrongs for the price of one."
+? seen:bell_market :: "You sold the bell of Marrowmere to a smuggler," he says, "and it went to a man who rang it to call up our people."
+? seen:abbess_destroyed :: "And you broke our Abbess, who was ours to judge."
+? seen:ormond_escaped :: And in chains, between two of the Tide Guard, Ormond Vane, still in river-green, looking at you as if this were all your fault.
+? seen:drowned_home :: But at the front of the court stand a hundred drowned from Saltreach quay, the ones you called home, and they are watching the Judge, not you.
+
+* plead: Answer the Judge yourself. Truthfully.
+  temper: honesty +1
+  contest: opponent=court_judge title="Before the Judge"
+  mod: abbess_counsel => resolve=-4
+  mod: charter_found => resolve=-3
+  mod: court_cold => resolve=3
+  mod: court_angry => resolve=3
+  mod: seen:abbess_destroyed => resolve=3
+  approach lore: Tell him the whole tale, from the first bell to tonight, and leave nothing out.
+  approach ward: Stand before him, and say plainly what you did, and that you'll answer for it.
+  approach grace: Speak for the living of Marrowmere, who never meant the lake any harm.
+  > triumph: The Judge listens to the end. Then he sits back, and for the first time looks like a ferryman, tired at the end of a long day. "Well," he says. "That's the truth, at least. We don't get much of it." The court murmurs, and the water warms.
+    do: flag climax peace; flag verdict_kind; regard 1
+    goto: offering
+  > success: "Truthful," says the Judge. "Not blameless. But truthful." The water warms a little.
+    do: flag climax peace
+    goto: offering
+  > mixed: He believes you. He wants something for it.
+    do: flag climax peace
+    goto: offering
+    cost: The lake takes its due (Coin, half of it) :: coin -20
+    cost: The Judge marks you (take a Wound, from the cold) :: wound "Frostbite"
+  > fail: "Words," says the Judge, and the water goes black. "The lake has had enough of words." The floor of the chapter house cracks, and the lake itself rises up through it.
+    do: flag court_angry
+    goto: wrath
+  > caught: The Judge's eyes go to your loaded die, and stay there. "And in the very court," he says, almost sadly. "Lying to the water." The floor cracks.
+    do: flag court_angry; flag caught_cheating
+    goto: wrath
+
+* speak: Speak for the drowned themselves. It's their court.
+  if: seen:drowned_home or prayed
+  temper: mercy +1
+  contest: opponent=drowned_court title="For the drowned"
+  mod: seen:drowned_home => resolve=-5
+  mod: prayed => resolve=-2
+  mod: wren_along => resolve=-3
+  mod: court_angry => resolve=3
+  approach grace: Turn your back on the Judge, and speak to them.
+  approach lore: Say their names. Every one you know.
+  approach ward: Stand among them, and tell the Judge you'll take whatever verdict they take.
+  > triumph: The drowned answer you. Not in words: they turn, all of them, toward the Judge, and the oldest of them, a woman with shells in her hair, says, "Enough. Let them go." And the Judge, who was a ferryman, bows his head.
+    do: flag climax peace; flag verdict_kind; regard 1
+    goto: offering
+  > success: The drowned murmur, and the murmur goes round the court, and it isn't angry.
+    do: flag climax peace
+    goto: offering
+  > mixed: Some of them are with you. Some of them want something first.
+    do: flag climax peace
+    goto: offering
+    cost: A drowned hand on your heart (lose 5 Grit) :: grit -5
+    cost: They keep a little of your warmth (take a Fever) :: wound "Fever"
+  > fail: The drowned turn away from you. Their grief is older than your words. The Judge lifts his hand, and the lake comes in.
+    do: flag court_angry
+    goto: wrath
+
+* accuse: Point at Ormond. He's the binder. Let the lake judge him.
+  if: seen:ormond_escaped
+  temper: duty +1
+  challenge: kind=test difficulty=standard tries=2 title="The case against Ormond"
+  mod: seen:drowned_home => progress=-2
+  mod: charter_found => progress=-2
+  approach lore: Read the court his buying list: every name, and its price.
+  approach guile: Get him to talk. He loves to talk. Let him hang himself.
+  approach grace: Bring the Saltreach drowned forward, one by one, to look at him.
+  > triumph: Ormond talks, as you knew he would, and the court listens, and when he's finished there is a silence like deep water. The Judge points, and the Tide Guard lead Ormond Vane out of the chapter house, and nobody ever sees him again.
+    do: flag climax judged; flag ormond_judged
+    goto: offering
+  > success: The court turns its anger on Ormond, where it belongs. He is taken away, still talking.
+    do: flag climax judged; flag ormond_judged
+    goto: offering
+  > mixed: They take Ormond. They haven't forgotten you.
+    do: flag climax judged; flag ormond_judged
+    goto: offering
+    cost: The Judge reminds you of your own part (Marrowmere -1) :: standing Marrowmere -1
+    cost: Ormond curses you as they drag him off (lose 5 Grit) :: grit -5
+  > fail: Ormond is a better talker than you, and it turns out the court can't tell one thief from another. The water rises.
+    do: flag court_angry
+    goto: wrath
+
+* defy: Draw your weapon. Nobody judges you.
+  temper: honesty -1
+  do: flag court_angry
+  goto: wrath
+  reply: The Judge doesn't move. "Then the lake will," he says, and the floor of the chapter house cracks open, and the water comes up through it like a fist. [i]Well. That's one way to plead.[/i]
+
+## offering: The Verdict
+act: 3
+type: challenge
+tile: bell
+at: 6.8, 0.2
+token: gold_returned => wave "The bell's gold, given back"
+
+The Judge stands. The water goes still. "The lake will hear one thing more," he says, "and then give its verdict."
+? cursed and seen:greed and not seen:sold_gold :: The Bellmetal in your Pouch is ringing now, so loud that the drowned put their hands over their ears.
+? ormond_judged and seen:sold_gold :: On the floor where Ormond stood lies your Bellmetal d20, still humming. The lake has given it back to you. You don't think that's a kindness.
+? climax==judged :: [i]Ormond is gone. That leaves you.[/i]
+
+* return: Give the gold back to the lake. All of it.
+  if: cursed and seen:greed
+  temper: honesty +1
+  do: flag gold_returned; lift_curse bellmetal_d20; flag climax peace
+  goto: ending
+  reply: You hold the Bellmetal out over the crack in the floor, where the black water is, and open your hand. It doesn't fall. The lake takes the gold out of it, gently, the way you'd take a splinter out of a child's hand, and leaves you the die, quiet. [i]Well. Now it's only a die. A good one. It's yours.[/i]
+
+* oath: Promise the lake you'll keep Marrowmere's people safe, the living and the drowned.
+  temper: duty +1
+  do: flag lake_oath; regard 1
+  goto: ending
+  reply: "Promised," says the Judge, "before the court." The drowned murmur it after him, a sound like the tide. [i]Another promise. This one is to a lake. I'd keep it.[/i]
+
+* ask: Ask the Judge to let the drowned go. All of them, home.
+  if: climax==peace or climax==judged
+  temper: mercy +1
+  challenge: kind=test difficulty=hard tries=2 title="Asking for them"
+  mod: verdict_kind => progress=-3
+  mod: wren_along => progress=-2
+  approach grace: Ask it as a favour, from one who has done the lake favours.
+  approach lore: Remind him what the sisters' charter promised: the poor, and the lost.
+  approach ward: Kneel, and ask, and don't get up.
+  > triumph: The Judge looks at you for a long time. Then he takes off his ferryman's hat, and the lake sighs, and every drowned soul in the court lifts its face and is gone, like breath on a cold window. Wren's father is the last to go. He looks back.
+    do: flag drowned_released; regard 1
+    goto: ending
+  > success: "Some of them," says the Judge. "The ones who are ready." And the court half empties, gently, like a tide going out.
+    do: flag drowned_released
+    goto: ending
+  > mixed: He'll let them go. The lake wants a keepsake.
+    do: flag drowned_released
+    goto: ending
+    cost: Your best die, cracked by the cold (a face is gone) :: crack_best
+    cost: A little of your warmth, for good (take Frostbite) :: wound "Frostbite"
+  > fail: "Not tonight," says the Judge, not unkindly. "They're not ready, and neither are you."
+    goto: ending
+
+## wrath: The Lake Rises
+act: 3
+type: challenge
+tile: cove
+at: 6.8, -1.2
+
+The chapter house is gone. There is no floor, no walls, no court: only the lake, standing up in the dark like a wave that won't break, and in it, every drowned face in Marrowmere, and none of them kind.
+? seen:sold_gold :: In the heart of the wave, a gleam of gold, ringing: the Bellmetal you sold, giving the lake its voice.
+? wren_along :: Wren is beside you, holding her gran's bell. Her hands are shaking. She hasn't let go of it.
+
+* fight: Stand, and fight the lake.
+  temper: duty +1
+  combat: foe=lake_wrath
+  mod: abbess_counsel => resolve=-4
+  mod: guard_saluted => no_wardens=true
+  mod: seen:sold_gold => resolve=4
+  > triumph: You fight until the wave breaks, and when it breaks it breaks gently, and you are standing in the chapter house again, with the court around you and the Judge on his chair. "Well," he says. "You'll do." And beside you, on the floor, a pearl the size of a fist, carved twelve-sided by the lake.
+    do: flag climax stilled; gain pearl_d12
+    goto: ending
+  > success: The lake breaks over you, and falls back, and is still. The Judge is on his chair, looking at you as if you'd just won an argument.
+    do: flag climax stilled
+    goto: ending
+  > mixed: The lake falls back. Not before it had its way with you.
+    do: flag climax stilled
+    goto: ending
+    cost: The cold of the deep water (take Frostbite) :: wound "Frostbite"
+    cost: The wave takes something from your Pouch (your best die cracks) :: crack_best
+  > fail: The wave comes down, and the lake closes over you, green and then black.
+    do: flag defeat
+    goto: ending
+
+* ring: Take Wren's bell, and ring the morning call.
+  if: wren_along
+  temper: mercy +1
+  challenge: kind=test difficulty=hard tries=2 title="Gran's bell"
+  approach grace: Ring it the way Wren's gran rang it, at the turn of every tide.
+  approach lore: Ring the morning call, the note the Abbess rang, that sends the drowned home.
+  approach ward: Hold it up in the face of the wave, and ring, and don't step back.
+  > triumph: One small clear note, and the great wave stops, and listens, and lies down like a dog at your feet. The Judge, on his chair again, takes off his hat to Wren.
+    do: flag climax peace; flag verdict_kind; regard 1
+    goto: offering
+  > success: The bell rings, and the lake hears it, and falls quiet.
+    do: flag climax peace
+    goto: offering
+  > mixed: It rings, and the lake listens, mostly.
+    do: flag climax peace
+    goto: offering
+    cost: The cold takes your hand (take Frostbite) :: wound "Frostbite"
+    cost: Gran's bell cracks on the last note (Wren says nothing) :: flag bell_cracked
+  > fail: The bell is too small, and the lake too big. The wave comes down.
+    goto: wrath
+    retry: fight
+
+## ending: How It Ended
+act: 3
+type: ending
+
++ fallen: Taken by the Lake
+  if: defeat or wounds>=3
+  [i]And so the lake rose, and kept rising, and the court sat on without you.[/i]
+  You wake on the shore at Marrowmere at dawn, coughing up lake water, with Wren pressing on your chest. She doesn't say anything. She doesn't have to.
+  [i]Get warm. Get mended. The court sits until the tide turns, and the lake is patient.[/i]
+  do: mark lake_lost; chronicle "The Tide Court rose against you, and the lake kept rising."
+
++ peace: The Verdict of the Lake
+  if: climax==peace
+  renown: 5
+  The Judge gives the verdict, in a voice like the tide coming in: the lake is answered. The water goes down that night, and by morning Marrowmere's streets are mud and puddles and the boats are back on the beach where they belong.
+  ? gold_returned :: The Bellmetal in your Pouch is quiet. For the first time since the abbey, you sleep through the night.
+  ? drowned_released :: And the drowned are gone from the shallows. Wren walks the shore at dawn and doesn't find a single one, and sits down on the beach and laughs, and cries, and laughs.
+  ? lake_oath :: You promised the lake. Marrowmere knows it, and the fishermen nod to you in the street.
+  ? bell_cracked :: Wren keeps her gran's cracked bell on the shelf over her bed.
+  [i]Three tales, and a lake at peace at the end of them. That's as good an ending as I know.[/i]
+  do: coin 25; material tide_pearl; standing Marrowmere 2; standing Abbey 1; chronicle "The Tide Court gave its verdict, and the lake was at peace."; mark lake_at_peace; if drowned_released then mark drowned_released; if gold_returned then mark gold_returned; if lake_oath then mark lake_oath
+
++ judged: Ormond Vane, Judged
+  if: climax==judged
+  renown: 4
+  The court gives Ormond Vane to the lake, and the lake keeps him. The water goes down a little that night: not all the way. The lake has had its due, but not from you.
+  ? drowned_released :: And the drowned are gone from the shallows, home.
+  ? lake_oath :: You promised the lake. It will hold you to that.
+  On his barge, left drifting, you find Ormond's purse, and a crate of things from Marrowmere you send home.
+  [i]The binder, bound. The lake has a sense of justice. Not a gentle one.[/i]
+  do: coin 40; standing Marrowmere 1; chronicle "Ormond Vane was given to the lake by the Tide Court."; mark ormond_judged; mark lake_at_peace; if drowned_released then mark drowned_released; if lake_oath then mark lake_oath
+
++ stilled: The Lake Stilled
+  if: climax==stilled
+  renown: 3
+  The lake goes down, in the end, because you made it. Marrowmere dries out. The fishermen are grateful, and a little afraid of you, and the drowned stand in the shallows still, at night, facing the abbey, waiting for a verdict that never came.
+  ? wren_along :: Wren walks home with you, and doesn't talk, and at the tavern door she says, "It's not finished, you know. It just stopped."
+  [i]You won. I'm not sure the lake lost.[/i]
+  do: coin 15; standing Marrowmere 1; standing Abbey -1; chronicle "You fought the Tide Court, and the lake went down."; mark lake_stilled

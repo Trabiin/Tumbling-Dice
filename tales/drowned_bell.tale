@@ -2,6 +2,17 @@ title: The Drowned Bell
 id: drowned_bell
 patron: Wren
 start: plea
+arc: wren
+order: 1
+pitch: A fisherman's daughter, and a bell under the lake.
+teller: triumph :: Triumph. They will sing that one at the Drowned Lamb, slightly wrong, for years.
+teller: triumph :: Even the lake went quiet for that.
+teller: mixed :: You get what you came for. The lake takes its share.
+teller: mixed :: Through, but not free. Nothing in Marrowmere is free.
+teller: fail :: It goes wrong. It was always going to go wrong somewhere. Better here than at the bell.
+teller: downed :: You are down. The water is very close. Throw everything you have.
+teller: last_stand_win :: Up again, bleeding and stubborn. The lake will have to try harder.
+teller: loaded_caught :: Mother Kettle's eyes go to {die}, and stay there. Oh dear.
 
 ## plea: Wren's Plea
 act: 1
@@ -80,10 +91,10 @@ Doors are barred. One window is lit: the Drowned Lamb, the only inn. Down the sh
   approach grace: Charm the room: a song, a joke, a round for the fishermen.
   approach might: Arm-wrestle the boatmen until someone respects you enough to talk.
   > triumph: By the third round the whole inn is talking at once. Odile leans close: smugglers work the north cove, and their boss, Mother Kettle, has been out on the lake every night the bell rang. Then the fishermen insist on buying your drinks.
-    do: flag rumour_smugglers; coin 10; rumour "Mother Kettle's smugglers are out on the lake when the bell rings."
+    do: flag rumour_smugglers; coin 10; rumour kettle_lake "Mother Kettle's smugglers are out on the lake when the bell rings."
     goto: tolls
   > success: Odile wipes the same mug for a long time, then says it low: smugglers in the north cove, and their Mother Kettle is out on the water whenever the bell rings. "Didn't hear it from me."
-    do: flag rumour_smugglers; rumour "Mother Kettle's smugglers are out on the lake when the bell rings."
+    do: flag rumour_smugglers; rumour kettle_lake "Mother Kettle's smugglers are out on the lake when the bell rings."
     goto: tolls
   > mixed: You get it out of her in the end: smugglers, the north cove, a Mother Kettle. But it costs you.
     do: flag rumour_smugglers
@@ -92,7 +103,7 @@ Doors are barred. One window is lit: the Drowned Lamb, the only inn. Down the sh
     cost: Someone saw you asking (Kettle hears you're coming) :: flag kettle_warned
     cost: Drink with the boatmen (lose 4 Grit) :: grit -4
   > fail: Odile has you thrown out into the night. On the steps, an old ferryman with no teeth is sitting out the bell. "You want the lake?" he wheezes. "Bell's loudest when the tide turns. Go down then, it pulls you to it." He laughs until he coughs.
-    do: flag tide_lore; rumour "The bell pulls hardest at the turn of the tide."
+    do: flag tide_lore; rumour tide_turn "The bell pulls hardest at the turn of the tide."
     goto: tolls
 
 * shore: Walk the shore alone at dusk.
@@ -485,7 +496,7 @@ There is so much more down there.
 ## waystone: The Lakeside Shrine
 act: 2
 type: waystone
-on enter: rest 11; if gold_taken then toll
+on enter: rest 11
 tile: shrine
 at: 7, 0.3
 token: wren_present => handbell "Wren on the shore with her bell"
@@ -659,6 +670,7 @@ type: ending
 
 + rest: Rest
   if: climax==freed
+  renown: 4
   Morning comes up over Marrowmere, and the lake is only a lake.
   ? wren_present :: Wren meets you on the shore. She has already found her father, lying peaceful in the shallows, and she does not cry until you put his oak die back in her hand.
   ? wren_safe :: Wren is waiting at the jetty, where you told her to wait. You give her back her father's die, and tell her he is resting now, and she believes you.
@@ -669,14 +681,16 @@ type: ending
 
 + bargain: The Bargain
   if: climax==salvaged
+  renown: 2
   Kettle's crew sell the bell in three ports before the month is out. Your share is heavier than you expected.
   The drowning stops. Nobody in Marrowmere knows quite why. The abbey island stands empty, and at night, sometimes, people say they hear singing out there, very faint.
   ? kettle_grudge :: Kettle pays you, but she doesn't smile when she does it. You will be seeing her again.
   [i]A good bargain. Whether it was a good ending, I leave to you.[/i]
-  do: coin 80; shard Spark; standing "Thieves' Guild" 2; standing Abbey -2; chronicle "The Drowned Bell: salvaged and sold."; mark bell_market; rumour "The bell of Marrowmere is for sale, somewhere."
+  do: coin 80; shard Spark; standing "Thieves' Guild" 2; standing Abbey -2; chronicle "The Drowned Bell: salvaged and sold."; mark bell_market; rumour bell_for_sale "The bell of Marrowmere is for sale, somewhere."
 
 + greed: Greed
   if: gold_taken
+  renown: 1
   You walk out of the Bell Chamber alive, with the abbey's gold heavy in your pack and the Bellmetal d20 humming in your Pouch, contented, like a cat.
   The drowning stops, for now. But the lake knows who took its gold.
   [i]Marrowmere will flood again, some autumn. A refugee will sit by this fire one night and tell me about it. You'll be there, I expect. You'll recognise the gold.[/i]
@@ -684,6 +698,7 @@ type: ending
 
 + silence: Silence
   if: climax==destroyed or climax==broken
+  renown: 3
   The bell of Marrowmere never rings again.
   The Drowned are buried properly, in the churchyard on the hill, Hobb and Aldous and the rest. The abbey crumbles into the lake that winter. Some say the island is quieter than a grave should be.
   ? climax==broken :: Among the shards of the bell you find one piece that fits your palm like a die.

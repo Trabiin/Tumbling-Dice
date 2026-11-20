@@ -44,6 +44,7 @@ var outcome := ""              # "won", "lost", "fled"
 var stolen = null              # the die a Thief holds
 var wardens := true            # minion waves (the Abbess); Kettle's crew can hold them off
 var bell_ready := false        # Wren's hand-bell: once, re-throw every die showing 1
+var first_round_penalty := 0   # a Wound (Arrow in the Shoulder) or a tale mod: Effort -n in round one
 var history: Array = []
 
 
@@ -52,6 +53,8 @@ static func create(foe_def: Dictionary, mods := {}):
 	c.foe = foe_def
 	c.wardens = not mods.get("no_wardens", false)
 	c.bell_ready = mods.get("bell", false)
+	c.first_round_penalty = int(mods.get("ambushed", 0))
+	c.effort_base += int(mods.get("effort", 0))
 	c._enter_phase(0)
 	c.resolve += int(mods.get("resolve", 0))
 	c.resolve_max = c.resolve
@@ -87,6 +90,8 @@ func begin_round() -> Array:
 	penalty_next = 0
 	if round_no == 1 and has_trait("ambush"):
 		effort_penalty += 1
+	if round_no == 1:
+		effort_penalty += first_round_penalty
 	var p := phase()
 	var dice: Array = p.dice.duplicate()
 	if p.has("split") and resolve <= int(p.split):

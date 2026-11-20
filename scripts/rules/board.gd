@@ -14,7 +14,7 @@ const Cond := preload("res://scripts/rules/conditions.gd")
 
 ## Tile looks. The writer picks one per scene; anything else falls back to "place".
 const ICONS := ["inn", "village", "shore", "drowned", "jetty", "abbey", "cove", "camp", "dive", "chest",
-	"shrine", "bell", "tower", "forest", "cave", "bridge", "place"]
+	"shrine", "bell", "tower", "forest", "cave", "bridge", "place", "market", "keep", "road"]
 ## Token looks.
 const TOKENS := ["chest", "coins", "grave", "lamp", "beacon", "flag", "knife", "rune", "boat", "footprints",
 	"handbell", "candle", "broken_bell", "wave", "dove", "foe", "skull", "fire", "seal"]

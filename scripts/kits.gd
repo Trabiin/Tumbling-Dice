@@ -246,12 +246,15 @@ static func aabb(n: Node) -> AABB:
 const MINI_TEX := {
 	"hero": "rogue_texture", "smuggler": "rogue_texture", "innkeeper": "barbarian_texture",
 	"drowned": "skeleton_texture", "abbess": "skeleton_texture", "hooded": "skeleton_texture",
+	"knight": "knight_texture", "mage": "mage_texture", "warrior": "skeleton_texture",
 }
 ## Colour washes that turn stock characters into ours.
 const MINI_TINT := {
 	"drowned": [Color("#5f9a86"), 0.55],   # lake-green bones and weed-dark rags
 	"abbess": [Color("#8fb6c4"), 0.4],     # pale, drowned blue
 	"hooded": [Color("#5a5468"), 0.35],
+	"warrior": [Color("#4f8a7c"), 0.5],    # the Tide Court's drowned guard
+	"mage": [Color("#4a5a50"), 0.3],       # Ormond the collector, in river-dark green
 }
 const MINI_HEIGHT := 1.55                  # the figure itself, standing on its 0.2 base
 const GLOW := Color("#9ef0d8")

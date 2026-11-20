@@ -13,6 +13,13 @@ static func write(tale: Dictionary) -> String:
 	if tale.get("patron", "") != "":
 		out.append("patron: " + tale.patron)
 	out.append("start: " + tale.get("start", ""))
+	for k in ["arc", "order", "pitch", "offer", "expires", "missed"]:
+		if str(tale.get(k, "")) != "":
+			out.append("%s: %s" % [k, str(tale[k])])
+	var tl: Dictionary = tale.get("teller", {})
+	for ev in tl:
+		for line in tl[ev]:
+			out.append("teller: %s :: %s" % [ev, line])
 	for id in tale.scenes:
 		out.append("")
 		_scene(tale.scenes[id], out)
@@ -47,6 +54,8 @@ static func _scene(sc: Dictionary, out: Array[String]) -> void:
 		out.append("+ %s: %s" % [en.id, en.get("title", "")])
 		if en.get("cond", "") != "":
 			out.append("  if: " + en.cond)
+		if en.has("renown"):
+			out.append("  renown: %d" % en.renown)
 		_lines(en.get("text", []), out, "  ")
 		if not en.get("effects", []).is_empty():
 			out.append("  do: " + effects(en.effects))

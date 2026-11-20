@@ -1,0 +1,521 @@
+title: The Pretender's Road
+id: pretender_road
+patron: Captain Ashgrove
+start: orders
+arc: ashgrove
+order: 2
+pitch: Lord Marshal Harrow calls himself king and is marching south on the mountain road. The captain wants him met before the snow.
+offer: ended:last_watch
+expires: winter
+missed: Snow closed the mountain road. Harrow came down it before the snow did, and nobody stood in his way.
+teller: triumph :: Now that is how you meet a would-be king on his own road.
+teller: triumph :: They will put that in a ballad. A short one. Harrow will hate it.
+teller: mixed :: Through, and the mountain takes its toll.
+teller: fail :: No. The road is long, and so is this tale. Get up.
+teller: rest :: A shepherd's fire, a roof of stone, and an hour when nobody is trying to kill you.
+
+// Captain Ashgrove's arc, tale 2 of 3. Reads The Last Watch (the banner, the letter, Brask) and
+// Mother Kettle's favour from The Drowned Bell. Siege of Holloway reads how this one ended.
+
+## orders: The Captain's Orders
+act: 1
+tile: inn
+at: 0, 0
+token: carry_letter => seal "The Marshal's letter, for the Crown"
+
+? seen:banner_home :: The Greyfell banner hangs over the captain's table now, scorched and proud.
+? seen:tower_burned :: The captain's table is bare. He hasn't been sleeping.
+Ashgrove has a map spread across his table, held down with cups. "Harrow," he says, before you sit. "He's done waiting. He's calling himself king, and he's bringing three hundred men down the mountain road to prove it. The first town in his way is Holloway." He taps the map. "My town. My mother's buried there."
+? seen:harrow_letter :: "The letter you brought me," he says. "If it reaches the Crown's magistrate at Kestrel Bridge before Harrow does, the garrison will hold the bridge against him. If it doesn't, they'll open the gate and kneel."
+? not seen:harrow_letter :: "There's a Crown garrison at Kestrel Bridge, and a magistrate who'll kneel to whoever arrives first. I need someone to arrive first."
+"The road's open until the first snow. After that, he's through or he isn't."
+
+* letter: "Give me the letter. The Crown will have it before Harrow has the bridge."
+  if: seen:harrow_letter
+  temper: duty +1
+  do: flag carry_letter
+  goto: prepare
+  reply: He gives it to you wrapped in oilcloth. "Don't lose it," he says. "There isn't another." [i]A letter. The heaviest thing a traveller can carry, and it weighs nothing at all.[/i]
+
+* slow: "I'll slow him down. Whatever it takes."
+  temper: duty +1
+  do: flag delay
+  goto: prepare
+  reply: "Whatever it takes," he repeats, and doesn't smile. "I've said that. Be careful what it ends up meaning."
+
+* why: "Why should I care which lord wears the crown?"
+  temper: honesty +1
+  do: flag asked_why
+  goto: prepare
+  reply: Ashgrove thinks about it properly, which you weren't expecting. "You shouldn't," he says. "But the people of Holloway will care what his men do to them on the way past. Care about that." [i]A fair answer. Rarer than a crown.[/i]
+
+## prepare: Packing for the Mountain
+act: 1
+type: prepare
+goto: road
+
+Hollis has your Pouch ready. "Mountain road," he says. "Cold, high, and full of soldiers. Pack for all three."
+[i]Choose what you carry. There's a shepherd's bothy halfway up, for the Saddlebag.[/i]
+
+## road: The Mountain Road
+act: 1
+on enter: random_flag weather [rain, wind, clear]; if season==autumn then flag weather sleet
+tile: road
+at: 1.4, 0.2
+token: farmers_warned => lamp "The hill farms, warned"
+
+The mountain road climbs in long loops above the tree line, past hill farms and sheep-folds and the cold eyes of goats. Somewhere above you, coming down, three hundred men. Somewhere below, Kestrel Bridge and the Crown's toll-fort.
+? weather==rain :: Rain, coming sideways. The road is a stream.
+? weather==wind :: A wind that wants you off the mountain and is prepared to help.
+? weather==clear :: Clear and cold. Far up the road you can see the glint of spears, and dust.
+? weather==sleet :: Autumn sleet. The snow is not far behind it.
+? seen:smugglers_allied or standing:guild>=1 :: In the lee of a rock, a goat-herd who is plainly not a goat-herd tips his hat to you. Mother Kettle's people know every path over these hills.
+[i]Harrow's outriders are on the road ahead of his army. Mind how you meet them.[/i]
+
+* high: Take the high road, fast, and race his outriders to the bridge.
+  goto: riders
+  reply: You put your head down and climb. Round the second bend, you hear hooves.
+
+* smugglers: Go with Kettle's goat-herd. Smugglers know the paths soldiers don't.
+  if: seen:smugglers_allied or standing:guild>=1 or rumour:kettle_lake
+  goto: goatpath
+  reply: The goat-herd grins with three teeth. "Mother Kettle sends her regards," he says, "and her bill."
+
+* farms: Turn off to warn the hill farms before the army reaches them.
+  temper: mercy +1
+  goto: farms
+  reply: Smoke from chimneys, washing on lines, children. None of them know what's coming down the road.
+
+## riders: Harrow's Outriders
+act: 1
+type: encounter
+on enter: grit -2
+tile: road
+at: 2.4, -1.2
+token: riders_beaten => foe "The outriders, unhorsed"
+
+Three riders come round the bend at a trot, in black and gold, lances upright. Their captain reins in and looks you over. "Halt. Road's closed, by order of the King."
+? carry_letter :: The letter is under your shirt. If they search you, it's over.
+"Which king would that be?" you could say. Or not.
+
+* fight: Pull the captain off his horse.
+  temper: duty +1
+  combat: foe=outriders
+  mod: weather==rain => ambushed=1
+  > triumph: You take the captain out of the saddle and the other two think better of it. In his saddlebag: Harrow's marching orders, and a little lead for a sling.
+    do: flag riders_beaten; flag marching_orders; material lead
+    goto: bridge
+  > success: Two of them ride for help. The third doesn't ride anywhere. The road's yours.
+    do: flag riders_beaten
+    goto: bridge
+  > mixed: You win, but the road is lined with their friends by the time you're through.
+    do: flag riders_beaten
+    goto: bridge
+    cost: A lance-point across your side (lose 5 Grit) :: grit -5
+    cost: One gets away to warn Harrow (he knows you're coming) :: flag harrow_warned
+  > fail: They ride you down and leave you in the ditch. When you crawl out, they're long gone toward the bridge, to tell Harrow someone is on the road.
+    do: flag harrow_warned; grit -3
+    goto: bridge
+
+* bluff: "I'm the King's messenger. Out of my way."
+  temper: honesty -1
+  challenge: kind=test difficulty=standard tries=2 title="The King's messenger"
+  approach guile: Wave a folded paper at them with total confidence.
+  approach grace: Act bored, as if they're keeping you from somewhere important.
+  approach lore: Name Harrow's officers and quote his orders back at them.
+  > triumph: They salute. They actually salute. The captain even tells you the password for the army's camp: "Long winter." You thank him and ride on with it.
+    do: flag password; flag riders_fooled
+    goto: bridge
+  > success: The captain waves you through, bored. You don't look back until the bend.
+    do: flag riders_fooled
+    goto: bridge
+  > mixed: They let you go, eventually.
+    do: flag riders_fooled
+    goto: bridge
+    cost: They search you first (anything you're carrying, they read) :: flag harrow_warned
+    cost: They take your horse "for the King" (1 Fatigue) :: fatigue 1
+  > fail: The captain laughs. "The King's messenger came through yesterday," he says. They take your boots for the joke and send you on barefoot.
+    do: grit -4; flag harrow_warned
+    goto: bridge
+
+* hide: Get off the road before they see you.
+  challenge: kind=trial progress=16 danger=3 danger_text="A rider turns his head." title="Off the road"
+  approach grace: Drop over the edge and cling to the rocks.
+  approach guile: Pull a shepherd's cloak over your head and become a sheep.
+  approach ward [progress=18 danger=4]: Lie flat in the heather and do not move for anything.
+  > triumph: They ride past close enough to touch. One of them is complaining that the King, meaning Harrow, owes him three months' pay. You remember that.
+    do: flag unpaid_army
+    goto: bridge
+  > success: They go by. You let your breath out and climb back onto the road behind them.
+    goto: bridge
+  > mixed: They go by, but it costs you.
+    goto: bridge
+    cost: An hour in a freezing gully (lose 4 Grit) :: grit -4
+    cost: You lose the road and time (1 Fatigue) :: fatigue 1
+  > fail: A horse shies at you. You run, and they let you, laughing. But now Harrow knows someone's on the road.
+    do: flag harrow_warned; grit -2
+    goto: bridge
+
+## goatpath: The Smugglers' Path
+act: 1
+type: challenge
+tile: forest
+at: 3.0, 0
+token: kettle_guides => flag "Kettle's goat-herds"
+
+The goat-herd takes you up a path that isn't there, along a ledge that shouldn't hold a goat, past a cave where somebody has stacked enough brandy to float a ship. "Mother says you're owed," he says. "Mother says you'll owe her back."
+? seen:kettle_grudge :: "Mother also says she hasn't forgotten," he adds. "But business is business."
+
+* follow: Keep up with him, whatever the ledge looks like.
+  challenge: kind=trial progress=16 danger=3 danger_text="The ledge crumbles." title="The goat path"
+  approach grace: Step where he steps, and don't look down.
+  approach ward: Rope yourself to him and trust it.
+  approach might: Haul yourself up the steep bits on your arms.
+  > triumph: Over the top by noon, a day ahead of Harrow, with a smuggler's satchel the goat-herd insists you take: lead, wrapped in a cloth, and a note from Kettle that says only "for Brannoc. You'll see."
+    do: flag kettle_guides; flag ahead; material lead; standing guild 1
+    goto: bridge
+  > success: You come down onto the road below Kestrel Bridge a full day ahead of Harrow's vanguard.
+    do: flag kettle_guides; flag ahead
+    goto: bridge
+  > mixed: You make it, but the mountain made you earn it.
+    do: flag kettle_guides; flag ahead
+    goto: bridge
+    cost: A fall on the scree (lose 5 Grit) :: grit -5
+    cost: Kettle's bill is bigger than you thought (lose 10 coins) :: coin -10
+  > fail: The ledge goes and you go with it, and the goat-herd hauls you up by your belt and walks you back to the road. "Mother'll laugh," he says. You're behind Harrow's outriders now.
+    do: grit -4; flag harrow_warned
+    goto: bridge
+
+* trade: Ask the smugglers what they know about Harrow's army.
+  temper: honesty -1
+  challenge: kind=test difficulty=easy tries=2 title="Smugglers' gossip"
+  approach guile: Trade them a rumour for a rumour.
+  approach lore: Ask the right questions about supplies and pay.
+  > triumph: The smugglers have been selling Harrow's quartermaster brandy for a month, and he hasn't paid: Harrow's army hasn't been paid since summer. They also sell you a short cut, cheap.
+    do: flag unpaid_army; flag ahead; flag kettle_guides
+    goto: bridge
+  > success: "His men haven't been paid since summer," the goat-herd says. "Grumbling something terrible. Mother's sold them brandy on credit." Useful.
+    do: flag unpaid_army; flag kettle_guides
+    goto: bridge
+  > mixed: They know a lot. They charge for all of it.
+    do: flag unpaid_army; flag kettle_guides
+    goto: bridge
+    cost: Smugglers' prices (lose 8 coins) :: coin -8
+    cost: You drink with them to be polite (lose 4 Grit) :: grit -4
+  > fail: They take your money and tell you nothing true. You find the road again on your own.
+    do: coin -5
+    goto: bridge
+
+## farms: The Hill Farms
+act: 1
+type: challenge
+on enter: grit -2
+tile: village
+at: 2.6, 1.2
+token: farmers_warned => lamp "The hill farms, warned"
+
+Six farms in a high valley, stone walls, sheep, hay in the barns. Nobody here has heard of Harrow, or of kings at all, beyond the one on the coins.
+? seen:hill_farms_burned :: You know how this ends if nobody warns them. You've seen the empty farms further north.
+[i]Three hundred hungry men are coming down this road, and armies take what they find.[/i]
+
+* warn: Go farm to farm and get them moving south, with their animals.
+  temper: mercy +1
+  challenge: kind=trial progress=18 danger=3 danger_text="Spears on the ridge." title="Moving the farms"
+  approach grace: Run farm to farm faster than the rumour.
+  approach ward: Herd the sheep yourself, and the people with them.
+  approach lore: Talk to the eldest first: where the grandmother goes, the valley follows.
+  > triumph: By dusk the valley is empty, the hay is burned so Harrow can't have it, and a column of farmers is walking south toward Holloway with every sheep they own. An old shepherd gives you his crook. You give it back. He gives you a binding-cord from his own wrist instead.
+    do: flag farmers_warned; add farms_saved 6; material binding_grace
+    goto: bridge
+  > success: Most of them go. They'll be in Holloway by the time Harrow is.
+    do: flag farmers_warned; add farms_saved 4
+    goto: bridge
+  > mixed: They go, but not all of them, and not cheaply.
+    do: flag farmers_warned; add farms_saved 2
+    goto: bridge
+    cost: You carry a lame ewe half the way (1 Fatigue) :: fatigue 1
+    cost: You stay to burn the last barn and nearly don't get out (lose 5 Grit) :: grit -5
+  > fail: They don't believe you until they see the spears, and then it's too late for some of them. You get the children out. Not the barns.
+    do: add farms_saved 1; grit -3
+    goto: bridge
+
+* fortify: Help them make the valley a hard place to take.
+  temper: duty +1
+  challenge: kind=test difficulty=standard tries=2 title="A valley that bites"
+  approach might: Roll boulders onto the road at the narrows.
+  approach lore: Dam the stream so the road floods at the ford.
+  approach ward: Teach them to bar a farmhouse door like a castle gate.
+  > triumph: The road at the narrows is a rockfall and the ford is a lake. Harrow will lose two days getting through, and the farmers cheer you down the valley.
+    do: flag road_blocked; flag farmers_warned
+    goto: bridge
+  > success: The narrows are blocked. It will cost Harrow a day.
+    do: flag road_blocked
+    goto: bridge
+  > mixed: It slows him, but you pay for it.
+    do: flag road_blocked
+    goto: bridge
+    cost: A boulder rolls the wrong way (lose 5 Grit) :: grit -5
+    cost: It takes all night (1 Fatigue) :: fatigue 1
+  > fail: The boulders don't move and the stream won't dam. The farmers give you a meal for trying, and you go on to the bridge behind schedule.
+    do: grit -2
+    goto: bridge
+
+## bridge: Kestrel Bridge
+act: 2
+type: challenge
+tile: bridge
+at: 4.3, 0
+token: coyle_convinced => seal "The magistrate, convinced"
+token: bridge_mined => fire "Powder under the bridge"
+
+Kestrel Bridge: a single stone arch over a gorge so deep you can't hear the river. On the near side, the Crown's toll-fort, twenty soldiers and a magistrate. On the far side, the road down to Holloway.
+? ahead :: You're a day ahead of Harrow. Time enough to do this properly.
+? harrow_warned :: You can see the dust of Harrow's vanguard on the switchbacks above. Hours, not days.
+Magistrate Coyle is a small, careful man in a black coat, who keeps a set of dice in his pocket and turns them over and over while he listens. "Harrow," he says. "Yes. And you expect me to do what, exactly?"
+? carry_letter :: The letter is under your shirt, warm from your skin.
+[i]Coyle is a careful man. Careful men watch the dice, and know a loaded one when they see it.[/i]
+
+* letter: Put Harrow's letter in his hands.
+  if: carry_letter
+  temper: honesty +1
+  contest: opponent=magistrate title="Convincing Magistrate Coyle"
+  mod: carry_letter => resolve=-6
+  mod: seen:letter_burned => resolve=3
+  approach lore: Walk him through the seal and the hand, line by line.
+  approach ward: Lay it before him and stand there until he acts.
+  approach grace: Remind him what the Crown does to magistrates who kneel to traitors.
+  > triumph: Coyle reads it twice and goes white. Then he rings the fort's bell and every soldier in the fort comes running. "Barricade the bridge," he says. "In the name of the King. The real one." He presses his own seal-die into your hand. "Officially," he says, "you never had this."
+    do: flag coyle_convinced; flag garrison_holds; gain seal_d10
+    goto: bothy
+  > success: "Very well," says Coyle. "The bridge holds. Until it doesn't." The soldiers start piling carts across the road.
+    do: flag coyle_convinced; flag garrison_holds
+    goto: bothy
+  > mixed: He believes you. He wants something for it.
+    do: flag coyle_convinced; flag garrison_holds
+    goto: bothy
+    cost: He keeps the letter (it goes to the Crown, not back to the captain) :: flag letter_kept
+    cost: A toll for the trouble (lose 10 coins) :: coin -10
+  > fail: Coyle reads the letter, smiles thinly, and drops it in the brazier. "Forgeries are a hanging matter," he says. "I'll let it go, this once." The bridge will open for Harrow.
+    do: flag letter_lost
+    goto: bothy
+  > caught: Coyle's eyes go to the die in your hand. "Loaded," he says softly. "And you want me to believe your letter?" He has you thrown out of the fort.
+    do: flag letter_lost; flag caught_cheating
+    goto: bothy
+
+* persuade: Talk him into holding the bridge, letter or no letter.
+  contest: opponent=magistrate title="Talking round the magistrate"
+  mod: not carry_letter => resolve=3
+  mod: unpaid_army => resolve=-3
+  mod: marching_orders => resolve=-4
+  approach guile: Tell him Harrow plans to hang every Crown official he finds.
+  approach lore: Show him on the map what Harrow will cost the Crown in tolls.
+  approach grace: Appeal to his pride as the King's man on the bridge.
+  > triumph: You talk until his candles are stubs, and in the end he says, "Very well. If he's that hungry and that broke, he won't wait long. The bridge holds." He gives you his seal-die, "for luck".
+    do: flag coyle_convinced; flag garrison_holds; gain seal_d10
+    goto: bothy
+  > success: "The bridge holds," Coyle says at last, sounding surprised at himself. "For now."
+    do: flag coyle_convinced; flag garrison_holds
+    goto: bothy
+  > mixed: He agrees. There's a cost.
+    do: flag coyle_convinced; flag garrison_holds
+    goto: bothy
+    cost: Half his men slip away in the night (the garrison is thin) :: flag garrison_thin
+    cost: He wants your word in writing (Crown standing hangs on it) :: standing crown -1
+  > fail: "I serve the King," Coyle says. "Whichever one arrives." The gate stays open.
+    goto: bothy
+  > caught: "Loaded," he says, looking at your dice. "Get out of my fort."
+    do: flag caught_cheating
+    goto: bothy
+
+* mine: Forget the magistrate. Pack the bridge with the fort's powder.
+  temper: duty -1
+  challenge: kind=trial progress=18 danger=3 danger_text="A sentry looks over the parapet." title="Powder under the bridge"
+  mod: ahead => progress=-3
+  approach guile: Steal the powder a keg at a time, under the sentries' noses.
+  approach lore: Find the bridge's keystone: one keg there is worth ten anywhere else.
+  approach grace [progress=20 danger=4]: Climb down under the arch with the kegs on your back.
+  > triumph: Under the arch, at the keystone, ten kegs and a fuse long enough to light from the bothy. Nobody at the fort has any idea.
+    do: flag bridge_mined; flag mine_perfect
+    goto: bothy
+  > success: The powder's in place under the arch, and the fuse runs up the gorge to the bothy.
+    do: flag bridge_mined
+    goto: bothy
+  > mixed: The powder's in place. Somebody noticed.
+    do: flag bridge_mined
+    goto: bothy
+    cost: The fort knows (Crown standing -1) :: standing crown -1
+    cost: A keg went off early (take a Wound) :: wound ""
+  > fail: A sentry spots you, the alarm goes up, and you run for the gorge with Coyle shouting about hanging. The powder stays in the fort.
+    do: grit -3; flag fort_hostile
+    goto: bothy
+
+## bothy: The Shepherd's Bothy
+act: 2
+type: waystone
+on enter: rest 11
+tile: camp
+at: 5.6, 0.7
+token: farmers_warned => lamp "Farmers on the road south"
+
+A stone hut above the gorge, with turf on the roof and a fire-pit, and a view straight down the road to the bridge and straight up it to Harrow's army, who are making camp on the switchbacks. Their fires go up the mountain like a stair.
+? garrison_holds :: Down at the bridge, the fort's soldiers are piling carts and timber across the road.
+? bridge_mined :: The fuse runs past the bothy door and down into the dark of the gorge.
+? farmers_warned :: On the road south, a long line of lanterns: the hill farmers, walking toward Holloway.
+A Waystone. You light a small fire, where the army can't see it, and empty your Pouch onto the stones.
+[i]At dawn he'll come down to the bridge. Rest while you can.[/i]
+
+* dawn: Sleep, and be at the bridge at dawn.
+  goto: dawn
+  reply: You sleep with your back to the wall, like the captain does. At first light, drums.
+
+* camp: Go up into Harrow's camp in the dark, and see the would-be king for yourself.
+  if: password or riders_fooled
+  temper: honesty -1
+  do: flag saw_harrow; fatigue 1
+  goto: dawn
+  reply: "Long winter," you tell the sentries, and they let you through. Harrow sits in a great tent with a gold circlet on a table in front of him, and his officers are arguing about pay. You leave before dawn knowing exactly how thin his patience is. [i]You have looked a king in the eye, or near enough. Remember what you saw.[/i]
+
+## dawn: Harrow at the Bridge
+act: 3
+type: challenge
+tile: bridge
+at: 7, 0
+token: climax==exposed => seal "Harrow exposed"
+token: climax==held => flag "Kestrel Bridge, held"
+token: climax==burned => fire "Kestrel Bridge, fallen"
+token: climax==joined => coins "Harrow's gold"
+
+Dawn on Kestrel Bridge. Harrow comes down the road with his banners up, black and gold, three hundred men behind him, and himself at the front on a grey horse, a gold circlet welded to his helm.
+? garrison_holds :: The Crown's soldiers stand behind their barricade. Coyle is there, very pale, with a sword he doesn't know how to hold.
+? not garrison_holds :: The fort's gate stands open. The soldiers are lined up to kneel.
+? bridge_mined :: The fuse is at your feet.
+? road_blocked :: Harrow's men look tired and wet. The rockfall in the narrows cost them.
+Harrow reins in at the end of the bridge and looks at you. "You," he says. "Whoever you are. Kneel, and keep your head."
+
+* expose: Tell his men what their king did at Greyfell.
+  if: seen:harrow_letter or seen:north_gate
+  temper: honesty +1
+  contest: opponent=harrow_parley title="Before Harrow's army"
+  mod: carry_letter and not letter_lost and not letter_kept => resolve=-5
+  mod: unpaid_army => resolve=-3
+  mod: saw_harrow => resolve=-2
+  approach lore: Read them the letter, every word, loud enough for the back rows.
+  approach grace: Speak to them as soldiers: men who were lied to, like Greyfell was.
+  approach ward: Stand alone in the middle of the bridge, and let them look at you.
+  > triumph: You read it out, and when you finish there is a silence you could cut, and then an old sergeant in the front rank throws his spear down on the road. Then another. By noon Harrow is riding back up the mountain with a third of the men he came with.
+    do: flag climax exposed; regard 1
+    goto: ending
+  > success: The ranks mutter. Men look at each other. Harrow orders the charge, and half of them don't move. He turns back, swearing, to think again.
+    do: flag climax exposed
+    goto: ending
+  > mixed: They hear you. Harrow makes sure they don't listen for long.
+    do: flag climax exposed
+    goto: ending
+    cost: A crossbow bolt from his guard (take a Wound) :: wound ""
+    cost: Harrow knows your face now (he'll remember at Holloway) :: flag harrow_hates
+  > fail: Harrow laughs, and his men laugh with him. "Forgeries," he says, and gives the order. You get off the bridge alive, just, with crossbow bolts in the planks around your feet.
+    goto: ending
+    retry: hold
+
+* hold: Hold the bridge.
+  temper: duty +1
+  combat: foe=outriders
+  mod: garrison_holds => resolve=-6
+  mod: garrison_thin => resolve=3
+  mod: road_blocked => resolve=-3
+  mod: harrow_warned => ambushed=1
+  > triumph: The vanguard breaks on the barricade and goes back up the road leaving horses and lances behind. Harrow stares down the bridge at you a long time. Then he turns his whole army round. There's another way to Holloway. It's a week longer.
+    do: flag climax held; regard 1
+    goto: ending
+  > success: They come three times, and three times they go back. Harrow pulls back up the mountain to find another road.
+    do: flag climax held
+    goto: ending
+  > mixed: The bridge holds. It costs.
+    do: flag climax held
+    goto: ending
+    cost: You take a lance at the barricade (take a Wound) :: wound ""
+    cost: Coyle falls on the bridge (Crown standing -1) :: standing crown -1; flag coyle_dead
+  > fail: They come over the barricade like a wave and you go down under it. When you wake, the bridge is Harrow's and the army has gone by.
+    do: flag climax passed; grit -3
+    goto: ending
+
+* burn: Light the fuse.
+  if: bridge_mined
+  temper: mercy -1
+  challenge: kind=test difficulty=easy tries=2 title="The fuse"
+  mod: mine_perfect => progress=-3
+  approach grace: Light it and run.
+  approach ward: Shield the flame from the wind with your body until it catches.
+  > triumph: The keystone goes up with a sound you feel in your teeth for a week, and Kestrel Bridge falls into the gorge in one piece, slowly, like a bow. Harrow sits on his grey horse at the edge of nothing for a long time.
+    do: flag climax burned
+    goto: ending
+  > success: The bridge goes into the gorge with a roar. Harrow will have to go round. A week, at least.
+    do: flag climax burned
+    goto: ending
+  > mixed: The bridge falls. Not cleanly.
+    do: flag climax burned
+    goto: ending
+    cost: You were too close (take a Wound) :: wound ""
+    cost: Three of the fort's soldiers were on it (Crown standing -1, and it weighs on you) :: standing crown -1; temper mercy -1
+  > fail: The fuse goes out in the damp. You light it again. It goes out again. Harrow's men are on the bridge.
+    goto: dawn
+    retry: hold
+
+* kneel: Kneel. Kings come and go. You'd like to keep your head.
+  temper: duty -1
+  do: flag climax joined; coin 40; standing crown -2; standing Holloway -2
+  goto: ending
+  reply: You kneel on the cold stones of Kestrel Bridge. Harrow smiles down at you, pleased, and tosses you a purse. "Sensible," he says. "I'll need sensible people in Holloway." [i]Well. That is a choice. I won't tell you what I think of it. You'll know.[/i]
+
+## ending: How It Ended
+act: 3
+type: ending
+
++ fallen: The Road South
+  if: defeat or wounds>=3
+  [i]And the would-be king went down the mountain road with his banners up, and nobody stood in his way.[/i]
+  They carry you to the bothy, where a shepherd sets your bones. By the time you can walk, Harrow is at Holloway's walls.
+  [i]Tales can be told again. But armies don't wait for second tellings. Get well, and get to Holloway.[/i]
+  do: mark road_lost; chronicle "Harrow came down the mountain road unopposed."
+
++ joined: Long Live the King
+  if: climax==joined
+  renown: 1
+  You ride into Holloway in Harrow's train with a purse at your belt. The townspeople line the street in silence.
+  When you come back to the tavern, the captain's table is empty. Hollis says he left the night you went north, and didn't say where. You can guess.
+  [i]I've told a great many tales, traveller. Not many where the hero kneels. It is a kind of ending.[/i]
+  do: mark sided_harrow; chronicle "You knelt to Harrow on Kestrel Bridge."; chronicle "Captain Ashgrove left the tavern, and didn't say where."; if farmers_warned then mark farmers_warned; if harrow_hates then mark harrow_hates; if kettle_guides then mark kettle_guides
+
++ exposed: The Pretender Exposed
+  if: climax==exposed
+  renown: 4
+  The story is in every tavern in the kingdom inside a week: the traveller on Kestrel Bridge who read out the Marshal's own letter, and the men who threw down their spears.
+  Harrow still has an army. A smaller one, unpaid and suspicious, and he's going round by the long road to Holloway with it.
+  ? seen:banner_home :: When you come home, Ashgrove has polished the banner's pole. He lifts his cup to you from across the room.
+  [i]A pretender can survive a battle. It's very hard to survive being laughed at by his own men.[/i]
+  do: standing crown 2; standing Holloway 1; coin 15; chronicle "Harrow exposed on Kestrel Bridge; a third of his army deserted."; mark harrow_exposed; if farmers_warned then mark farmers_warned; if harrow_hates then mark harrow_hates; if kettle_guides then mark kettle_guides
+
++ held: Kestrel Bridge Holds
+  if: climax==held
+  renown: 3
+  Kestrel Bridge holds, and Harrow goes round. The long road to Holloway will take him a week and cost him half his supplies.
+  ? coyle_dead :: Coyle is buried on the far side of the bridge he held. The Crown sends a letter of thanks, addressed to the wrong man.
+  ? not coyle_dead :: Coyle shakes your hand at the fort gate. "I'll mention you in my report," he says, and the way he says it, that's a great honour.
+  ? farmers_warned :: The hill farmers are safe in Holloway, with their sheep.
+  [i]A bridge held is a story every soldier understands. Ashgrove will want to hear it twice.[/i]
+  do: standing crown 1; standing Holloway 1; coin 15; chronicle "Kestrel Bridge held against Harrow."; mark bridge_held; if farmers_warned then mark farmers_warned; if harrow_hates then mark harrow_hates; if kettle_guides then mark kettle_guides
+
++ burned: The Bridge Burned
+  if: climax==burned
+  renown: 3
+  Kestrel Bridge lies at the bottom of its gorge, and Harrow sits on the wrong side of it. He'll go round, by the long road, and get to Holloway a week late and starving.
+  The Crown, which owned the bridge, is not pleased with you. Holloway, when it hears, is.
+  [i]Burning a bridge. People say it like it's a bad thing. Ask the people on the other side.[/i]
+  do: standing Holloway 2; standing crown -1; chronicle "Kestrel Bridge fell into its gorge, and Harrow went round."; mark bridge_burned; if farmers_warned then mark farmers_warned; if harrow_hates then mark harrow_hates; if kettle_guides then mark kettle_guides
+
++ passed: Harrow Passes
+  renown: 1
+  Harrow goes through Kestrel Bridge with his banners up, and the fort's soldiers on their knees. You watch from the gorge, alive, and not much else.
+  ? farmers_warned :: At least the hill farmers got away.
+  [i]You were there. That counts for something, when the songs are written. Not much.[/i]
+  do: chronicle "Harrow came through Kestrel Bridge."; mark road_lost; if farmers_warned then mark farmers_warned; if harrow_hates then mark harrow_hates; if kettle_guides then mark kettle_guides

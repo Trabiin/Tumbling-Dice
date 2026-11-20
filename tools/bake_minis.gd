@@ -1,7 +1,7 @@
 extends SceneTree
 ## Bakes KayKit characters into posed, static miniatures for the tale board and the foe stand.
 ##
-##   godot --headless -s res://tools/bake_minis.gd -- --adventurers=DIR --skeletons=DIR
+##   godot --headless -s res://tools/bake_minis.gd -- --adventurers=DIR --skeletons=DIR [--only=knight,mage]
 ##
 ## DIR is a clone of github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0 or
 ## ...-Skeletons-1.0. Each character is posed with one of its animations, the parts we want
@@ -23,6 +23,12 @@ const MINIS := {
 		["Skeleton_Minion_ArmLeft", "Skeleton_Minion_ArmRight", "Skeleton_Minion_Body", "Skeleton_Minion_Cloak", "Skeleton_Minion_Eyes", "Skeleton_Minion_Head", "Skeleton_Minion_Jaw", "Skeleton_Minion_LegLeft", "Skeleton_Minion_LegRight"]],
 	"abbess": ["skeletons", "Skeleton_Mage", "Idle", 0.4,
 		["Skeleton_Mage_Hat", "Skeleton_Mage_ArmLeft", "Skeleton_Mage_ArmRight", "Skeleton_Mage_Body", "Skeleton_Mage_Eyes", "Skeleton_Mage_Jaw", "Skeleton_Mage_LegLeft", "Skeleton_Mage_LegRight", "Skeleton_Mage_Skull"]],
+	"knight": ["adventurers", "Knight", "Idle", 0.4,
+		["Knight_Helmet", "Knight_Cape", "Knight_ArmLeft", "Knight_ArmRight", "Knight_Body", "Knight_Head", "Knight_LegLeft", "Knight_LegRight", "1H_Sword", "Badge_Shield"]],
+	"mage": ["adventurers", "Mage", "Idle", 0.4,
+		["Mage_Hat", "Mage_Cape", "Mage_ArmLeft", "Mage_ArmRight", "Mage_Body", "Mage_Head", "Mage_LegLeft", "Mage_LegRight", "2H_Staff"]],
+	"warrior": ["skeletons", "Skeleton_Warrior", "Idle", 0.4,
+		["Skeleton_Warrior_Helmet", "Skeleton_Warrior_ArmLeft", "Skeleton_Warrior_ArmRight", "Skeleton_Warrior_Body", "Skeleton_Warrior_Cloak", "Skeleton_Warrior_Eyes", "Skeleton_Warrior_Head", "Skeleton_Warrior_Jaw", "Skeleton_Warrior_LegLeft", "Skeleton_Warrior_LegRight"]],
 	"hooded": ["skeletons", "Skeleton_Rogue", "Idle", 0.4,
 		["Skeleton_Rogue_Hood", "Skeleton_Rogue_Cape", "Skeleton_Rogue_ArmLeft", "Skeleton_Rogue_ArmRight", "Skeleton_Rogue_Body", "Skeleton_Rogue_Eyes", "Skeleton_Rogue_Head", "Skeleton_Rogue_Jaw", "Skeleton_Rogue_LegLeft", "Skeleton_Rogue_LegRight"]],
 }
@@ -35,13 +41,15 @@ const PACKS := {
 
 func _init() -> void:
 	var dirs := {}
+	var only: Array = []
 	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--only="): only = Array(a.substr(7).split(","))
 		if a.begins_with("--adventurers="): dirs["adventurers"] = a.substr(14)
 		elif a.begins_with("--skeletons="): dirs["skeletons"] = a.substr(12)
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUT))
 	for kind in MINIS:
 		var spec: Array = MINIS[kind]
-		if not dirs.has(spec[0]):
+		if not dirs.has(spec[0]) or (not only.is_empty() and not only.has(kind)):
 			continue
 		var base: String = dirs[spec[0]].path_join(PACKS[spec[0]])
 		await _bake(kind, base.path_join("Characters/gltf/%s.glb" % spec[1]), spec[2], spec[3], spec[4])
@@ -49,7 +57,7 @@ func _init() -> void:
 		var base: String = dirs[pack].path_join(PACKS[pack])
 		var tex_dir := base.path_join("Textures")
 		for f in DirAccess.get_files_at(tex_dir):
-			if f in ["rogue_texture.png", "barbarian_texture.png", "skeleton_texture.png"]:
+			if f in ["rogue_texture.png", "barbarian_texture.png", "skeleton_texture.png", "knight_texture.png", "mage_texture.png"]:
 				DirAccess.copy_absolute(tex_dir.path_join(f), ProjectSettings.globalize_path(OUT + f))
 		DirAccess.copy_absolute(dirs[pack].path_join("LICENSE.txt"), ProjectSettings.globalize_path(OUT + "License_%s.txt" % pack))
 	quit()

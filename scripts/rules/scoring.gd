@@ -120,6 +120,8 @@ static func evaluate(ts: Array, ctx := {}) -> Dictionary:
 			notes.append("Grudge: %s +1" % ts[i].die.name)
 		if ctx.get("shaking", false) and ts[i].die.sides >= 12:
 			vals[i] = maxi(0, vals[i] - 2)
+		if ctx.get("broken_hand", false) and ts[i].die.sides <= 6:
+			vals[i] = maxi(0, vals[i] - 1)
 	if ctx.get("pity", false) and not ts.is_empty():
 		var hi := 0
 		for i in vals.size():

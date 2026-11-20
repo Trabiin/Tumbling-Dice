@@ -641,6 +641,9 @@ const WINDOW := """
 shader_type spatial;
 render_mode unshaded, fog_disabled;
 uniform vec2 size = vec2(30.0, 40.0);
+uniform float snow = 1.0;    // the season outside: snow in winter, rain in autumn and spring
+uniform float rain = 0.0;
+uniform float frost = 1.0;
 void fragment() {
 	vec2 p = vec2(UV.x, 1.0 - UV.y) * size;
 	// diamond leading
@@ -671,15 +674,21 @@ void fragment() {
 		vec2 id = floor(sp);
 		vec2 c = fract(sp) - 0.5 - (vec2(hash3(vec3(id, 7.0 + fl)), hash3(vec3(id, 9.0 + fl))) - 0.5) * 0.6;
 		float on = step(0.55, hash3(vec3(id, 11.0 + fl)));
-		sky += vec3(0.75, 0.8, 0.95) * on * smoothstep(0.2 + fl * 0.05, 0.06, length(c)) * (0.55 + fl * 0.2);
+		sky += vec3(0.75, 0.8, 0.95) * on * snow * smoothstep(0.2 + fl * 0.05, 0.06, length(c)) * (0.55 + fl * 0.2);
 	}
+	// Rain: thin slanted streaks, fast, faint.
+	vec2 rp = vec2(q.x + q.y * 0.18, q.y) * vec2(1.4, 0.12) + vec2(0.0, TIME * 2.6);
+	vec2 rid = floor(rp);
+	float rx = abs(fract(rp.x) - 0.5 - (hash3(vec3(rid, 13.0)) - 0.5) * 0.6);
+	float streak = step(0.72, hash3(vec3(rid, 15.0))) * smoothstep(0.06, 0.0, rx) * smoothstep(0.0, 0.5, fract(rp.y)) * smoothstep(1.0, 0.6, fract(rp.y));
+	sky += vec3(0.45, 0.52, 0.7) * streak * rain * 0.45;
 	float pane_edge = smoothstep(0.3, 0.46, max(f.x, f.y));
 	sky *= 1.0 - pane_edge * 0.15;
 	// Frost: thickest along the bottom and in the corners of the frame, feathered by noise.
 	vec2 e = min(UV, 1.0 - UV);
 	float edge_d = min(min(e.x, e.y) * 1.4, (1.0 - UV.y) * 0.9 + 0.02);
-	float frost = smoothstep(0.16, 0.0, edge_d + (vnoise(vec3(p * 0.9, 4.0)) - 0.5) * 0.12);
-	sky = mix(sky, vec3(0.55, 0.62, 0.78), frost * 0.55);
+	float frost_e = smoothstep(0.16, 0.0, edge_d + (vnoise(vec3(p * 0.9, 4.0)) - 0.5) * 0.12);
+	sky = mix(sky, vec3(0.55, 0.62, 0.78), frost_e * 0.55 * frost);
 	ALBEDO = mix(sky, vec3(0.03, 0.025, 0.02), lead);
 }
 """
@@ -753,8 +762,32 @@ static func wax(color := Color("#efe2c2"), top_y := 1e6) -> ShaderMaterial:
 	return _mat("wax", WAX, {"color": color, "top_y": top_y})
 
 
+static var _windows: Array = []
+static var _window_season := "winter"
+const WINDOW_SEASONS := {"spring": [0.0, 0.5, 0.0], "summer": [0.0, 0.0, 0.0], "autumn": [0.0, 1.0, 0.25], "winter": [1.0, 0.0, 1.0]}
+
+
 static func night_window() -> ShaderMaterial:
-	return _mat("window", WINDOW, {})
+	var m := _mat("window", WINDOW, {})
+	_windows = _windows.filter(func(w): return is_instance_valid(w))
+	_windows.append(m)
+	_apply_window(m)
+	return m
+
+
+## What the tavern windows show outside: snow and frost in winter, rain in autumn and spring.
+static func set_window_season(season: String) -> void:
+	_window_season = season
+	for m in _windows:
+		if is_instance_valid(m):
+			_apply_window(m)
+
+
+static func _apply_window(m: ShaderMaterial) -> void:
+	var v: Array = WINDOW_SEASONS.get(_window_season, WINDOW_SEASONS.winter)
+	m.set_shader_parameter("snow", v[0])
+	m.set_shader_parameter("rain", v[1])
+	m.set_shader_parameter("frost", v[2])
 
 
 ## Brush size of the painterly screen pass in pixels (0 turns the smear off, keeps the ink).
