@@ -1,0 +1,139 @@
+extends RefCounted
+## Everything one playthrough of a tale remembers: Grit, Fate, Wounds, flags, temperament,
+## the Teller's regard, what you gained and lost. Campaign-wide memory lives in campaign.gd.
+
+const S := preload("res://scripts/rules/scoring.gd")
+
+const FATE_CAP := 6
+const MAX_WOUNDS := 3
+const START_GRIT := 20
+const START_FATE := 3
+
+## Wounds are named negative rules. Three of them and the tale is lost.
+const WOUNDS := {
+	"Waterlogged Lungs": "Hand size -1.",
+	"Cracked Ribs": "Maximum Grit -4.",
+	"Shaking Hands": "Your d12s and d20s count 2 less.",
+	"Lake Chill": "You cannot gain Fate.",
+	"Bitten": "Mend runes restore only 1 Grit.",
+}
+const WOUND_ORDER := ["Cracked Ribs", "Shaking Hands", "Bitten"]
+
+var grit := START_GRIT
+var grit_max := START_GRIT
+var fate := START_FATE
+var wounds: Array = []
+var flags := {}
+## Temperament: + is Mercy / Honesty / Duty, - is Ruthlessness / Cunning / Freedom.
+## Neither end gives a bonus; each opens its own doors.
+var temper := {"mercy": 0, "honesty": 0, "duty": 0}
+var regard := 0                # the Teller's hidden opinion of you
+var defy_used := false
+var fail_streak := 0
+var wager = null               # the die staked on the tale
+var visited: Array = []
+var chronicle: Array = []      # entries written at the ending
+var gained: Array = []         # dice gained this tale
+var lost: Array = []
+var rumours: Array = []
+var standing := {}             # faction -> delta this tale
+var shards: Array = []
+var coin := 0                  # coin earned this tale
+var ending := ""
+var throws := 0
+var choices: Array = []        # [scene_id, option_id] for telemetry and the pick-rate check
+
+
+func flag(name: String):
+	return flags.get(name, false)
+
+
+func num(name: String) -> int:
+	var v = flags.get(name, 0)
+	if v is bool:
+		return 1 if v else 0
+	return int(v)
+
+
+func set_flag(name: String, value = true) -> void:
+	flags[name] = value
+
+
+func add_grit(n: int) -> int:
+	var before := grit
+	grit = clampi(grit + n, -99, grit_max)
+	return grit - before
+
+
+func add_fate(n: int) -> int:
+	var before := fate
+	if n > 0 and wounds.has("Lake Chill"):
+		return 0
+	fate = clampi(fate + n, 0, FATE_CAP)
+	return fate - before
+
+
+## Add a Wound by name, or the next one in order when name is empty. Returns its name.
+func add_wound(name := "") -> String:
+	if name == "" or wounds.has(name):
+		name = ""
+		for w in WOUND_ORDER:
+			if not wounds.has(w):
+				name = w
+				break
+		if name == "":
+			name = "Cracked Ribs (again)"
+	wounds.append(name)
+	if name == "Cracked Ribs":
+		grit_max -= 4
+		grit = mini(grit, grit_max)
+	return name
+
+
+func wound_count() -> int:
+	return wounds.size()
+
+
+func defeated() -> bool:
+	return wounds.size() >= MAX_WOUNDS
+
+
+func hand_penalty() -> int:
+	return wounds.count("Waterlogged Lungs")
+
+
+func shaking() -> bool:
+	return wounds.has("Shaking Hands")
+
+
+func mend_amount() -> int:
+	return 1 if wounds.has("Bitten") else 2
+
+
+## After two Fails in a row the Teller takes pity: +1 to the highest die, shown in the odds.
+func pity() -> bool:
+	return fail_streak >= 2
+
+
+func record_tier(tier: int) -> void:
+	if tier == S.FAIL:
+		fail_streak += 1
+	else:
+		fail_streak = 0
+
+
+func move_temper(track: String, amount: int) -> void:
+	temper[track] = int(temper.get(track, 0)) + amount
+
+
+## How the Teller describes you, from your temperament.
+func epithet() -> String:
+	var best := ""
+	var best_v := 0
+	var names := {"mercy": ["merciful", "ruthless"], "honesty": ["honest", "cunning"], "duty": ["dutiful", "free"]}
+	for k in temper:
+		var v: int = temper[k]
+		if absi(v) > absi(best_v):
+			best_v = v
+			best = names[k][0] if v > 0 else names[k][1]
+	return best

@@ -2,8 +2,8 @@
 config_version=5
 
 [application]
-config/name="Dice at the Inn"
-run/main_scene="res://main.tscn"
+config/name="Tales of the Tumbling Dice"
+run/main_scene="res://game.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 
 [display]
