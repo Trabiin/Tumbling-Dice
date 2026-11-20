@@ -14,9 +14,9 @@ thank you, and please support them.
 
 ## What is here, and how it got here
 
-Only the pieces the game uses are copied in, and only their colour maps: our toon shader
-(`scripts/kits.gd`) paints with the base colour alone, so normal, roughness and occlusion maps are left
-out. The nature textures are shrunk to 512 px because they only ever appear on the tale board.
+Only the pieces the game uses are copied in, with their colour maps, plus the props kit's normal
+maps (shrunk to 1024 px): its carved panels, plank grooves and rivets live there, and our toon shader
+(`scripts/kits.gd`) uses them on Medium and High. Roughness and occlusion maps are left out. The nature textures are shrunk to 512 px because they only ever appear on the tale board.
 
 - `tools/vendor_kits.py` copies the props, nature and hexagon models from the downloaded packs
   (needs Python 3 and Pillow). Edit its lists to bring in more pieces.

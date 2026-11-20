@@ -235,7 +235,10 @@ func _ready() -> void:
 func _parse_args() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a == "--fast": fast_dice = true
-		elif a == "--kits=off": Kits.enabled = false   # the all-code look, for comparisons
+		elif a == "--kits=off": Kits.enabled = false
+		elif a == "--kits-look=stock": Kits.stock = true
+		elif a == "--kits-normals=off": Kits.normals = false
+		elif a.begins_with("--brush="): Mats.brush_px = int(a.substr(8))   # the all-code look, for comparisons
 		elif a == "--new": opt_new = true
 		elif a == "--autoplay": opt_autoplay = true
 		elif a == "--practice": opt_practice = true

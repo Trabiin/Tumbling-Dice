@@ -15,12 +15,19 @@ const Mats := preload("res://scripts/materials.gd")
 const ROOT := "res://assets/kits/"
 
 static var enabled := true
+## Use the props kit's normal maps (carved panels, grooves, rivets). Off on Low.
+static var normals := true
+## Debug: keep the kits' own PBR materials instead of repainting (--kits-look=stock).
+static var stock := false
 
 const KIT := """
 shader_type spatial;
 render_mode CULL;
 uniform sampler2D albedo_tex : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform vec4 albedo : source_color = vec4(1.0);
+uniform sampler2D normal_tex : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform bool use_normal = false;
+uniform float normal_depth = 1.0;
 uniform bool use_vcol = false;
 uniform float rough = 0.8;
 uniform float metal = 0.0;
@@ -47,6 +54,12 @@ void fragment() {
 	c *= 0.94 + 0.1 * vnoise(vec3(UV * brush_scale, 1.0));
 	ALBEDO = mix(c, paper * 0.95, fade);
 	EMISSION = c * glow * (1.0 - fade);
+#ifndef LITE
+	if (use_normal) {
+		NORMAL_MAP = texture(normal_tex, UV).rgb;
+		NORMAL_MAP_DEPTH = normal_depth;
+	}
+#endif
 	ROUGHNESS = rough;
 	METALLIC = metal;
 	SPECULAR = 0.3;
@@ -113,6 +126,8 @@ static func model(path: String, opts := {}) -> Node3D:
 	if inst is MeshInstance3D:
 		meshes.append(inst)
 	for mi: MeshInstance3D in meshes:
+		if stock:
+			continue
 		for i in mi.mesh.get_surface_count():
 			var src := mi.get_active_material(i)
 			mi.set_surface_override_material(i, paint(src, opts, width / s))
@@ -127,7 +142,7 @@ static func paint(src: Material, opts := {}, outline_local := 0.0) -> ShaderMate
 	var wash: float = opts.get("wash", 0.0)
 	var fade: float = opts.get("fade", 0.0)
 	var sat: float = opts.get("sat", 1.12)
-	var key := "%d|%s|%.2f|%.2f|%.2f|%.4f|%s" % [src.get_instance_id() if src else 0, tint.to_html(), wash, fade, sat, outline_local, Mats.lite]
+	var key := "%d|%s|%.2f|%.2f|%.2f|%.4f|%s|%s" % [src.get_instance_id() if src else 0, tint.to_html(), wash, fade, sat, outline_local, Mats.lite, normals]
 	if _mats.has(key):
 		return _mats[key]
 	var tex: Texture2D = null
@@ -137,9 +152,12 @@ static func paint(src: Material, opts := {}, outline_local := 0.0) -> ShaderMate
 	var rough := 0.8
 	var metal := 0.0
 	var glass := false
+	var nmap: Texture2D = null
 	if src is BaseMaterial3D:
 		var b := src as BaseMaterial3D
 		tex = b.albedo_texture
+		if normals and not Mats.lite and b.normal_enabled:
+			nmap = b.normal_texture
 		col = b.albedo_color
 		# The props kit tints glass, potions and coins by vertex colour ("..._Vertex" materials).
 		vcol = b.vertex_color_use_as_albedo or String(b.resource_name).contains("Vertex")
@@ -153,6 +171,9 @@ static func paint(src: Material, opts := {}, outline_local := 0.0) -> ShaderMate
 	var m := _new_mat(tex, col, vcol, cutout, rough, metal, Color(tint, wash), fade)
 	m.set_shader_parameter("sat", sat)
 	m.set_shader_parameter("glow", 0.35 if glass else 0.0)
+	if nmap != null:
+		m.set_shader_parameter("normal_tex", nmap)
+		m.set_shader_parameter("use_normal", true)
 	if outline_local > 0.0 and not cutout:
 		var o := ShaderMaterial.new()
 		o.shader = Mats._shader("kit_outline", OUTLINE)

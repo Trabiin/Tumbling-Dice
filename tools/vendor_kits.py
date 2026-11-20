@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Copy the CC0 kit models the game uses into assets/kits/, colour maps only.
+"""Copy the CC0 kit models the game uses into assets/kits/: colour maps, plus normal maps for
+the props kit (its carved panels, grooves and rivets live there; shrunk to 1024 px).
 
-Our toon shader paints with the colour (base colour) map alone, so each glTF is rewritten
-without its normal, ORM and occlusion maps, and only the textures still referenced are copied.
-This keeps the repository small and the Low preset light.
+Our toon shader has no use for the ORM and occlusion maps, so each glTF is rewritten without
+them, and only the textures still referenced are copied. This keeps the repository small.
 
   python3 -I tools/vendor_kits.py --props DIR --nature DIR --hexagon DIR
 
@@ -45,20 +45,24 @@ decoration/nature/waterplant_A decoration/nature/waterlily_A""".split()
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "kits")
 
 
-def vendor(src_gltf: str, dst_dir: str, max_px: int = 0) -> None:
+def vendor(src_gltf: str, dst_dir: str, max_px: int = 0, normals: bool = False) -> None:
     with open(src_gltf) as f:
         j = json.load(f)
     src_dir = os.path.dirname(src_gltf)
     for m in j.get("materials", []):
-        for k in ("normalTexture", "occlusionTexture", "emissiveTexture"):
+        for k in ("occlusionTexture", "emissiveTexture") + (() if normals else ("normalTexture",)):
             m.pop(k, None)
         pbr = m.get("pbrMetallicRoughness", {})
         pbr.pop("metallicRoughnessTexture", None)
     used = set()
+    normal_imgs = set()
     for m in j.get("materials", []):
         t = m.get("pbrMetallicRoughness", {}).get("baseColorTexture")
         if t is not None:
             used.add(t["index"])
+        if m.get("normalTexture") is not None:
+            used.add(m["normalTexture"]["index"])
+            normal_imgs.add(j["textures"][m["normalTexture"]["index"]]["source"])
     # Board-sized pieces (nature) are shrunk to 512 px; they cover a few dozen pixels on screen.
     # Renumber the textures and images that are still used.
     tex_map, img_map, textures, images = {}, {}, [], []
@@ -75,6 +79,9 @@ def vendor(src_gltf: str, dst_dir: str, max_px: int = 0) -> None:
         t = m.get("pbrMetallicRoughness", {}).get("baseColorTexture")
         if t is not None:
             t["index"] = tex_map[t["index"]]
+        if m.get("normalTexture") is not None:
+            m["normalTexture"]["index"] = tex_map[m["normalTexture"]["index"]]
+    normal_uris = {j["images"][i]["uri"] for i in normal_imgs}
     if textures:
         j["textures"], j["images"] = textures, images
     else:
@@ -90,6 +97,8 @@ def vendor(src_gltf: str, dst_dir: str, max_px: int = 0) -> None:
             shutil.copy(os.path.join(src_dir, im["uri"]), dst)
             if max_px:
                 shrink(dst, max_px)
+            elif im["uri"] in normal_uris:
+                shrink(dst, 1024)   # carved detail only; half size is plenty
     with open(os.path.join(dst_dir, os.path.basename(src_gltf)), "w") as f:
         json.dump(j, f, separators=(",", ":"))
 
@@ -111,7 +120,7 @@ def main() -> int:
     a = ap.parse_args()
     if a.props:
         for n in PROPS:
-            vendor(os.path.join(a.props, "Exports", "glTF", n + ".gltf"), os.path.join(ROOT, "fantasy_props"))
+            vendor(os.path.join(a.props, "Exports", "glTF", n + ".gltf"), os.path.join(ROOT, "fantasy_props"), normals=True)
         shutil.copy(os.path.join(a.props, "License_Standard.txt"), os.path.join(ROOT, "fantasy_props", "License.txt"))
     if a.nature:
         for n in NATURE:

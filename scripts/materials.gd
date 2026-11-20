@@ -736,8 +736,11 @@ static func night_window() -> ShaderMaterial:
 	return _mat("window", WINDOW, {})
 
 
+## Brush size of the painterly screen pass in pixels (0 turns the smear off, keeps the ink).
+static var brush_px := 3
+
 static func post() -> ShaderMaterial:
-	var m := _mat("post", POST, {})
+	var m := _mat("post", POST, {"brush_px": brush_px})
 	m.render_priority = Material.RENDER_PRIORITY_MIN  # before flames and glass, which stay crisp
 	return m
 
