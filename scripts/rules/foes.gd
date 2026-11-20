@@ -40,7 +40,7 @@ static func foe(id: String) -> Dictionary:
 		"drowned_pair":
 			return {"id": id, "name": "Two Drowned", "kind": "minion", "speed": 6,
 				"text": "Grey men in sodden wool, lake water pouring from their sleeves.",
-				"phases": [{"resolve": 16, "traits": ["ghostly"],
+				"phases": [{"resolve": 18, "traits": ["ghostly"],
 					"dice": [{"name": "Grasp", "sides": 8, "kind": "attack"}, {"name": "Grasp", "sides": 8, "kind": "attack"}],
 					"split": 8}],
 				"weakness": "lore", "loot": "brine_d6", "figure": "drowned"}
@@ -71,7 +71,7 @@ static func foe(id: String) -> Dictionary:
 static func opponent(id: String) -> Dictionary:
 	match id:
 		"odile":
-			return {"id": id, "name": "Odile, keeper of the Drowned Lamb", "resolve": 12,
+			return {"id": id, "name": "Odile, keeper of the Drowned Lamb", "resolve": 15,
 				"dice": [{"name": "Doubt", "sides": 6}, {"name": "Doubt", "sides": 6}], "traits": []}
 		"kettle":
 			return {"id": id, "name": "Mother Kettle", "resolve": 14,

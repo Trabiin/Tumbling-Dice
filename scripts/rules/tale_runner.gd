@@ -975,10 +975,13 @@ func _effect(e: Array) -> void:
 				_say("Your %s is gone, into the dark." % low.die.name, "foe")
 				events.append({"type": "lost", "die": low.die})
 		"rest":
-			state.add_grit(int(e[1]))
+			# A Waystone gets you back on your feet, not back to full: Grit rises to n if it is lower.
+			var before_rest: int = state.grit
+			state.grit = clampi(maxi(state.grit, int(e[1])), state.grit, state.grit_max)
 			pouch.rest(rng, 2)
 			_say(teller.line("rest"), "teller")
-			_say("Grit restored to %d. Fatigue cleared. You may swap up to 2 dice with your Saddlebag." % state.grit, "system")
+			var grit_text := ("Grit back up to %d." % state.grit) if state.grit > before_rest else ("Grit stays at %d." % state.grit)
+			_say("%s Fatigue cleared. You may swap up to 2 dice with your Saddlebag." % grit_text, "system")
 		"practice_reset":
 			# The practice table: every challenge starts from the same footing.
 			state.grit_max = TaleState.START_GRIT

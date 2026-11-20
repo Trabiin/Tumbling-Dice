@@ -116,7 +116,7 @@ Effects are separated by `;`. Words with spaces go in double quotes. Lists go in
 | `standing "Thieves' Guild" n` | Faction standing |
 | `rumour "text"`, `chronicle "text"`, `mark name`, `shard name` | Campaign memory |
 | `exhaust_best`, `lose_lowest` | Lose the use of your best die for the tale, or lose your lowest die |
-| `rest n` | Restore Grit, clear Fatigue, allow Saddlebag swaps |
+| `rest n` | Raise Grit to n if it is lower (a rest gets you back on your feet, not back to full), clear Fatigue, allow Saddlebag swaps |
 | `toll`, `wager_pick`, `lose_wager`, `return_gold` | Special effects of The Drowned Bell |
 | `if condition then effect` | Only when the condition holds |
 

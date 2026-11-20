@@ -90,7 +90,7 @@ Doors are barred. One window is lit: the Drowned Lamb, the only inn. Down the sh
     goto: tolls
     cost: Buy the whole inn a round (lose 8 Coin) :: coin -8
     cost: Someone saw you asking (Kettle hears you're coming) :: flag kettle_warned
-    cost: Drink with the boatmen (lose 3 Grit) :: grit -3
+    cost: Drink with the boatmen (lose 4 Grit) :: grit -4
   > fail: Odile has you thrown out into the night. On the steps, an old ferryman with no teeth is sitting out the bell. "You want the lake?" he wheezes. "Bell's loudest when the tide turns. Go down then, it pulls you to it." He laughs until he coughs.
     do: flag tide_lore; rumour "The bell pulls hardest at the turn of the tide."
     goto: tolls
@@ -109,11 +109,11 @@ Doors are barred. One window is lit: the Drowned Lamb, the only inn. Down the sh
   > mixed: You find the rune-stone, slick with weed, but the lake does not give it up cheaply.
     do: flag rune_fragment
     goto: tolls
-    cost: The cold gets into you (lose 3 Grit) :: grit -3
+    cost: The cold gets into you (lose 4 Grit) :: grit -4
     cost: Your fingers go numb (your best die is set aside until the Waystone) :: exhaust_best
     cost: It takes too long (1 Fatigue) :: fatigue 1
   > fail: The shore throws you down into the shallows, and you come up gasping with a fistful of silt. In the silt is a die: grey driftwood, carved from a drowned man's knuckle, every face worn soft. You keep it. [i]The lake gives as well as takes. Rarely.[/i]
-    do: grit -3; gain knuckle_d4
+    do: grit -4; gain knuckle_d4
     goto: tolls
 
 * row: Don't wait for anyone. Row out tonight.
@@ -130,7 +130,7 @@ Doors are barred. One window is lit: the Drowned Lamb, the only inn. Down the sh
   > mixed: You make the shrine, but the lake makes you pay for the crossing.
     do: fatigue 2; flag rowed_out; temper mercy -1
     goto: waystone
-    cost: An oar cracks across your hands (lose 4 Grit) :: grit -4
+    cost: An oar cracks across your hands (lose 5 Grit) :: grit -5
     cost: Your lantern goes over the side (darker in the Bell Chamber) :: flag no_lantern
   > fail: The boat goes over. The cold is total. You wake on the shingle by the shrine, coughing lake water, with a stranger's coat over you and a brass die pressed into your palm. Footprints lead away to a skiff: smugglers. A note in the coat says only: [i]you owe Mother Kettle.[/i]
     do: fatigue 2; wound "Waterlogged Lungs"; flag rowed_out; flag kettle_rescued; flag smugglers_allied; ally hook_d6
@@ -139,13 +139,14 @@ Doors are barred. One window is lit: the Drowned Lamb, the only inn. Down the sh
 ## tolls: The Bell Tolls
 act: 1
 type: encounter
+on enter: grit -2
 tile: drowned
 at: 2.7, 0.9
 token: villagers_saved>=2 => lamp "The village, every lamp lit"
 token: fisherman_lost => grave "Aldous, taken by the lake"
 token: drowned_path => footprints "Wet footprints to the abbey stair"
 
-Full dark. Then the bell: one note, from under the water, so low you feel it in your teeth.
+Full dark, and a wind off the lake that cuts to the bone. Then the bell: one note, from under the water, so low you feel it in your teeth.
 Out of the shallows, two figures wade ashore. Grey men in sodden wool, lake water pouring from their sleeves. Their eyes are open. They walk toward the nearest door, where a lamp is lit and a child is laughing.
 ? villagers_saved>=1 :: Thanks to your warning, a few families are already barring their shutters.
 [i]What you do now, Marrowmere will remember.[/i]
@@ -163,9 +164,9 @@ Out of the shallows, two figures wade ashore. Grey men in sodden wool, lake wate
     do: add villagers_saved 1
     goto: fork
     cost: A fisherman was dragged into the lake (Marrowmere remembers) :: flag fisherman_lost
-    cost: You took his place in the water (lose 4 Grit) :: grit -4; add villagers_saved 1
+    cost: You took his place in the water (lose 5 Grit) :: grit -5; add villagers_saved 1
   > fail: Cold hands drag you into the lake, and by the time you crawl out the Drowned are gone, and so is a fisherman called Aldous. Wet footprints lead from the shore to the old abbey stair, and back.
-    do: flag drowned_path; flag fisherman_lost
+    do: flag drowned_path; flag fisherman_lost; grit -3
     goto: fork
 
 * hide: Get the villagers indoors and out of sight.
@@ -184,9 +185,9 @@ Out of the shallows, two figures wade ashore. Grey men in sodden wool, lake wate
     do: add villagers_saved 1
     goto: fork
     cost: One family didn't hear you in time (Marrowmere remembers) :: flag fisherman_lost
-    cost: You went back for them (lose 4 Grit) :: grit -4; add villagers_saved 1
+    cost: You went back for them (lose 5 Grit) :: grit -5; add villagers_saved 1
   > fail: Panic. Doors slam on you, a dog howls, and the Drowned take a fisherman called Aldous from his own porch. But you, hidden in a doorway, watch where they go: up the old abbey stair, and down into the water.
-    do: flag drowned_path; flag fisherman_lost
+    do: flag drowned_path; flag fisherman_lost; grit -3
     goto: fork
 
 * follow: Let them come. Follow them back to the water and learn where they go.
@@ -204,18 +205,19 @@ Out of the shallows, two figures wade ashore. Grey men in sodden wool, lake wate
   > mixed: You learn the way: the abbey stair. But you were seen.
     do: flag drowned_path; flag fisherman_lost
     goto: fork
-    cost: A Drowned turned and grabbed you (lose 4 Grit) :: grit -4
+    cost: A Drowned turned and grabbed you (lose 5 Grit) :: grit -5
     cost: The villagers saw you do nothing (they won't forget) :: flag village_cold
   > fail: You lose them in the dark, and in the morning a fisherman called Aldous is missing, and the whole village knows you watched. Nobody will look at you.
-    do: flag fisherman_lost; flag village_cold
+    do: flag fisherman_lost; flag village_cold; grit -3
     goto: fork
 
 ## fork: The Jetty
 act: 2
+on enter: grit -4
 tile: jetty
 at: 3.8, 0.1
 
-Morning, grey as pewter. You stand at the end of the village jetty with a borrowed skiff.
+Morning, grey as pewter. Nobody in Marrowmere slept, and neither did you. You stand at the end of the village jetty with a borrowed skiff.
 The island and its ruined abbey sit out on the lake. Somewhere under the water between here and there, the bell.
 ? rumour_smugglers :: Up the shore, a thread of smoke rises from the north cove. Mother Kettle's smugglers.
 ? rune_fragment :: The rune-stone in your pocket is cold. The same shapes are carved over the abbey gate.
@@ -245,12 +247,13 @@ The island and its ruined abbey sit out on the lake. Somewhere under the water b
 ## scriptorium: The Flooded Scriptorium
 act: 2
 type: challenge
+on enter: grit -2
 tile: abbey
 at: 5.1, -1.3
 token: abbess_name => candle "Her true name: Ysolde"
 token: bell_crack => broken_bell "A crack in the bell"
 
-Inside the abbey, the lake has come up through the floor. Water has swallowed the lower shelves. Ledgers float like dead fish.
+Inside the abbey, the lake has come up through the floor. Water has swallowed the lower shelves. Ledgers float like dead fish. The water is cold enough to stop a heart.
 On a high desk, out of the water, one candle stub is still standing, and beside it a book bound in black: the Register of the Drowned. Somewhere in it is the name of everyone the lake ever took. And the name of the woman who rang the bell.
 [i]One candle. When it goes out, you are reading in the dark.[/i]
 
@@ -268,11 +271,11 @@ On a high desk, out of the water, one candle stub is still standing, and beside 
   > mixed: You find it: Ysolde. But the candle and the cold water take their due.
     do: flag abbess_name
     goto: waystone
-    cost: You read it by touch in freezing water (lose 3 Grit) :: grit -3
+    cost: You read it by touch in freezing water (lose 4 Grit) :: grit -4
     cost: The page tears (her name is incomplete; harder to speak) :: flag name_torn
     cost: It takes all night (1 Fatigue) :: fatigue 1
   > fail: The candle drowns. In the dark the water comes up to your chest, and you claw your way out with nothing. But as you go, something whispers your name from under the water, very softly, like an apology.
-    do: grit -4; flag heard_whisper
+    do: grit -5; flag heard_whisper
     goto: waystone
 
 * pray: Leave the book. Light the candle at the drowned altar and pray for the sisters.
@@ -290,10 +293,10 @@ On a high desk, out of the water, one candle stub is still standing, and beside 
   > mixed: Something hears you. But the cold is merciless.
     do: flag heard_whisper
     goto: waystone
-    cost: The vigil chills you to the bone (lose 4 Grit) :: grit -4
+    cost: The vigil chills you to the bone (lose 5 Grit) :: grit -5
     cost: It takes all night (1 Fatigue) :: fatigue 1
   > fail: Nothing answers. The candle goes out, and you leave cold and wet and none the wiser. [i]Not every prayer is heard. Most are, though. Eventually.[/i]
-    do: grit -2
+    do: grit -3
     goto: waystone
 
 ## kettle: Mother Kettle's Table
@@ -370,7 +373,7 @@ The north cove: a cave mouth full of boats, barrels and lamp smoke. At a table m
   > mixed: She gives in. You have made an enemy who will outlive this tale.
     do: flag smugglers_allied; flag kettle_grudge; standing "Thieves' Guild" -1
     goto: waystone
-    cost: Her boys rough you up on the way out (lose 4 Grit) :: grit -4
+    cost: Her boys rough you up on the way out (lose 5 Grit) :: grit -5
     cost: She'll remember your face (Thieves' Guild -1 more) :: standing "Thieves' Guild" -1
   > fail: Kettle laughs in your face, and you leave with nothing but a sore pride. On the way out, one of her boys mutters where the gold lies, just to see you drown for it.
     do: flag hoard_hint; standing "Thieves' Guild" -1
@@ -400,7 +403,7 @@ Three of Kettle's crew between you and the cave mouth, and Kettle herself watchi
   > mixed: You get out. Just.
     do: flag smugglers_hostile; standing "Thieves' Guild" -1
     goto: waystone
-    cost: A knife opens your arm (lose 4 Grit) :: grit -4
+    cost: A knife opens your arm (lose 5 Grit) :: grit -5
     cost: You lose your purse in the scramble (lose 10 Coin) :: coin -10
   > fail: They beat you and throw you in the lake. When you crawl out on the far shore, your purse is gone, but you are alive, and you know at least that Kettle's boys saw gold down by the bell.
     do: flag smugglers_hostile; coin -20; flag hoard_hint
@@ -415,6 +418,7 @@ Three of Kettle's crew between you and the cave mouth, and Kettle herself watchi
 ## dive: The Dive
 act: 2
 type: challenge
+on enter: grit -2
 tile: dive
 at: 5, 1.55
 token: found_hoard => chest "The drowned hoard"
@@ -442,7 +446,7 @@ You tie the skiff off over the darkest water and the bell hums up through the hu
   > mixed: You find it: the bell, and the gold around it. The lake wants something back.
     do: flag found_hoard
     goto: gold
-    cost: The cold bites deep (lose 4 Grit) :: grit -4
+    cost: The cold bites deep (lose 5 Grit) :: grit -5
     cost: A die slips from your pouch into the dark (lose your lowest die thrown) :: lose_lowest
     cost: You come up exhausted (1 Fatigue) :: fatigue 1
   > fail: Your breath goes. Black water, the bell's hum, and then something takes your wrist, gently, and pulls you UP. You break the surface alone, choking, and nothing is there. [i]Somebody down there does not want you dead. Interesting.[/i]
@@ -481,7 +485,7 @@ There is so much more down there.
 ## waystone: The Lakeside Shrine
 act: 2
 type: waystone
-on enter: rest 5; if gold_taken then toll
+on enter: rest 11; if gold_taken then toll
 tile: shrine
 at: 7, 0.3
 token: wren_present => handbell "Wren on the shore with her bell"
