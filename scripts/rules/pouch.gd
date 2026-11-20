@@ -166,6 +166,27 @@ func rest(rng: RandomNumberGenerator, swaps := 2) -> void:
 	swaps_left = swaps
 
 
+## The per-tale part of the Pouch, for a mid-tale save (the collection is saved by the campaign).
+func tale_to_dict() -> Dictionary:
+	var ids := func(arr): return arr.map(func(d): return d.id)
+	return {"draw_pile": ids.call(draw_pile), "discard": ids.call(discard), "hand": ids.call(hand),
+		"exhausted": ids.call(exhausted), "fatigue": fatigue, "hand_penalty": hand_penalty, "swaps_left": swaps_left}
+
+
+func tale_from_dict(d: Dictionary) -> void:
+	var by_id := {}
+	for die in collection:
+		by_id[die.id] = die
+	var dice := func(arr): return arr.filter(func(id): return by_id.has(id)).map(func(id): return by_id[id])
+	draw_pile = dice.call(d.get("draw_pile", []))
+	discard = dice.call(d.get("discard", []))
+	hand = dice.call(d.get("hand", []))
+	exhausted = dice.call(d.get("exhausted", []))
+	fatigue = int(d.get("fatigue", 0))
+	hand_penalty = int(d.get("hand_penalty", 0))
+	swaps_left = int(d.get("swaps_left", 0))
+
+
 ## Swap one die between Pouch and Saddlebag at a Waystone (each move counts as one swap).
 func waystone_swap(die: Dictionary) -> bool:
 	if swaps_left <= 0:

@@ -44,6 +44,43 @@ var throws := 0
 var choices: Array = []        # [scene_id, option_id] for telemetry and the pick-rate check
 
 
+const SAVED := ["grit", "grit_max", "fate", "wounds", "flags", "temper", "regard", "defy_used", "fail_streak",
+	"visited", "chronicle", "rumours", "standing", "shards", "coin", "ending", "throws", "choices"]
+
+
+## For a mid-tale save. Dice are saved whole (a lost die is no longer in the collection).
+func to_dict() -> Dictionary:
+	var d := {}
+	for k in SAVED:
+		d[k] = get(k)
+	d.wager = wager
+	d.gained = gained
+	d.lost = lost
+	return d
+
+
+## by_id maps die ids to the restored collection's dice, so a gained die is the same object.
+func from_dict(d: Dictionary, by_id: Dictionary) -> void:
+	for k in SAVED:
+		if d.has(k):
+			var v = d[k]
+			# JSON numbers come back as floats.
+			if get(k) is int:
+				v = int(v)
+			set(k, v)
+	for k in temper:
+		temper[k] = int(temper[k])
+	for k in standing:
+		standing[k] = int(standing[k])
+	for k in flags:
+		if flags[k] is float and flags[k] == int(flags[k]):
+			flags[k] = int(flags[k])
+	var pick = func(x): return by_id.get(x.id, x) if x is Dictionary else x
+	wager = pick.call(d.get("wager")) if d.get("wager") != null else null
+	gained = d.get("gained", []).map(pick)
+	lost = d.get("lost", [])
+
+
 func flag(name: String):
 	return flags.get(name, false)
 

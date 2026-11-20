@@ -14,6 +14,11 @@ extends Node3D
 ##   --quit-at-end   quit when the tale ends
 ##   --practice      with --autoplay: play the practice table instead of the tale
 ##   --drag          with --autoplay: throw by simulated mouse drags instead of the button
+##   --preview       open the writers' text preview at start
+##   --quit-at-scene=<n>  quit (with the tale saved) once n scenes have been visited
+##   --continue      with --autoplay: continue the saved tale instead of starting over
+##   --screens       screenshot the title and the Chronicle, then quit
+##   --quality=<p>   graphics preset for this run: low, medium or high (not saved)
 
 const Tavern := preload("res://scripts/tavern.gd")
 const Table := preload("res://scripts/game/table.gd")
@@ -22,9 +27,12 @@ const Dice := preload("res://scripts/rules/dice.gd")
 const S := preload("res://scripts/rules/scoring.gd")
 const Runner := preload("res://scripts/rules/tale_runner.gd")
 const Campaign := preload("res://scripts/rules/campaign.gd")
-const Tale := preload("res://scripts/tale/drowned_bell.gd")
+const Tales := preload("res://scripts/rules/tales.gd")
 const Practice := preload("res://scripts/tale/practice.gd")
 const PracticeLog := preload("res://scripts/game/practice_log.gd")
+const Settings := preload("res://scripts/game/settings.gd")
+const PreviewPanel := preload("res://scripts/game/preview_panel.gd")
+const Mats := preload("res://scripts/materials.gd")
 const Odds := preload("res://scripts/rules/odds.gd")
 const Combat := preload("res://scripts/rules/combat.gd")
 const Contest := preload("res://scripts/rules/contest.gd")
@@ -62,6 +70,7 @@ var banner: Label
 var overlay: Control
 var fast_toggle: CheckButton
 var _type_tween: Tween
+var fps_label: Label
 
 # A throw in progress
 var selected: Array = []
@@ -80,6 +89,11 @@ var opt_max_shots := 40
 var opt_quit_at_end := false
 var opt_new := false
 var opt_practice := false
+var opt_preview := false
+var opt_continue := false
+var opt_screens := false
+var opt_quit_at_scene := 0
+var opt_quality := ""
 var opt_drag := false
 var opt_seed := -1
 var shots_taken := 0
@@ -93,6 +107,10 @@ var home_campaign = null         # the real campaign, set aside during practice
 
 func _ready() -> void:
 	_parse_args()
+	Settings.load_settings()
+	if opt_quality != "":
+		Settings.preset = opt_quality
+	Settings.apply_engine()
 	tavern = Tavern.new()
 	add_child(tavern)
 	camera = Camera3D.new()
@@ -104,6 +122,7 @@ func _ready() -> void:
 	attr.dof_blur_amount = 0.05
 	camera.attributes = attr
 	_frame_camera()
+	Settings.apply_scene(get_viewport(), tavern, camera)
 	table = Table.new()
 	table.tavern = tavern
 	table.font = UI.font("ui")
@@ -120,10 +139,34 @@ func _ready() -> void:
 		campaign.new_campaign()
 	_build_ui()
 	_show_title()
+	if opt_preview:
+		_show_preview()
+		if opt_shots != "":
+			# Click through a few choices, force a Mixed, and show it (for screenshots).
+			var panel = overlay.get_child(0)
+			for key in ["1", "2", "1", "1", "m"]:
+				await _wait(5)
+				panel.p.choose(key)
+				panel._refresh()
+			panel._say(panel.p.command("flag weather=fog"))
+			await _shot("preview")
+			get_tree().quit()
+		return
+	if opt_screens:
+		# Title and Chronicle screenshots, then quit.
+		await _wait(10)
+		await _shot("title")
+		_show_chronicle()
+		await _shot("chronicle")
+		get_tree().quit()
+		return
 	if opt_autoplay:
 		await _wait(10)
 		if opt_practice:
 			_begin_practice()
+		elif opt_continue and not _read_tale_save().is_empty():
+			print("CONTINUE from ", _read_tale_save().scene)
+			_continue_tale(_read_tale_save())
 		else:
 			_begin_tale()
 
@@ -135,12 +178,131 @@ func _parse_args() -> void:
 		elif a == "--autoplay": opt_autoplay = true
 		elif a == "--practice": opt_practice = true
 		elif a == "--drag": opt_drag = true
+		elif a == "--preview": opt_preview = true
+		elif a == "--continue": opt_continue = true
+		elif a == "--screens": opt_screens = true
+		elif a.begins_with("--quit-at-scene="): opt_quit_at_scene = int(a.substr(16))
+		elif a.begins_with("--quality="): opt_quality = a.substr(10)
 		elif a == "--quit-at-end": opt_quit_at_end = true
 		elif a.begins_with("--shots="): opt_shots = a.substr(8)
 		elif a.begins_with("--max-shots="): opt_max_shots = int(a.substr(12))
 		elif a.begins_with("--seed="): opt_seed = int(a.substr(7))
 	if opt_shots != "":
 		DirAccess.make_dir_recursive_absolute(opt_shots)
+
+
+# ===================================================================== the Chronicle
+
+## The campaign's memory as a book: endings found, Chronicle entries, rumours, standing, and the
+## history of every die you own.
+func _show_chronicle() -> void:
+	UI.clear(overlay)
+	var p := UI.panel(UI.PAPER, 18)
+	p.set_anchors_preset(Control.PRESET_FULL_RECT)
+	p.offset_left = 60
+	p.offset_right = -60
+	p.offset_top = 30
+	p.offset_bottom = -30
+	overlay.add_child(p)
+	var outer := VBoxContainer.new()
+	outer.add_theme_constant_override("separation", 8)
+	p.add_child(outer)
+	var head := HBoxContainer.new()
+	outer.add_child(head)
+	var t := UI.label("The Chronicle", 26, Color("#6a1010"), "title")
+	t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(t)
+	var close := UI.seal_button("Close", 13, Color("#5a4a3a"))
+	close.pressed.connect(func():
+		UI.clear(overlay)
+		_show_title())
+	head.add_child(close)
+	var sc := ScrollContainer.new()
+	sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	outer.add_child(sc)
+	var v := VBoxContainer.new()
+	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	v.add_theme_constant_override("separation", 6)
+	sc.add_child(v)
+	var c = campaign
+	var ending_names := {"rest": "Rest", "silence": "Silence", "greed": "Greed", "bargain": "The Bargain", "drowned": "Drowned"}
+	v.add_child(UI.label("Tales told: %d.   Coin: %d.   Endings found in The Drowned Bell: %d of 5%s" % [c.tales_played, c.coin,
+		c.endings_seen.size(), (" (" + ", ".join(c.endings_seen.map(func(e): return ending_names.get(e, e))) + ")") if not c.endings_seen.is_empty() else ""], 15, UI.INK))
+	var sections := [
+		["What the Teller remembers", c.chronicle, "Nothing yet. Tell a tale."],
+		["Rumours", c.rumours, "None heard."],
+	]
+	for sec in sections:
+		v.add_child(UI.rule())
+		v.add_child(UI.label(sec[0], 17, Color("#6a1010"), "ui"))
+		if sec[1].is_empty():
+			v.add_child(UI.wrap_label(sec[2], 14, UI.INK_SOFT, "italic"))
+		for line in sec[1]:
+			v.add_child(UI.wrap_label("· " + str(line), 15, UI.INK, "body"))
+	if not c.standing.is_empty():
+		v.add_child(UI.rule())
+		v.add_child(UI.label("Standing", 17, Color("#6a1010"), "ui"))
+		var bits: Array[String] = []
+		for k in c.standing:
+			bits.append("%s %+d" % [k, int(c.standing[k])])
+		v.add_child(UI.wrap_label(", ".join(bits), 15, UI.INK, "body"))
+	v.add_child(UI.rule())
+	v.add_child(UI.label("Your dice and their stories", 17, Color("#6a1010"), "ui"))
+	var dice: Array = c.pouch.collection.duplicate()
+	# Dice with a past first.
+	dice.sort_custom(func(a, b): return a.history.size() + a.notches > b.history.size() + b.notches)
+	for d in dice:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 10)
+		v.add_child(row)
+		var tile = UI.DieTile.new(d, 52.0)
+		tile.caption = UI.INK
+		row.add_child(tile)
+		var col := VBoxContainer.new()
+		col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(col)
+		var name_line: String = d.name
+		if d.get("epithet", "") != "":
+			name_line += ", " + d.epithet
+		if d.notches > 0:
+			name_line += "   (%d notch%s)" % [d.notches, "" if d.notches == 1 else "es"]
+		if d.get("grudge", "") != "":
+			name_line += "   holds a grudge"
+		col.add_child(UI.label(name_line, 15, UI.INK, "ui"))
+		var hist: Array = d.get("history", [])
+		col.add_child(UI.wrap_label(" ".join(hist) if not hist.is_empty() else "No stories yet.", 13, UI.INK_SOFT if hist.is_empty() else UI.INK, "body"))
+
+
+# ===================================================================== writers' preview
+
+func _show_preview() -> void:
+	UI.clear(overlay)
+	var panel = PreviewPanel.new()
+	panel.closed.connect(func():
+		UI.clear(overlay)
+		_show_title())
+	overlay.add_child(panel)
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+
+# ===================================================================== graphics quality
+
+## Apply the current preset. Shader quality is baked into the inn when it is built, so a change
+## that switches it rebuilds the inn (only offered on the title screen, with no dice out).
+func _apply_quality(rebuild: bool) -> void:
+	var was_lite: bool = Mats.lite
+	Settings.apply_engine()
+	if rebuild and was_lite != Mats.lite:
+		table.clear_player()
+		table.clear_foe()
+		tavern.queue_free()
+		Mats._cache.clear()
+		tavern = Tavern.new()
+		add_child(tavern)
+		move_child(tavern, 0)
+		table.tavern = tavern
+	Settings.apply_scene(get_viewport(), tavern, camera)
 
 
 # ===================================================================== camera
@@ -162,6 +324,10 @@ func _process(delta: float) -> void:
 	var off := Vector3(sin(_breath * 0.37) * 0.12, sin(_breath * 0.29 + 1.0) * 0.07, sin(_breath * 0.21) * 0.08)
 	camera.transform = _cam_rest.translated(off).rotated_local(Vector3.FORWARD, sin(_breath * 0.17) * 0.003)
 	_process_hold(delta)
+	if fps_label != null:
+		fps_label.visible = Settings.show_fps
+		if Settings.show_fps:
+			fps_label.text = "%d fps · %s" % [Engine.get_frames_per_second(), Settings.NAMES[Settings.preset]]
 
 
 # ===================================================================== layout
@@ -309,6 +475,10 @@ func _build_ui() -> void:
 	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(banner)
 
+	fps_label = UI.label("", 13, Color("#f0e0c0"), "ui")
+	fps_label.position = Vector2(300, 8)
+	fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(fps_label)
 	overlay = Control.new()
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -393,6 +563,14 @@ func _refresh_hand(selectable: bool) -> void:
 # ===================================================================== the Teller's parchment
 
 func _on_said(raw_text: String, style: String) -> void:
+	var t := _format_said(raw_text, style, true)
+	var before := log_text.get_total_character_count()
+	log_text.append_text(t + "\n")
+	_type_from(before)
+
+
+## Narration as parchment BBCode. banner: also flash the tier banner (not when replaying a save).
+func _format_said(raw_text: String, style: String, banner := false) -> String:
 	var text := UI.smart_quotes(raw_text)
 	var t := text
 	match style:
@@ -411,10 +589,9 @@ func _on_said(raw_text: String, style: String) -> void:
 				var idx := ["fail", "mixed", "success", "triumph", "caught"].find(key)
 				var col: Color = S.TIER_COLORS[mini(idx, 3)] if idx < 4 else Color("#8a1010")
 				t = "[center][font_size=22][color=#%s]— %s —[/color][/font_size][/center]" % [col.darkened(0.25).to_html(false), text]
-				_show_banner(text, col)
-	var before := log_text.get_total_character_count()
-	log_text.append_text(t + "\n")
-	_type_from(before)
+				if banner:
+					_show_banner(text, col)
+	return t
 
 
 func _type_from(start: int) -> void:
@@ -464,7 +641,13 @@ func _show_title() -> void:
 	if not campaign.chronicle.is_empty():
 		var ch := UI.wrap_label("Chronicle: " + " ".join(campaign.chronicle.slice(-3)), 14, UI.INK_SOFT, "italic")
 		v.add_child(ch)
-	var b := UI.seal_button("Begin the tale", 18)
+	var snap := _read_tale_save()
+	if not snap.is_empty():
+		var cb := UI.seal_button("Continue the tale: %s" % snap.get("scene_title", ""), 18)
+		cb.tooltip_text = "Saved %s." % str(snap.get("saved_at", "")).replace("T", " at ")
+		cb.pressed.connect(func(): _continue_tale(snap))
+		v.add_child(cb)
+	var b := UI.seal_button("Begin the tale" if snap.is_empty() else "Begin it again from the start", 18 if snap.is_empty() else 14)
 	b.pressed.connect(_begin_tale)
 	v.add_child(b)
 	var pb := UI.seal_button("Practice table: 20 challenges", 14, Color("#2a5a6a"))
@@ -478,12 +661,82 @@ func _show_title() -> void:
 			campaign.save()
 			_show_title())
 		v.add_child(nb)
+	var chb := UI.seal_button("The Chronicle", 13, Color("#5a4a3a"))
+	chb.tooltip_text = "What your tales have left behind: endings, rumours, standing, and the story of every die."
+	chb.pressed.connect(_show_chronicle)
+	v.add_child(chb)
+	var tp := UI.seal_button("Tale preview (text, for writers)", 13, Color("#5a4a3a"))
+	tp.tooltip_text = "Play a tale as text with no dice: pick any outcome, jump to scenes, reload after editing the .tale file."
+	tp.pressed.connect(_show_preview)
+	v.add_child(tp)
+	var grow := HBoxContainer.new()
+	grow.add_theme_constant_override("separation", 8)
+	v.add_child(grow)
+	var gb := UI.seal_button("Graphics: %s" % Settings.NAMES[Settings.preset], 13, Color("#5a4a3a"))
+	gb.tooltip_text = "Low suits tablets and Chromebooks; High is the full look. Saved for next time."
+	gb.pressed.connect(func():
+		Settings.preset = Settings.next_preset()
+		Settings.save_settings()
+		_apply_quality(true)
+		_show_title())
+	grow.add_child(gb)
+	var fb := UI.seal_button("Frame rate: %s" % ("shown" if Settings.show_fps else "hidden"), 13, Color("#5a4a3a"))
+	fb.pressed.connect(func():
+		Settings.show_fps = not Settings.show_fps
+		Settings.save_settings()
+		_show_title())
+	grow.add_child(fb)
 	var help := UI.wrap_label("Click choices and dice. Space throws, Enter continues, F toggles fast dice. Hover a die to read it.", 13, UI.INK_SOFT, "italic")
 	v.add_child(help)
 
 
 func _begin_tale() -> void:
-	_start_runner(Tale.tale())
+	_clear_tale_save()
+	tale_path = Tales.DROWNED_BELL
+	_start_runner(Tales.load_tale(tale_path))
+
+
+# ---------------------------------------------------------------- mid-tale saves
+
+const TALE_SAVE := "user://tale_save.json"
+var tale_path := ""
+
+
+func _read_tale_save() -> Dictionary:
+	if not FileAccess.file_exists(TALE_SAVE):
+		return {}
+	var d = JSON.parse_string(FileAccess.get_file_as_string(TALE_SAVE))
+	if not d is Dictionary or not FileAccess.file_exists(str(d.get("tale_path", ""))):
+		return {}
+	return d
+
+
+func _write_tale_save() -> void:
+	if practice != null or runner == null or tale_path == "" or not runner.can_snapshot():
+		return
+	var f := FileAccess.open(TALE_SAVE, FileAccess.WRITE)
+	if f:
+		f.store_string(JSON.stringify(runner.snapshot(tale_path)))
+
+
+func _clear_tale_save() -> void:
+	if FileAccess.file_exists(TALE_SAVE):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(TALE_SAVE))
+
+
+func _continue_tale(snap: Dictionary) -> void:
+	UI.clear(overlay)
+	log_text.clear()
+	tale_path = snap.tale_path
+	campaign = Campaign.new()
+	runner = Runner.new()
+	# Replay the parchment as it was, without the typewriter or banners.
+	for e in snap.get("transcript", []):
+		log_text.append_text(_format_said(e.text, e.style) + "\n")
+	runner.said.connect(_on_said)
+	runner.changed.connect(_on_changed)
+	runner.resume(Tales.load_tale(tale_path), campaign, snap)
+	_refresh_status()
 
 
 ## The practice table runs on a throwaway campaign, so it never touches your save.
@@ -518,7 +771,13 @@ func _on_phase(serial: int) -> void:
 	if ph != "throw" and ph != "assign":
 		selected.clear()
 	match ph:
-		"choose": _show_choices()
+		"choose":
+			_write_tale_save()
+			_show_choices()
+			if opt_quit_at_scene > 0 and runner.state.visited.size() >= opt_quit_at_scene and practice == null:
+				print("QUIT at scene ", runner.scene.id, " grit ", runner.state.grit)
+				get_tree().quit()
+				return
 		"wager": _show_wager()
 		"prepare": _show_pouch_screen("prepare")
 		"waystone": _show_pouch_screen("waystone")
@@ -1390,6 +1649,7 @@ func _show_ending() -> void:
 		_show_practice_summary()
 		return
 	campaign.save()
+	_clear_tale_save()
 	UI.clear(overlay)
 	var st = runner.state
 	var p := UI.panel(UI.PAPER, 18)
@@ -1500,6 +1760,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_F:
 			fast_dice = not fast_dice
 			fast_toggle.button_pressed = fast_dice
+		KEY_F4:
+			Settings.show_fps = not Settings.show_fps
+			Settings.save_settings()
 		KEY_SPACE:
 			if runner and runner.phase == "throw":
 				_do_throw()

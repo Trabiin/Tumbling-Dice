@@ -1,0 +1,642 @@
+title: The Drowned Bell
+id: drowned_bell
+patron: Wren
+start: plea
+
+## plea: Wren's Plea
+act: 1
+
+? seen:drowned_before :: [i]They say a traveller tried this before you. They say the lake kept them. Well. Here you are again, and here is the girl again, and the bell has not stopped.[/i]
+[i]Pull your stool closer to the fire. This one is cold.[/i]
+A girl in a fisherman's oilskin stands at your table, dripping on the boards. She has not taken off her hood. "You're the one with the dice," she says. "They say you go out and come back."
+Her name is Wren. Three nights ago her father, Hobb, walked into Marrowmere lake with his boots on. He was not the first. Every night since midsummer the bell of the drowned abbey rings from the bottom of the lake, and every night someone answers it.
+"Nobody will go out there. Will you?"
+
+* promise: "I'll find your father. I promise you that."
+  temper: duty +1
+  do: flag promised_wren; regard 1
+  goto: wager
+  reply: Wren looks at you for a long moment, then nods once, the way fishermen seal a bargain. [i]A promise. I do like those. They are so heavy to carry.[/i]
+
+* paid: "I'll go. But nobody walks into a haunted lake for free."
+  temper: duty -1
+  do: coin 15; flag paid_wren
+  goto: wager
+  reply: She counts fifteen coins onto the table, all she has, and does not look up again. [i]Honest, at least. The lake does not care why you come.[/i]
+
+* bell: "Tell me about the bell."
+  temper: honesty +1
+  do: flag asked_bell
+  goto: wager
+  reply: "The abbey sank forty years ago. Flood took the island in a night, nuns and all. The abbess was called Mother Ysolde. My gran said she rang the bell the whole time the water came up." [i]Remember that name. Or don't. The lake will remind you.[/i]
+
+## wager: The Wager
+act: 1
+
+[i]At this table there is an old custom. A traveller who means it stakes one of their own dice on the tale. Come back, and the tale pays double. Don't, and the die stays with the story.[/i]
+
+* stake: Set one of your dice on the table.
+  temper: duty +1
+  do: wager_pick; regard 1
+  goto: prepare
+  reply: [i]Bold. I'll keep it safe. Probably.[/i]
+
+* keep: Keep your dice where they are.
+  goto: prepare
+  reply: [i]Sensible. Nobody ever sang a song about sensible, but nobody drowned of it either.[/i]
+
+## prepare: Packing the Pouch
+act: 1
+type: prepare
+goto: arrival
+
+Your dice wait on the shelf behind the bar. Hollis, the barkeep, sets your leather Pouch beside them.
+[i]Choose what you carry. The Pouch holds only so much weight, and what you leave on the shelf stays here. The Saddlebag holds a little more, for the Waystone halfway. Once you leave, what you drew is what you have.[/i]
+
+## arrival: Arrival at Marrowmere
+act: 1
+on enter: random_flag weather [fog, rain, moon]
+
+Marrowmere is a crooked village of stilts and nets, leaning over a lake as flat and black as a slate. Out on the water, a ruined bell tower juts from a little island like a broken finger.
+? weather==fog :: Fog lies on the water so thick the tower comes and goes, like something breathing.
+? weather==rain :: Rain hisses on the lake. Every roof in the village drips.
+? weather==moon :: A full moon lays a white road across the water, straight to the tower.
+Doors are barred. One window is lit: the Drowned Lamb, the only inn. Down the shore, the path along the water is empty.
+[i]You have until the bell rings. That gives you one thing to do before dark. Choose.[/i]
+
+* lamb: Go where people talk: the Drowned Lamb.
+  contest: opponent=odile title="Getting Odile to talk"
+  approach guile: Spin her a story: you're a bell-founder, come to buy the old bronze.
+  approach grace: Charm the room: a song, a joke, a round for the fishermen.
+  approach might: Arm-wrestle the boatmen until someone respects you enough to talk.
+  > triumph: By the third round the whole inn is talking at once. Odile leans close: smugglers work the north cove, and their boss, Mother Kettle, has been out on the lake every night the bell rang. Then the fishermen insist on buying your drinks.
+    do: flag rumour_smugglers; coin 10; rumour "Mother Kettle's smugglers are out on the lake when the bell rings."
+    goto: tolls
+  > success: Odile wipes the same mug for a long time, then says it low: smugglers in the north cove, and their Mother Kettle is out on the water whenever the bell rings. "Didn't hear it from me."
+    do: flag rumour_smugglers; rumour "Mother Kettle's smugglers are out on the lake when the bell rings."
+    goto: tolls
+  > mixed: You get it out of her in the end: smugglers, the north cove, a Mother Kettle. But it costs you.
+    do: flag rumour_smugglers
+    goto: tolls
+    cost: Buy the whole inn a round (lose 8 Coin) :: coin -8
+    cost: Someone saw you asking (Kettle hears you're coming) :: flag kettle_warned
+    cost: Drink with the boatmen (lose 3 Grit) :: grit -3
+  > fail: Odile has you thrown out into the night. On the steps, an old ferryman with no teeth is sitting out the bell. "You want the lake?" he wheezes. "Bell's loudest when the tide turns. Go down then, it pulls you to it." He laughs until he coughs.
+    do: flag tide_lore; rumour "The bell pulls hardest at the turn of the tide."
+    goto: tolls
+
+* shore: Walk the shore alone at dusk.
+  challenge: kind=test difficulty=standard tries=2 title="Reading the shore"
+  approach lore: Read the carved stones half-sunk along the waterline.
+  approach grace: Climb out along the broken causeway toward the island.
+  approach ward: Stand in the cold shallows, still, until the lake shows you something.
+  > triumph: A stone at the waterline carries a line of abbey runes, and the half you can read is a warning: the drowned come up where the bell is loudest. You see the first pale shapes stir under the water, early, and run to warn the village.
+    do: flag rune_fragment; add villagers_saved 1
+    goto: tolls
+  > success: You find a carved fragment, an abbey rune-stone washed off the island. The shapes are a prayer, or a lock. You pocket it.
+    do: flag rune_fragment
+    goto: tolls
+  > mixed: You find the rune-stone, slick with weed, but the lake does not give it up cheaply.
+    do: flag rune_fragment
+    goto: tolls
+    cost: The cold gets into you (lose 3 Grit) :: grit -3
+    cost: Your fingers go numb (your best die is set aside until the Waystone) :: exhaust_best
+    cost: It takes too long (1 Fatigue) :: fatigue 1
+  > fail: The shore throws you down into the shallows, and you come up gasping with a fistful of silt. In the silt is a die: grey driftwood, carved from a drowned man's knuckle, every face worn soft. You keep it. [i]The lake gives as well as takes. Rarely.[/i]
+    do: grit -3; gain knuckle_d4
+    goto: tolls
+
+* row: Don't wait for anyone. Row out tonight.
+  challenge: kind=trial progress=17 danger=3 danger_text="The fog closes in." title="Rowing out in the dark"
+  approach grace: Row by feel, quiet oars, reading the swell.
+  approach lore: Steer by the stars through the gaps in the fog.
+  approach might [progress=19]: Pull hard and straight against the current.
+  > triumph: You row straight through the dark as if the lake wanted you there, and step ashore at the lakeside shrine with time to spare. Behind you, the bell begins to ring, and you hear the village screaming. You were not there.
+    do: fatigue 2; flag rowed_out; temper mercy -1
+    goto: waystone
+  > success: Hours of black water, and then stone under the keel: the lakeside shrine, halfway to the island. The bell rings behind you over a village you left to its night.
+    do: fatigue 2; flag rowed_out; temper mercy -1
+    goto: waystone
+  > mixed: You make the shrine, but the lake makes you pay for the crossing.
+    do: fatigue 2; flag rowed_out; temper mercy -1
+    goto: waystone
+    cost: An oar cracks across your hands (lose 4 Grit) :: grit -4
+    cost: Your lantern goes over the side (darker in the Bell Chamber) :: flag no_lantern
+  > fail: The boat goes over. The cold is total. You wake on the shingle by the shrine, coughing lake water, with a stranger's coat over you and a brass die pressed into your palm. Footprints lead away to a skiff: smugglers. A note in the coat says only: [i]you owe Mother Kettle.[/i]
+    do: fatigue 2; wound "Waterlogged Lungs"; flag rowed_out; flag kettle_rescued; flag smugglers_allied; ally hook_d6
+    goto: waystone
+
+## tolls: The Bell Tolls
+act: 1
+type: encounter
+
+Full dark. Then the bell: one note, from under the water, so low you feel it in your teeth.
+Out of the shallows, two figures wade ashore. Grey men in sodden wool, lake water pouring from their sleeves. Their eyes are open. They walk toward the nearest door, where a lamp is lit and a child is laughing.
+? villagers_saved>=1 :: Thanks to your warning, a few families are already barring their shutters.
+[i]What you do now, Marrowmere will remember.[/i]
+
+* fight: Meet them on the shore with steel.
+  temper: duty +1
+  combat: foe=drowned_pair
+  > triumph: They go down into the shallows and do not get up, and not one door is touched. The whole village saw. A widow presses a carved die into your hand: her husband made it on long nights at sea.
+    do: add villagers_saved 3; gain fisher_bone_d6
+    goto: fork
+  > success: The Drowned fall back into the lake, and the village is safe for the night. Faces appear at the windows.
+    do: add villagers_saved 2
+    goto: fork
+  > mixed: You put them down, but one got as far as a doorstep before you did.
+    do: add villagers_saved 1
+    goto: fork
+    cost: A fisherman was dragged into the lake (Marrowmere remembers) :: flag fisherman_lost
+    cost: You took his place in the water (lose 4 Grit) :: grit -4; add villagers_saved 1
+  > fail: Cold hands drag you into the lake, and by the time you crawl out the Drowned are gone, and so is a fisherman called Aldous. Wet footprints lead from the shore to the old abbey stair, and back.
+    do: flag drowned_path; flag fisherman_lost
+    goto: fork
+
+* hide: Get the villagers indoors and out of sight.
+  temper: mercy +1
+  challenge: kind=trial progress=20 danger=4 danger_text="The Drowned reach the first doorstep." title="Hiding the village"
+  approach guile: Douse the lamps and lead them through the back alleys.
+  approach grace: Run door to door, faster than the Drowned can walk.
+  approach ward: Bar the chapel door with everyone inside, and hold it.
+  > triumph: Every lamp out, every door barred, and the Drowned walk the empty street and go back into the lake with nothing. An old woman squeezes your hand in the dark and gives you her husband's carved bone die.
+    do: add villagers_saved 3; gain fisher_bone_d6
+    goto: fork
+  > success: The village is dark and silent when the Drowned reach it. They stand in the street for a long time, listening. Then they go back to the water.
+    do: add villagers_saved 2
+    goto: fork
+  > mixed: Most of them make it inside. Most.
+    do: add villagers_saved 1
+    goto: fork
+    cost: One family didn't hear you in time (Marrowmere remembers) :: flag fisherman_lost
+    cost: You went back for them (lose 4 Grit) :: grit -4; add villagers_saved 1
+  > fail: Panic. Doors slam on you, a dog howls, and the Drowned take a fisherman called Aldous from his own porch. But you, hidden in a doorway, watch where they go: up the old abbey stair, and down into the water.
+    do: flag drowned_path; flag fisherman_lost
+    goto: fork
+
+* follow: Let them come. Follow them back to the water and learn where they go.
+  temper: mercy -1
+  challenge: kind=test difficulty=standard tries=2 title="Shadowing the Drowned"
+  approach lore: Keep your distance and study the path they take.
+  approach grace: Shadow them close, rooftop to rooftop.
+  approach guile: Smear yourself with lake mud and walk among them.
+  > triumph: They take a fisherman, and you let them. You follow them all the way to the abbey stair, and on its lowest step you find runes cut fresh, as if by fingernails. You copy them.
+    do: flag drowned_path; flag rune_fragment; flag fisherman_lost
+    goto: fork
+  > success: They take a fisherman called Aldous, and you let them. You follow them to the old abbey stair and watch them walk down it into the lake. Now you know the way.
+    do: flag drowned_path; flag fisherman_lost
+    goto: fork
+  > mixed: You learn the way: the abbey stair. But you were seen.
+    do: flag drowned_path; flag fisherman_lost
+    goto: fork
+    cost: A Drowned turned and grabbed you (lose 4 Grit) :: grit -4
+    cost: The villagers saw you do nothing (they won't forget) :: flag village_cold
+  > fail: You lose them in the dark, and in the morning a fisherman called Aldous is missing, and the whole village knows you watched. Nobody will look at you.
+    do: flag fisherman_lost; flag village_cold
+    goto: fork
+
+## fork: The Jetty
+act: 2
+
+Morning, grey as pewter. You stand at the end of the village jetty with a borrowed skiff.
+The island and its ruined abbey sit out on the lake. Somewhere under the water between here and there, the bell.
+? rumour_smugglers :: Up the shore, a thread of smoke rises from the north cove. Mother Kettle's smugglers.
+? rune_fragment :: The rune-stone in your pocket is cold. The same shapes are carved over the abbey gate.
+? drowned_path :: You know the way the Drowned walk: down the abbey stair, straight to the bell.
+[i]Three roads. You will only walk one of them tonight.[/i]
+
+* abbey: Row to the ruined abbey on the island.
+  if: not rune_fragment and not mat:jade
+  goto: scriptorium
+  reply: The abbey gate is carved with runes you cannot read. It opens anyway. [i]Not everything wants to be understood.[/i]
+
+* abbey_runes: Row to the abbey. Its runes match the ones you carry.
+  if: rune_fragment or mat:jade
+  do: flag runes_read
+  goto: scriptorium
+  reply: The runes over the gate unfold for you: [i]Here the sisters kept the names of the drowned, that they be called home.[/i] You know where to look.
+
+* cove: Find the smugglers' cove.
+  if: rumour_smugglers or has:guile
+  goto: kettle
+  reply: [i]Where there are smugglers there are boats, and where there are boats there are people who have seen things. For a price.[/i]
+
+* dive: Dive where the bell rings.
+  goto: dive
+  reply: You row out to where the water is darkest and the bell, even by day, hums up through the hull.
+
+## scriptorium: The Flooded Scriptorium
+act: 2
+type: challenge
+
+Inside the abbey, the lake has come up through the floor. Water has swallowed the lower shelves. Ledgers float like dead fish.
+On a high desk, out of the water, one candle stub is still standing, and beside it a book bound in black: the Register of the Drowned. Somewhere in it is the name of everyone the lake ever took. And the name of the woman who rang the bell.
+[i]One candle. When it goes out, you are reading in the dark.[/i]
+
+* read: Search the Register for the abbess's true name.
+  challenge: kind=trial progress=18 danger=3 danger_text="The candle gutters." title="The last candle"
+  approach lore: Read the Register line by line, in the sisters' old hand.
+  approach grace: Dive for the sunken ledgers, quick, before the candle dies.
+  approach ward [progress=22 danger=4]: Shield the candle with your body and work slowly.
+  > triumph: The last page, the last line, in a different ink: [i]Ysolde of Marrowmere, Abbess, who rang the bell while the water rose, that the village might wake. She did not leave the tower.[/i] Pressed between the pages is a single jade rosary bead.
+    do: flag abbess_name; flag rosary_bead
+    goto: waystone
+  > success: There, in faded ink: [i]Ysolde of Marrowmere, Abbess. She rang the bell while the water rose. She did not leave the tower.[/i] Her name. Her true name.
+    do: flag abbess_name
+    goto: waystone
+  > mixed: You find it: Ysolde. But the candle and the cold water take their due.
+    do: flag abbess_name
+    goto: waystone
+    cost: You read it by touch in freezing water (lose 3 Grit) :: grit -3
+    cost: The page tears (her name is incomplete; harder to speak) :: flag name_torn
+    cost: It takes all night (1 Fatigue) :: fatigue 1
+  > fail: The candle drowns. In the dark the water comes up to your chest, and you claw your way out with nothing. But as you go, something whispers your name from under the water, very softly, like an apology.
+    do: grit -4; flag heard_whisper
+    goto: waystone
+
+* pray: Leave the book. Light the candle at the drowned altar and pray for the sisters.
+  temper: mercy +1
+  challenge: kind=test difficulty=standard tries=2 title="A prayer in the water"
+  approach lore: Say the old office for the dead, in the abbey's own words.
+  approach ward: Kneel in the cold water and keep vigil until the candle is gone.
+  approach grace: Sing. The acoustics of a drowned chapel are very forgiving.
+  > triumph: When you finish, the water around the altar is still as glass, and you hear it clearly: a woman's voice, saying thank you, and her name. Ysolde.
+    do: flag abbess_name; flag heard_whisper; regard 1
+    goto: waystone
+  > success: The candle burns down to nothing. When it goes out you are not afraid of the dark, and from somewhere under the water a voice says thank you.
+    do: flag heard_whisper; regard 1
+    goto: waystone
+  > mixed: Something hears you. But the cold is merciless.
+    do: flag heard_whisper
+    goto: waystone
+    cost: The vigil chills you to the bone (lose 4 Grit) :: grit -4
+    cost: It takes all night (1 Fatigue) :: fatigue 1
+  > fail: Nothing answers. The candle goes out, and you leave cold and wet and none the wiser. [i]Not every prayer is heard. Most are, though. Eventually.[/i]
+    do: grit -2
+    goto: waystone
+
+## kettle: Mother Kettle's Table
+act: 2
+type: challenge
+
+The north cove: a cave mouth full of boats, barrels and lamp smoke. At a table made from a door sits Mother Kettle, round and grey and smiling, shuffling a deck of cards with hands that never stop.
+? kettle_warned :: "Ah," she says, before you open your mouth. "The one who's been asking about me."
+"Everyone wants to know about the bell," she says. "I'm the only one who's been down there and come back. A boat, a crew, and what I saw. Make me an offer."
+[i]Mother Kettle has been cheating at cards since before you were born. She knows a loaded die when she sees one.[/i]
+
+* haggle: Haggle for her boat and her crew.
+  contest: opponent=kettle title="Haggling with Mother Kettle"
+  mod: kettle_warned => resolve=3
+  approach guile: Out-bluff a bluffer. Dice on the table.
+  approach grace: Flatter her. She was famous once, in certain ports.
+  approach lore: Quote smugglers' law at her: a debt to the drowned binds all boats.
+  > triumph: Kettle laughs until she has to wipe her eyes. "Oh, I like you." Her crew will hold the Bell Chamber stairs for you, and she slides a brass die across the table: the Smuggler's Hook, for friends. "Bring it back."
+    do: flag smugglers_allied; ally hook_d6; standing "Thieves' Guild" 1
+    goto: waystone
+  > success: "Done." She spits on her palm and shakes. Her crew will meet you at the Bell Chamber. "And whatever's down there that glitters, we talk about it first."
+    do: flag smugglers_allied
+    goto: waystone
+  > mixed: She'll help. On her terms.
+    do: flag smugglers_allied
+    goto: waystone
+    cost: Pay her 10 Coin up front :: coin -10
+    cost: Promise her a share of the bell's gold :: flag bargain_promised; temper honesty -1
+  > fail: "Not good enough, dearie." It costs you 20 Coin just to leave the cove. But at the door she calls after you, almost kindly: "The gold's at the bottom, by the bell. My boys saw it before they ran. Mind the cold."
+    do: coin -20; flag hoard_hint
+    goto: waystone
+  > caught: Kettle's hand comes down flat on your die. Very slowly, she picks it up, weighs it, and smiles with all her teeth. "Lead," she says. "In my house." Around you, chairs scrape back.
+    do: flag caught_cheating; standing "Thieves' Guild" -1; temper honesty -1
+    goto: kettle_brawl
+
+* share: Tell her the truth: what you're after, and that she can have the gold if it means the drowning stops.
+  temper: honesty +1
+  challenge: kind=test difficulty=easy title="An honest offer"
+  approach lore: Tell her everything you know about the bell, and why.
+  approach ward: Look her in the eye and give her your word.
+  approach grace: Tell it as a story. She likes stories.
+  > triumph: Kettle is quiet for a long time. "My brother walked into that lake," she says at last. "Ten years back. Nobody ever told me the truth about anything." Her crew is yours, and her Hook die with it.
+    do: flag smugglers_allied; flag bargain_promised; ally hook_d6
+    goto: waystone
+  > success: "Honest," she says, as if tasting a strange wine. "All right. My boys at the Bell Chamber. The gold is ours."
+    do: flag smugglers_allied; flag bargain_promised
+    goto: waystone
+  > mixed: She believes you, mostly. She wants something to hold.
+    do: flag smugglers_allied; flag bargain_promised
+    goto: waystone
+    cost: Leave her 10 Coin as a bond :: coin -10
+    cost: Leave her one of your dice until it's done (your best die stays in the cove) :: exhaust_best
+  > fail: She doesn't believe a word. Nobody tells the truth in this cove. But she tells you where the gold is anyway, "so you can drown looking at it."
+    do: flag hoard_hint
+    goto: waystone
+
+* threaten: Lean on her. The Duke's men would love to know about this cove.
+  temper: mercy -1
+  contest: opponent=kettle_threat title="Leaning on Mother Kettle"
+  approach might: Put your fist through her table.
+  approach guile: Describe, in detail, the Duke's new tax on smuggled brandy.
+  approach ward: Stand there, unmoved, until she blinks.
+  > triumph: Kettle goes pale under the grey. "Fine. Fine! Take the boys." Her crew will be at the stairs, sullen, and her Hook die is tossed at your feet.
+    do: flag smugglers_allied; flag kettle_grudge; ally hook_d6; standing "Thieves' Guild" -1
+    goto: waystone
+  > success: "You'll regret this," she says, but her crew will be at the Bell Chamber.
+    do: flag smugglers_allied; flag kettle_grudge; standing "Thieves' Guild" -1
+    goto: waystone
+  > mixed: She gives in. You have made an enemy who will outlive this tale.
+    do: flag smugglers_allied; flag kettle_grudge; standing "Thieves' Guild" -1
+    goto: waystone
+    cost: Her boys rough you up on the way out (lose 4 Grit) :: grit -4
+    cost: She'll remember your face (Thieves' Guild -1 more) :: standing "Thieves' Guild" -1
+  > fail: Kettle laughs in your face, and you leave with nothing but a sore pride. On the way out, one of her boys mutters where the gold lies, just to see you drown for it.
+    do: flag hoard_hint; standing "Thieves' Guild" -1
+    goto: waystone
+  > caught: In the middle of your threats she reaches over and turns your die in her fingers. "Lead. You come into my house to threaten me, with LEAD?" The knives come out.
+    do: flag caught_cheating; standing "Thieves' Guild" -1
+    goto: kettle_brawl
+
+## kettle_brawl: Knives in the Cove
+act: 2
+type: encounter
+
+Three of Kettle's crew between you and the cave mouth, and Kettle herself watching from her chair, shuffling.
+[i]Caught with a loaded die. It happens to the best of us. It happens most of all to the best of us.[/i]
+
+* fight: Fight your way out.
+  temper: mercy -1
+  combat: foe=kettle_knives
+  > triumph: Three smugglers on the floor and you barely winded. Kettle stops shuffling. "Well," she says. "Get out of my cove." You take a knife with you.
+    do: flag smugglers_hostile; standing "Thieves' Guild" -1
+    goto: waystone
+  > success: You fight clear of the cove and row hard. Behind you, Kettle is shouting about debts.
+    do: flag smugglers_hostile; standing "Thieves' Guild" -1
+    goto: waystone
+  > mixed: You get out. Just.
+    do: flag smugglers_hostile; standing "Thieves' Guild" -1
+    goto: waystone
+    cost: A knife opens your arm (lose 4 Grit) :: grit -4
+    cost: You lose your purse in the scramble (lose 10 Coin) :: coin -10
+  > fail: They beat you and throw you in the lake. When you crawl out on the far shore, your purse is gone, but you are alive, and you know at least that Kettle's boys saw gold down by the bell.
+    do: flag smugglers_hostile; coin -20; flag hoard_hint
+    goto: waystone
+
+* pay: Throw your purse on the table and walk out with your hands up.
+  temper: mercy +1
+  do: coin -20; flag smugglers_hostile; flag hoard_hint
+  goto: waystone
+  reply: Kettle weighs the purse and waves you off. "Gold's by the bell," she calls after you. "Since you're so fond of losing things." [i]Pride is cheaper to lose than teeth.[/i]
+
+## dive: The Dive
+act: 2
+type: challenge
+
+You tie the skiff off over the darkest water and the bell hums up through the hull, through the oars, through your bones.
+? tide_lore :: The ferryman was right. As the tide turns you feel it: a pull, gentle and certain, straight down.
+? hoard_hint :: Kettle's boys saw gold down there. You know roughly where to look.
+? drowned_path :: You know the line the Drowned walk. It leads straight down to here.
+[i]Three breaths, perhaps four, before the cold takes your choices away.[/i]
+
+* dive: Go down.
+  challenge: kind=trial progress=20 danger=3 danger_text="Your breath gives out." title="Holding your breath"
+  mod: tide_lore => progress=-4
+  mod: hoard_hint => progress=-4
+  mod: drowned_path => progress=-2
+  approach grace: Swim it, clean and quick.
+  approach might: Haul yourself down the old bell rope, hand over hand.
+  approach ward [progress=24 danger=4]: Weight your belt with stones and walk down, slow and steady.
+  > triumph: You reach the bottom with breath to spare. The bell lies on its side in the mud, huge, green-bronze, and a crack runs right through its lip. Around it, the abbey's gold glitters: chalices, coins, a reliquary. And you see the crack. A bell that cracked can be broken.
+    do: flag found_hoard; flag bell_crack
+    goto: gold
+  > success: The bell lies on its side in the mud like a sleeping animal, and around it, gold: chalices, coins, the abbey's whole treasury, scattered where the flood left it.
+    do: flag found_hoard
+    goto: gold
+  > mixed: You find it: the bell, and the gold around it. The lake wants something back.
+    do: flag found_hoard
+    goto: gold
+    cost: The cold bites deep (lose 4 Grit) :: grit -4
+    cost: A die slips from your pouch into the dark (lose your lowest die thrown) :: lose_lowest
+    cost: You come up exhausted (1 Fatigue) :: fatigue 1
+  > fail: Your breath goes. Black water, the bell's hum, and then something takes your wrist, gently, and pulls you UP. You break the surface alone, choking, and nothing is there. [i]Somebody down there does not want you dead. Interesting.[/i]
+    do: wound "Waterlogged Lungs"; flag saved_by_abbess
+    goto: waystone
+
+## gold: The Bell's Gold
+act: 2
+
+You surface, gasping, with one hand full of gold. In the bottom of the skiff it gleams: coins stamped with the abbey's bell, and a die. A d20 cast from the bell's own metal, warm as skin, humming faintly.
+There is so much more down there.
+[i]Ah. Now, this is where most travellers lose their nerve. Or find it. I have never been sure which.[/i]
+
+* take: Take it. All of it. The drowned don't need gold.
+  temper: honesty -1
+  do: flag gold_taken; gain bellmetal_d20; coin 60; regard -1
+  goto: waystone
+  reply: You dive twice more. When you are done, the skiff sits low in the water, and the d20 has stopped humming. It is listening. [i]Greed is a choice too. I won't pretend it isn't an interesting one.[/i]
+
+* leave: Put it all back. It isn't yours.
+  temper: honesty +1
+  do: flag left_gold; regard 1
+  goto: waystone
+  reply: You drop the coins, one by one, back into the black water, and the die last of all. Far below, the bell's hum changes. Softer. [i]Something noticed that.[/i]
+
+* one: Keep one coin for Wren's family. Return the rest.
+  temper: mercy +1
+  do: flag token_coin; coin 5
+  goto: waystone
+  reply: One coin, for a fisherman's widow. The rest goes back to the lake. [i]A small kindness, for a small price. The lake seems to find that acceptable.[/i]
+
+## waystone: The Lakeside Shrine
+act: 2
+type: waystone
+on enter: rest 5; if gold_taken then toll
+
+A shrine of grey stones at the water's edge, with a roof of turf and a fire pit full of old ash. A Waystone. You light the fire, empty your Pouch onto a flat stone, and breathe.
+? gold_taken :: In your Pouch, the Bellmetal d20 tolls once, by itself.
+? rowed_out :: Across the water, the village is quiet. You do not know who answered the bell last night.
+? villagers_saved>=2 :: Footsteps on the shingle. It's Wren, lantern in hand, out of breath. "They told me what you did," she says. "I'm coming with you. And I brought you this." Her father's carved oak die.
+? promised_wren and villagers_saved==1 :: Footsteps on the shingle. It's Wren. "You promised," she says, "so I'm holding you to it. I'm coming." She holds out her father's oak die.
+[i]Rest. Repack. What you carry into the Bell Chamber is what you will have.[/i]
+
+* wren_comes: "Stand on the shore with me, and ring when I need you."
+  if: villagers_saved>=2 or promised_wren and villagers_saved==1
+  do: flag wren_present; ally hobb_oak_d6
+  goto: chamber
+  reply: Wren takes a little brass hand-bell from her coat. "Gran's," she says. "For calling the boats home in fog." [i]Two bells, then. This should be interesting.[/i]
+
+* wren_home: "Go home, Wren. Your mother's already lost one."
+  if: villagers_saved>=2 or promised_wren and villagers_saved==1
+  temper: mercy +1
+  do: flag wren_safe; ally hobb_oak_d6
+  goto: chamber
+  reply: She argues. She loses. But she makes you take the die. "Bring it back," she says, "or bring him back. Either."
+
+* go_on: Bank the fire and go on alone.
+  if: villagers_saved<2 and not promised_wren or villagers_saved==0
+  goto: chamber
+  reply: The fire dies behind you. [i]Alone, then. It's how most of these end. Not all.[/i]
+
+## chamber: The Bell Chamber
+act: 3
+type: challenge
+
+Down the abbey stair, step after step into the lake, and the water does not close over you. It parts. At the bottom, a chamber of green stone, air trapped in the vault like a held breath. In the middle, the bell, upright now, and beside it, her.
+The Drowned Abbess. Mother Ysolde, forty years under the lake, her habit drifting like weed. Her hand is on the bell rope. Behind her, in rows, stand the Drowned: Hobb, Aldous, all of them, eyes open, waiting to be called.
+? smugglers_allied :: Behind you, boots on the stair: Kettle's crew, lanterns high, holding the steps against the Drowned.
+? wren_present :: Far above, faint through the water, a little hand-bell rings. Wren, on the shore, calling the boats home.
+? gold_taken :: The Abbess turns her head. She looks straight at your Pouch, where the Bellmetal d20 has begun to ring. "Thief," she says.
+? left_gold :: She looks at you a long time. "You gave it back," she says, puzzled, as if she had forgotten people could.
+? no_lantern :: Without your lantern the chamber is near black. You will be fighting half blind.
+[i]This is the end of the road. Every road you took leads here. Let's see what you brought.[/i]
+
+* name: Speak her true name.
+  if: abbess_name
+  contest: opponent=abbess_name title="Calling Ysolde home"
+  mod: name_torn => resolve=4
+  mod: rosary_bead => resolve=-4
+  mod: gold_taken => resolve=10
+  mod: left_gold => resolve=-4
+  approach lore: Recite her vows back to her, in the abbey's own words.
+  approach grace: Sing the hymn she rang the bell for.
+  approach ward: Walk into the water beside her and promise to stay until she rests.
+  > triumph: "Ysolde." She stops. The rope falls from her hand. For a moment she is only an old woman in a wet habit, and she smiles. "I rang so they would wake," she says. "I forgot to stop." One by one the Drowned lie down in the water, and are still. Hobb last of all.
+    do: flag climax freed; regard 1
+    goto: ending
+  > success: "Ysolde." The rope slips from her fingers. "Is it morning?" she asks. "Yes," you tell her. "Everyone's awake. You can stop." And she does.
+    do: flag climax freed
+    goto: ending
+  > mixed: She hears her name, and lets go of the rope. But forty years of grief do not go quietly.
+    do: flag climax freed
+    goto: ending
+    cost: Her grief marks you (take a Wound) :: wound ""
+    cost: The bell cracks as she goes (the abbey is lost) :: flag bell_broken_by_grief
+  > fail: The name comes out wrong, half-drowned in your throat. She screams, and the water comes down.
+    do: flag name_failed
+    goto: chamber
+    retry: fight
+
+* answer: Answer the voice that spared you: "I'll ring it for you, so you can rest."
+  if: heard_whisper or saved_by_abbess
+  temper: mercy +1
+  challenge: kind=test difficulty=hard tries=2 title="Ringing the true note"
+  approach grace: Take the rope and find the note by feel.
+  approach lore: Ring the abbey's last office: three, then nine, then one.
+  approach might: Haul the bell over with everything you have.
+  > triumph: One note. Not the low drowning toll but a clear high call, the morning bell. The Abbess lifts her face to it like sunlight. Then she and all the Drowned are gone, and you are standing in an empty chamber, in silence, with the rope in your hands.
+    do: flag climax freed; regard 1
+    goto: ending
+  > success: The bell rings morning. She closes her eyes. "Thank you," she says, and lets the lake have her at last.
+    do: flag climax freed
+    goto: ending
+  > mixed: The note is close enough. She goes, but the bell takes something from you as it sounds.
+    do: flag climax freed
+    goto: ending
+    cost: The rope tears your hands (take a Wound) :: wound ""
+    cost: The bell cracks on the last note (the abbey is lost) :: flag bell_broken_by_grief
+  > fail: The bell gives the old drowning toll. Her face changes. "Liar," she says, and the water comes down.
+    goto: chamber
+    retry: fight
+
+* salvage: Hold her off while Kettle's crew hauls the bell up and out.
+  if: smugglers_allied
+  temper: duty -1
+  challenge: kind=trial progress=18 danger=4 danger_text="The Drowned break through to the ropes." title="Holding the line"
+  approach ward: Stand between her and the ropes, and hold.
+  approach might: Drive the Drowned back from the crew.
+  approach guile: Lead her off into the dark of the chamber.
+  > triumph: The bell comes up out of the water on twenty ropes, streaming weed, and the moment it breaks the surface the Abbess simply stops, mid-step, and sinks like a stone. The Drowned go with her. Kettle is already counting.
+    do: flag climax salvaged
+    goto: ending
+  > success: The crew heave the bell up and out, and the Abbess's toll is cut off mid-note. The Drowned fall where they stand. Kettle claps you on the back. "Partners," she says.
+    do: flag climax salvaged
+    goto: ending
+  > mixed: The bell comes up. Not everyone does.
+    do: flag climax salvaged
+    goto: ending
+    cost: You hold the line too long (take a Wound) :: wound ""
+    cost: Two of the crew are dragged under (Kettle will blame you) :: flag kettle_grudge
+  > fail: The ropes snap. The bell falls back into the mud with a sound like the end of the world, and the Abbess comes for you.
+    goto: chamber
+    retry: fight
+
+* break: Break the bell. End this the hard way.
+  if: bell_crack
+  temper: mercy -1
+  challenge: kind=test difficulty=hard tries=2 title="Breaking the bell"
+  approach might: Strike the crack with a stone, again and again.
+  approach ward: Brace your back against it and push it over onto the flagstones.
+  approach lore: Find the note that will shatter it, and ring it.
+  > triumph: The crack runs, and the bell splits in two with a sound you feel in your teeth for a week. The Abbess comes apart like wet paper. Among the shards, one piece of bellmetal has broken off in the shape of a die.
+    do: flag climax broken
+    goto: ending
+  > success: The bell breaks. The Abbess screams once, without sound, and is gone, and the Drowned with her.
+    do: flag climax broken
+    goto: ending
+  > mixed: It breaks, and the shards fly.
+    do: flag climax broken
+    goto: ending
+    cost: A shard opens you up (take a Wound) :: wound ""
+    cost: The roof of the chamber comes down (lose 5 Grit) :: grit -5
+  > fail: The bell will not break. She turns from it, slowly, toward you.
+    goto: chamber
+    retry: fight
+
+* fight: Fight her.
+  combat: foe=abbess
+  mod: gold_taken => resolve=10
+  mod: left_gold => resolve=-4
+  mod: smugglers_allied => no_wardens=true
+  mod: wren_present => bell=true
+  > triumph: Your last throw takes her, and she comes apart into lake water and weed, and the Drowned fall with her, all at once, like puppets with cut strings. The bell is silent.
+    do: flag climax destroyed
+    goto: ending
+  > success: She goes down into the water and does not rise. The bell gives one last cracked note, and stops forever.
+    do: flag climax destroyed
+    goto: ending
+  > mixed: She is destroyed. You very nearly went with her.
+    do: flag climax destroyed
+    goto: ending
+  > fail: The water closes over you, and the last thing you hear is the bell.
+    do: flag defeat
+    goto: ending
+
+## ending: How It Ended
+act: 3
+type: ending
+
++ drowned: Drowned
+  if: defeat or wounds>=3
+  [i]And so the lake kept another one.[/i]
+  They say in Marrowmere that a traveller went down the abbey stair and never came up, and that the bell rang all that winter, and that by spring there were not enough fishermen left to mend the nets.
+  [i]But tales can be told again. Come back to the fire when you're ready. The bell is still ringing.[/i]
+  do: mark drowned_before; chronicle "Marrowmere: drowned, until you return."; lose_wager
+
++ rest: Rest
+  if: climax==freed
+  Morning comes up over Marrowmere, and the lake is only a lake.
+  ? wren_present :: Wren meets you on the shore. She has already found her father, lying peaceful in the shallows, and she does not cry until you put his oak die back in her hand.
+  ? wren_safe :: Wren is waiting at the jetty, where you told her to wait. You give her back her father's die, and tell her he is resting now, and she believes you.
+  ? gold_taken :: The bell's gold slides out of your pouch as you climb the stair, coin by coin, back into the lake. The Bellmetal d20 goes last. You let it.
+  In the shallows by the jetty, you find a string of jade beads, warm as a held hand.
+  [i]Some tales end with a fight. The good ones end with someone being allowed to stop.[/i]
+  do: gain rosary_d12; coin 20; standing Abbey 2; chronicle "Marrowmere: saved. The Drowned Abbess: freed."; chronicle "Wren becomes a regular at the tavern."; mark abbess_freed; if gold_taken then return_gold
+
++ bargain: The Bargain
+  if: climax==salvaged
+  Kettle's crew sell the bell in three ports before the month is out. Your share is heavier than you expected.
+  The drowning stops. Nobody in Marrowmere knows quite why. The abbey island stands empty, and at night, sometimes, people say they hear singing out there, very faint.
+  ? kettle_grudge :: Kettle pays you, but she doesn't smile when she does it. You will be seeing her again.
+  [i]A good bargain. Whether it was a good ending, I leave to you.[/i]
+  do: coin 80; shard Spark; standing "Thieves' Guild" 2; standing Abbey -2; chronicle "The Drowned Bell: salvaged and sold."; mark bell_market; rumour "The bell of Marrowmere is for sale, somewhere."
+
++ greed: Greed
+  if: gold_taken
+  You walk out of the Bell Chamber alive, with the abbey's gold heavy in your pack and the Bellmetal d20 humming in your Pouch, contented, like a cat.
+  The drowning stops, for now. But the lake knows who took its gold.
+  [i]Marrowmere will flood again, some autumn. A refugee will sit by this fire one night and tell me about it. You'll be there, I expect. You'll recognise the gold.[/i]
+  do: standing Abbey -2; chronicle "Marrowmere: will flood in a later season."; mark greed
+
++ silence: Silence
+  if: climax==destroyed or climax==broken
+  The bell of Marrowmere never rings again.
+  The Drowned are buried properly, in the churchyard on the hill, Hobb and Aldous and the rest. The abbey crumbles into the lake that winter. Some say the island is quieter than a grave should be.
+  ? climax==broken :: Among the shards of the bell you find one piece that fits your palm like a die.
+  [i]You ended it. That counts for a great deal. It is not quite the same as setting it right.[/i]
+  do: gain bellshard_d8; coin 20; chronicle "Marrowmere: saved. The abbey is lost forever."; mark abbess_destroyed
