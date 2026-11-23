@@ -4,6 +4,7 @@ patron: Captain Ashgrove
 start: note
 arc: ashgrove
 order: 3
+stakes: -3
 pitch: Harrow's army is at Holloway's walls, and the captain has gone home to stand on them. He left word for you.
 offer: told:pretender_road and not seen:sided_harrow and season==autumn
 expires: winter
@@ -400,7 +401,7 @@ act: 3
 type: ending
 
 + fallen: Holloway Burns
-  if: defeat or wounds>=3
+  if: defeat or fallen
   [i]And so Holloway fell, in the last week of autumn, with the snow coming.[/i]
   You wake in a cart going south, among the wounded, and do not need to be told. Behind you there is smoke on the hill.
   ? not ashgrove_fell :: Ashgrove is in the next cart. He hasn't spoken since the wall came down.

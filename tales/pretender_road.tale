@@ -4,6 +4,7 @@ patron: Captain Ashgrove
 start: orders
 arc: ashgrove
 order: 2
+stakes: 2
 pitch: Lord Marshal Harrow calls himself king and is marching south on the mountain road. The captain wants him met before the snow.
 offer: ended:last_watch
 expires: winter
@@ -472,7 +473,7 @@ act: 3
 type: ending
 
 + fallen: The Road South
-  if: defeat or wounds>=3
+  if: defeat or fallen
   [i]And the would-be king went down the mountain road with his banners up, and nobody stood in his way.[/i]
   They carry you to the bothy, where a shepherd sets your bones. By the time you can walk, Harrow is at Holloway's walls.
   [i]Tales can be told again. But armies don't wait for second tellings. Get well, and get to Holloway.[/i]

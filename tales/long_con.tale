@@ -4,6 +4,7 @@ patron: Mother Kettle
 start: plea
 arc: kettle
 order: 1
+stakes: 5
 pitch: Mother Kettle wants a fresh face at a card table on the Gilded Swan, and she says the mark has it coming.
 offer: night>=3 or seen:smugglers_allied or seen:kettle_grudge
 teller: triumph :: Oh, that was beautiful. They'll tell that one in every card room on the river, and get it wrong.
@@ -472,7 +473,7 @@ token: deeds_returned => boat "Forty boats, home"
 type: ending
 
 + caught: Rumbled
-  if: defeat or wounds>=3
+  if: defeat or fallen
   [i]And the Watch fished you out of the river at dawn, and the Duke's magistrate gave you a month in the Saltreach gaol for it.[/i]
   Kettle got you out in a week. She doesn't say how. She doesn't say anything about the deeds, either. Grisewold is still going up and down the river with his ledger.
   [i]Kettle doesn't hold it against you. She has failed more cons than you've had dinners. Come back when you're mended.[/i]

@@ -4,6 +4,7 @@ patron: Hollis
 start: cellar_door
 arc: hollis
 order: 1
+stakes: 2
 pitch: Hollis takes you aside at closing time. There's a door in his cellar he's kept locked for thirty years, and tonight the moon is full.
 offer: rumour:fair_game and night>=8
 teller: triumph :: Now that was a game. The Fair Folk will be talking about it for a hundred years, which for them is next week.
@@ -245,7 +246,7 @@ The Queen of Hours looks at you down the long table.
 type: ending
 
 + lost: Next Moon
-  if: defeat or wounds>=3
+  if: defeat or fallen
   [i]And Hollis pulled you out through the green door at dawn, older by more than a night, and locked it behind you, and didn't say I told you so, which is the kindest thing he's ever done.[/i]
   do: chronicle "The Card Sharps' Moon: the Fair Folk kept a year of yours."
 

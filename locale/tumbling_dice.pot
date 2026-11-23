@@ -4,47 +4,47 @@ msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 
-#: scripts/game/game.gd:1700
+#: scripts/game/game.gd:1704
 msgid "\nFull value for %s dice, half for others."
 msgstr ""
 
-#: scripts/game/game.gd:1325
+#: scripts/game/game.gd:1329
 msgid "\nLoaded dice: %d%% caught"
 msgstr ""
 
-#: scripts/game/game.gd:1671
+#: scripts/game/game.gd:1675
 msgid "\nThis face: %s"
 msgstr ""
 
-#: scripts/game/game.gd:379
+#: scripts/game/game.gd:383
 msgid "   (%d notch%s)"
 msgstr ""
 
-#: scripts/game/game.gd:1990
+#: scripts/game/game.gd:1994
 msgid "   weight %d / %d"
 msgstr ""
 
-#: scripts/game/game.gd:1319
+#: scripts/game/game.gd:1323
 msgid "  (clock %d)"
 msgstr ""
 
-#: scripts/game/game.gd:1799
+#: scripts/game/game.gd:1803
 msgid " (fire %d)"
 msgstr ""
 
-#: scripts/game/game.gd:1025
+#: scripts/game/game.gd:1029
 msgid " (system)"
 msgstr ""
 
-#: scripts/game/game.gd:1451
+#: scripts/game/game.gd:1455
 msgid " Chance she spots your loaded die: %d%%."
 msgstr ""
 
-#: scripts/game/game.gd:2125
+#: scripts/game/game.gd:2129
 msgid "%d challenges, %d throws.   %s"
 msgstr ""
 
-#: scripts/game/game.gd:587
+#: scripts/game/game.gd:591
 msgid "%d fps · %s · %d draws"
 msgstr ""
 
@@ -52,11 +52,11 @@ msgstr ""
 msgid "%d nights go by"
 msgstr ""
 
-#: scripts/game/game.gd:1927
+#: scripts/game/game.gd:1931
 msgid "%d of %d   (Mixed from %d, Triumph at %d)"
 msgstr ""
 
-#: scripts/game/game.gd:1372
+#: scripts/game/game.gd:1376
 msgid "%s  (Resolve %d)"
 msgstr ""
 
@@ -68,19 +68,19 @@ msgstr ""
 msgid "%s · %d Coin"
 msgstr ""
 
-#: scripts/rules/tale_runner.gd:828
+#: scripts/rules/tale_runner.gd:834
 msgid "%s, beaten"
 msgstr ""
 
-#: scripts/game/game.gd:324
+#: scripts/game/game.gd:328
 msgid "%s.   Tales told: %d.   Renown: %d.   Coin: %d."
 msgstr ""
 
-#: scripts/game/game.gd:1651
+#: scripts/game/game.gd:1655
 msgid "%s: Resolve %d, %s"
 msgstr ""
 
-#: scripts/game/game.gd:1652
+#: scripts/game/game.gd:1656
 msgid "%s: Resolve %d, pushing %d"
 msgstr ""
 
@@ -96,15 +96,15 @@ msgstr ""
 msgid ", %d to the next"
 msgstr ""
 
-#: scripts/game/game.gd:1810
+#: scripts/game/game.gd:1814
 msgid ". You take %d."
 msgstr ""
 
-#: scripts/game/game.gd:1274
+#: scripts/game/game.gd:1278
 msgid "A Fail"
 msgstr ""
 
-#: scripts/game/game.gd:1413
+#: scripts/game/game.gd:1417
 msgid "A Grace Test against its speed (%d). Escaping routes the tale differently."
 msgstr ""
 
@@ -152,7 +152,7 @@ msgstr ""
 msgid "Abbess's Rosary d12"
 msgstr ""
 
-#: scripts/game/game.gd:1201
+#: scripts/game/game.gd:1205
 msgid "Act %d"
 msgstr ""
 
@@ -208,7 +208,7 @@ msgstr ""
 msgid "Axe"
 msgstr ""
 
-#: scripts/game/game.gd:1057
+#: scripts/game/game.gd:1061
 msgid "Back"
 msgstr ""
 
@@ -216,7 +216,7 @@ msgstr ""
 msgid "Back to the room"
 msgstr ""
 
-#: scripts/game/game.gd:2088 scripts/game/game.gd:2136
+#: scripts/game/game.gd:2092 scripts/game/game.gd:2140
 msgid "Back to the tavern"
 msgstr ""
 
@@ -228,11 +228,11 @@ msgstr ""
 msgid "Bark"
 msgstr ""
 
-#: scripts/game/game.gd:940
+#: scripts/game/game.gd:944
 msgid "Begin the tale again from the start"
 msgstr ""
 
-#: scripts/game/game.gd:931
+#: scripts/game/game.gd:935
 msgid "Begin: The Stranger's Throw"
 msgstr ""
 
@@ -256,7 +256,7 @@ msgstr ""
 msgid "Bellows"
 msgstr ""
 
-#: scripts/game/game.gd:1749
+#: scripts/game/game.gd:1753
 msgid "Best"
 msgstr ""
 
@@ -316,7 +316,7 @@ msgstr ""
 msgid "Break them %d%%, Nerve lost %.1f"
 msgstr ""
 
-#: scripts/game/game.gd:1449
+#: scripts/game/game.gd:1453
 msgid "Break them this round: %d%%. Nerve lost: about %.1f."
 msgstr ""
 
@@ -328,7 +328,7 @@ msgstr ""
 msgid "Buckler"
 msgstr ""
 
-#: scripts/game/game.gd:1729
+#: scripts/game/game.gd:1733
 msgid "Bump table"
 msgstr ""
 
@@ -356,7 +356,7 @@ msgstr ""
 msgid "Caught with a loaded die"
 msgstr ""
 
-#: scripts/game/game.gd:920 scripts/game/game.gd:2081
+#: scripts/game/game.gd:924 scripts/game/game.gd:2085
 msgid "Chronicle: "
 msgstr ""
 
@@ -372,7 +372,7 @@ msgstr ""
 msgid "Claret"
 msgstr ""
 
-#: scripts/game/game.gd:1375
+#: scripts/game/game.gd:1379
 msgid "Clarity (Elven Jade): next round it throws %s."
 msgstr ""
 
@@ -380,15 +380,15 @@ msgstr ""
 msgid "Clarity: while it is in your Hand you see the odds of a foe's next throw."
 msgstr ""
 
-#: scripts/game/game.gd:1956
+#: scripts/game/game.gd:1960
 msgid "Click a die on the shelf to pack it; click a packed die to put it back. The Pouch is your deck for the whole tale; the Saddlebag waits at the Waystone, where you may swap up to 2 dice."
 msgstr ""
 
-#: scripts/game/game.gd:1033
+#: scripts/game/game.gd:1037
 msgid "Click an action, then press the key or controller button for it. A key replaces its keys, a button its buttons. Escape cancels. On a controller, the left stick and d-pad move between choices, A chooses, and a flick of the right stick throws the dice."
 msgstr ""
 
-#: scripts/game/game.gd:965
+#: scripts/game/game.gd:969
 msgid "Click choices and dice, or use a controller. Space throws, Enter continues, F toggles fast dice, hold Z to look closer. Hover a die to read it."
 msgstr ""
 
@@ -396,7 +396,7 @@ msgstr ""
 msgid "Cloak"
 msgstr ""
 
-#: scripts/game/game.gd:310
+#: scripts/game/game.gd:314
 msgid "Close"
 msgstr ""
 
@@ -404,11 +404,11 @@ msgstr ""
 msgid "Club"
 msgstr ""
 
-#: scripts/game/game.gd:1538
+#: scripts/game/game.gd:1542
 msgid "Cocked: %s"
 msgstr ""
 
-#: scripts/game/game.gd:794 scripts/game/game.gd:802
+#: scripts/game/game.gd:798 scripts/game/game.gd:806
 msgid "Coin %d"
 msgstr ""
 
@@ -424,19 +424,19 @@ msgstr ""
 msgid "Command (type help)"
 msgstr ""
 
-#: scripts/game/game.gd:1756
+#: scripts/game/game.gd:1760
 msgid "Confirm"
 msgstr ""
 
-#: scripts/game/game.gd:1219 scripts/rules/preview.gd:154
+#: scripts/game/game.gd:1223 scripts/rules/preview.gd:154
 msgid "Continue"
 msgstr ""
 
-#: scripts/game/game.gd:924 scripts/game/tavern_hub.gd:124
+#: scripts/game/game.gd:928 scripts/game/tavern_hub.gd:124
 msgid "Continue the tale: %s"
 msgstr ""
 
-#: scripts/game/game.gd:1032
+#: scripts/game/game.gd:1036
 msgid "Controls"
 msgstr ""
 
@@ -464,11 +464,11 @@ msgstr ""
 msgid "Cut-Badge d6"
 msgstr ""
 
-#: scripts/game/game.gd:1358
+#: scripts/game/game.gd:1362
 msgid "Danger %d of %d: %s"
 msgstr ""
 
-#: scripts/game/game.gd:1280
+#: scripts/game/game.gd:1284
 msgid "Defy (%d Fate)"
 msgstr ""
 
@@ -476,15 +476,15 @@ msgstr ""
 msgid "Defy the Fail (3 Fate): make it Mixed"
 msgstr ""
 
-#: scripts/game/game.gd:2070
+#: scripts/game/game.gd:2074
 msgid "Dice you came home with"
 msgstr ""
 
-#: scripts/game/game.gd:1663
+#: scripts/game/game.gd:1667
 msgid "Dice:"
 msgstr ""
 
-#: scripts/game/game.gd:1259
+#: scripts/game/game.gd:1263
 msgid "Done, with tries to spare"
 msgstr ""
 
@@ -572,11 +572,11 @@ msgstr ""
 msgid "Ember: its highest face sets a foe Burning (2 damage a round for 3 rounds)."
 msgstr ""
 
-#: scripts/game/game.gd:2065
+#: scripts/game/game.gd:2069
 msgid "Ending: %s"
 msgstr ""
 
-#: scripts/game/game.gd:2066
+#: scripts/game/game.gd:2070
 msgid "Endings found in %s: %d of %d   ·   Renown %d   ·   Coin %d"
 msgstr ""
 
@@ -584,16 +584,20 @@ msgstr ""
 msgid "Etiquette"
 msgstr ""
 
+#: scripts/rules/mood.gd:14
+msgid "Every foe and every opponent has 2 more Resolve."
+msgstr ""
+
 #: scripts/rules/foes.gd:191
 msgid "Every knife Mother Kettle owns, and Mother Kettle behind them with a crossbow, looking sorry about it."
 msgstr ""
 
-#: scripts/game/game.gd:1260
+#: scripts/game/game.gd:1264
 msgid "Every slot is met: that is a Success. Throw again for a Triumph (6 over in total), or take it. Pushing costs dice from your Pouch."
 msgstr ""
 
 #: scripts/rules/mood.gd:18
-msgid "Every target and every opponent's Resolve is 2 higher."
+msgid "Every target is 2 higher, and foes and opponents have 2 more Resolve again."
 msgstr ""
 
 #: scripts/game/tavern_hub.gd:475
@@ -620,19 +624,19 @@ msgstr ""
 msgid "Fang"
 msgstr ""
 
-#: scripts/game/game.gd:656 scripts/game/game.gd:1019
+#: scripts/game/game.gd:660 scripts/game/game.gd:1023
 msgid "Fast dice"
 msgstr ""
 
-#: scripts/game/game.gd:629
+#: scripts/game/game.gd:633
 msgid "Fate"
 msgstr ""
 
-#: scripts/game/game.gd:1711
+#: scripts/game/game.gd:1715
 msgid "Fate %d:"
 msgstr ""
 
-#: scripts/game/game.gd:804
+#: scripts/game/game.gd:808
 msgid "Fatigue %d"
 msgstr ""
 
@@ -648,7 +652,7 @@ msgstr ""
 msgid "Finish it %d%%, deal %.1f, take %.1f"
 msgstr ""
 
-#: scripts/game/game.gd:1455
+#: scripts/game/game.gd:1459
 msgid "Finish it this round: %d%%. Damage dealt about %.1f, taken about %.1f (of %d coming)."
 msgstr ""
 
@@ -668,19 +672,15 @@ msgstr ""
 msgid "Five men in what is left of the Greyfell livery, with the badges cut off. They were soldiers once. They remember how."
 msgstr ""
 
-#: scripts/game/game.gd:1412
+#: scripts/game/game.gd:1416
 msgid "Flee"
-msgstr ""
-
-#: scripts/rules/mood.gd:14
-msgid "Foes and opponents throw one extra d4."
 msgstr ""
 
 #: scripts/game/tavern_hub.gd:255
 msgid "For the tales above all: Grit doubled, and a Fail can always be Defied into a Mixed for free. The dice and odds stay honest."
 msgstr ""
 
-#: scripts/game/game.gd:1006
+#: scripts/game/game.gd:1010
 msgid "Frame rate"
 msgstr ""
 
@@ -712,7 +712,7 @@ msgstr ""
 msgid "Glint: when it lands even it counts in full in any slot."
 msgstr ""
 
-#: scripts/game/game.gd:1001
+#: scripts/game/game.gd:1005
 msgid "Graphics"
 msgstr ""
 
@@ -748,15 +748,15 @@ msgstr ""
 msgid "Grief"
 msgstr ""
 
-#: scripts/game/game.gd:797
+#: scripts/game/game.gd:801
 msgid "Grit %d/%d"
 msgstr ""
 
-#: scripts/game/game.gd:790
+#: scripts/game/game.gd:794
 msgid "Grit -"
 msgstr ""
 
-#: scripts/game/game.gd:611
+#: scripts/game/game.gd:615
 msgid "Grit 20/20"
 msgstr ""
 
@@ -776,7 +776,7 @@ msgstr ""
 msgid "Hammer"
 msgstr ""
 
-#: scripts/game/game.gd:702
+#: scripts/game/game.gd:706
 msgid "Hand"
 msgstr ""
 
@@ -796,7 +796,7 @@ msgstr ""
 msgid "Heartwood"
 msgstr ""
 
-#: scripts/game/game.gd:1006
+#: scripts/game/game.gd:1010
 msgid "Hidden"
 msgstr ""
 
@@ -844,15 +844,15 @@ msgstr ""
 msgid "Hounds"
 msgstr ""
 
-#: scripts/game/game.gd:1967
+#: scripts/game/game.gd:1971
 msgid "Hover a die to read it."
 msgstr ""
 
-#: scripts/game/game.gd:1301
+#: scripts/game/game.gd:1305
 msgid "How do you go about it? Your Hand is drawn below."
 msgstr ""
 
-#: scripts/game/game.gd:1010
+#: scripts/game/game.gd:1014
 msgid "How fast the Teller's lines are written out. Click the parchment to show a line at once."
 msgstr ""
 
@@ -868,7 +868,7 @@ msgstr ""
 msgid "Inscribe %s (%d Coin + shard)"
 msgstr ""
 
-#: scripts/game/game.gd:935
+#: scripts/game/game.gd:939
 msgid "Into the tavern"
 msgstr ""
 
@@ -884,7 +884,7 @@ msgstr ""
 msgid "It hums when the lake is near."
 msgstr ""
 
-#: scripts/game/game.gd:1373
+#: scripts/game/game.gd:1377
 msgid "It throws: %s."
 msgstr ""
 
@@ -924,7 +924,7 @@ msgstr ""
 msgid "Lance"
 msgstr ""
 
-#: scripts/game/game.gd:1025
+#: scripts/game/game.gd:1029
 msgid "Language"
 msgstr ""
 
@@ -944,7 +944,7 @@ msgstr ""
 msgid "Let a night pass. Tales that are waiting may not wait for ever."
 msgstr ""
 
-#: scripts/game/game.gd:1283
+#: scripts/game/game.gd:1287
 msgid "Let it stand"
 msgstr ""
 
@@ -968,11 +968,11 @@ msgstr ""
 msgid "Lord Marshal Harrow, who would be king, in black plate with a gold circlet welded to the helm. He fights like a man who has never once doubted he was right."
 msgstr ""
 
-#: scripts/game/game.gd:2079
+#: scripts/game/game.gd:2083
 msgid "Lost: "
 msgstr ""
 
-#: scripts/game/game.gd:1002
+#: scripts/game/game.gd:1006
 msgid "Low suits tablets and Chromebooks; High is the full look."
 msgstr ""
 
@@ -992,7 +992,7 @@ msgstr ""
 msgid "Magistrate's Seal d10"
 msgstr ""
 
-#: scripts/game/game.gd:1012
+#: scripts/game/game.gd:1016
 msgid "Makes every panel and its text larger."
 msgstr ""
 
@@ -1044,7 +1044,7 @@ msgstr ""
 msgid "Mixed"
 msgstr ""
 
-#: scripts/game/game.gd:1248
+#: scripts/game/game.gd:1252
 msgid "Mixed: choose the price"
 msgstr ""
 
@@ -1084,7 +1084,7 @@ msgstr ""
 msgid "Mother Ysolde, forty years under the lake, her habit drifting like weed."
 msgstr ""
 
-#: scripts/game/game.gd:2013
+#: scripts/game/game.gd:2017
 msgid "No room for the %s: the Pouch holds weight %d and the Saddlebag %d."
 msgstr ""
 
@@ -1092,7 +1092,7 @@ msgstr ""
 msgid "No rune shards to inscribe with. Melting a rune die gives its shards."
 msgstr ""
 
-#: scripts/game/game.gd:944
+#: scripts/game/game.gd:948
 msgid "No story, no stakes: twenty challenges to learn the dice. Your choices are logged for playtesting."
 msgstr ""
 
@@ -1100,11 +1100,11 @@ msgstr ""
 msgid "Now: %s. %s"
 msgstr ""
 
-#: scripts/game/game.gd:1719
+#: scripts/game/game.gd:1723
 msgid "Nudge +1"
 msgstr ""
 
-#: scripts/game/game.gd:1714
+#: scripts/game/game.gd:1718
 msgid "Nudge -1"
 msgstr ""
 
@@ -1140,7 +1140,7 @@ msgstr ""
 msgid "Odile, keeper of the Drowned Lamb"
 msgstr ""
 
-#: scripts/game/game.gd:1016 scripts/game/game.gd:1019
+#: scripts/game/game.gd:1020 scripts/game/game.gd:1023
 msgid "Off"
 msgstr ""
 
@@ -1156,19 +1156,19 @@ msgstr ""
 msgid "Old Mint d12"
 msgstr ""
 
-#: scripts/game/game.gd:1241
+#: scripts/game/game.gd:1245
 msgid "On second thought, no wager"
 msgstr ""
 
-#: scripts/game/game.gd:1736
+#: scripts/game/game.gd:1740
 msgid "Once in the climax: re-throw every die showing 1."
 msgstr ""
 
-#: scripts/game/game.gd:985
+#: scripts/game/game.gd:989
 msgid "Options"
 msgstr ""
 
-#: scripts/game/game.gd:962
+#: scripts/game/game.gd:966
 msgid "Options: graphics, text, motion, controls, language"
 msgstr ""
 
@@ -1192,7 +1192,7 @@ msgstr ""
 msgid "Pack"
 msgstr ""
 
-#: scripts/game/game.gd:1955
+#: scripts/game/game.gd:1959
 msgid "Packing the Pouch"
 msgstr ""
 
@@ -1232,7 +1232,7 @@ msgstr ""
 msgid "Pitch"
 msgstr ""
 
-#: scripts/game/game.gd:1750
+#: scripts/game/game.gd:1754
 msgid "Place every die where it does the most good."
 msgstr ""
 
@@ -1240,11 +1240,11 @@ msgstr ""
 msgid "Plain oak. Cheap, honest, light."
 msgstr ""
 
-#: scripts/game/game.gd:959
+#: scripts/game/game.gd:963
 msgid "Play a tale as text with no dice: pick any outcome, jump to scenes, reload after editing the .tale file."
 msgstr ""
 
-#: scripts/game/game.gd:828
+#: scripts/game/game.gd:832
 msgid "Pouch %d\nDiscard %d\nHand size %d"
 msgstr ""
 
@@ -1252,11 +1252,11 @@ msgstr ""
 msgid "Power"
 msgstr ""
 
-#: scripts/game/game.gd:2120
+#: scripts/game/game.gd:2124
 msgid "Practice done"
 msgstr ""
 
-#: scripts/game/game.gd:943
+#: scripts/game/game.gd:947
 msgid "Practice table: 20 challenges"
 msgstr ""
 
@@ -1264,11 +1264,11 @@ msgstr ""
 msgid "Press"
 msgstr ""
 
-#: scripts/game/game.gd:1794
+#: scripts/game/game.gd:1798
 msgid "Press %d against Resolve %d. Hold %d against their %d: you lose %d Nerve."
 msgstr ""
 
-#: scripts/game/game.gd:1043
+#: scripts/game/game.gd:1047
 msgid "Press a key or button..."
 msgstr ""
 
@@ -1288,7 +1288,7 @@ msgstr ""
 msgid "Purser Quill"
 msgstr ""
 
-#: scripts/game/game.gd:1267
+#: scripts/game/game.gd:1271
 msgid "Push for a Triumph"
 msgstr ""
 
@@ -1300,11 +1300,11 @@ msgstr ""
 msgid "Raven"
 msgstr ""
 
-#: scripts/game/game.gd:1731
+#: scripts/game/game.gd:1735
 msgid "Re-throw every die showing its lowest face (2 Fate)."
 msgstr ""
 
-#: scripts/game/game.gd:1740
+#: scripts/game/game.gd:1744
 msgid "Read: %s"
 msgstr ""
 
@@ -1312,7 +1312,7 @@ msgstr ""
 msgid "Rebind to %s (%d Coin + binding)"
 msgstr ""
 
-#: scripts/game/game.gd:1016
+#: scripts/game/game.gd:1020
 msgid "Reduced motion"
 msgstr ""
 
@@ -1328,11 +1328,11 @@ msgstr ""
 msgid "Renown %d (Pouch weight %d%s)"
 msgstr ""
 
-#: scripts/game/game.gd:1724
+#: scripts/game/game.gd:1728
 msgid "Reroll"
 msgstr ""
 
-#: scripts/game/game.gd:1052
+#: scripts/game/game.gd:1056
 msgid "Reset controls"
 msgstr ""
 
@@ -1352,11 +1352,11 @@ msgstr ""
 msgid "Roots"
 msgstr ""
 
-#: scripts/game/game.gd:1369
+#: scripts/game/game.gd:1373
 msgid "Round %d"
 msgstr ""
 
-#: scripts/game/game.gd:1365
+#: scripts/game/game.gd:1369
 msgid "Round %d of %d"
 msgstr ""
 
@@ -1372,7 +1372,7 @@ msgstr ""
 msgid "Saltreach Silver d6"
 msgstr ""
 
-#: scripts/game/game.gd:925
+#: scripts/game/game.gd:929
 msgid "Saved %s."
 msgstr ""
 
@@ -1396,11 +1396,11 @@ msgstr ""
 msgid "Sergeant Brask"
 msgstr ""
 
-#: scripts/game/game.gd:1973
+#: scripts/game/game.gd:1977
 msgid "Set out"
 msgstr ""
 
-#: scripts/game/game.gd:2360
+#: scripts/game/game.gd:2364
 msgid "Shake them... and let go. Flick to throw hard. Right-click to put them back."
 msgstr ""
 
@@ -1412,7 +1412,7 @@ msgstr ""
 msgid "Shield"
 msgstr ""
 
-#: scripts/game/game.gd:1006
+#: scripts/game/game.gd:1010
 msgid "Shown"
 msgstr ""
 
@@ -1444,11 +1444,11 @@ msgstr ""
 msgid "Six men in the Duke's blue with boathooks and lanterns, and a sergeant who has been waiting all evening for this."
 msgstr ""
 
-#: scripts/game/game.gd:1020
+#: scripts/game/game.gd:1024
 msgid "Skip the physics and show results at once. The odds are identical."
 msgstr ""
 
-#: scripts/game/game.gd:662
+#: scripts/game/game.gd:666
 msgid "Skip the physics and show results at once. The odds are identical: results come from each die's measured faces."
 msgstr ""
 
@@ -1476,7 +1476,7 @@ msgstr ""
 msgid "Staff"
 msgstr ""
 
-#: scripts/game/game.gd:1232 scripts/rules/preview.gd:140
+#: scripts/game/game.gd:1236 scripts/rules/preview.gd:140
 msgid "Stake a die"
 msgstr ""
 
@@ -1484,11 +1484,11 @@ msgstr ""
 msgid "Stand"
 msgstr ""
 
-#: scripts/game/game.gd:355
+#: scripts/game/game.gd:359
 msgid "Standing"
 msgstr ""
 
-#: scripts/game/game.gd:948
+#: scripts/game/game.gd:952
 msgid "Start a new campaign"
 msgstr ""
 
@@ -1496,7 +1496,7 @@ msgstr ""
 msgid "Steadfast: never cocks, and the tray's quakes cannot move it."
 msgstr ""
 
-#: scripts/game/game.gd:1017
+#: scripts/game/game.gd:1021
 msgid "Stills the camera's slow sway, makes camera moves and banners instant. The dice still tumble: turn on Fast dice to skip that too."
 msgstr ""
 
@@ -1532,7 +1532,7 @@ msgstr ""
 msgid "Suspicion"
 msgstr ""
 
-#: scripts/game/game.gd:1959
+#: scripts/game/game.gd:1963
 msgid "Swaps left: %d. Click a die to move it between Pouch and Saddlebag. Cursed dice cannot leave the Pouch."
 msgstr ""
 
@@ -1544,7 +1544,7 @@ msgstr ""
 msgid "Table felts"
 msgstr ""
 
-#: scripts/game/game.gd:1546
+#: scripts/game/game.gd:1550
 msgid "Take %d (%s)"
 msgstr ""
 
@@ -1556,7 +1556,7 @@ msgstr ""
 msgid "Take the Fail"
 msgstr ""
 
-#: scripts/game/game.gd:1264
+#: scripts/game/game.gd:1268
 msgid "Take the Success"
 msgstr ""
 
@@ -1564,11 +1564,11 @@ msgstr ""
 msgid "Tale preview"
 msgstr ""
 
-#: scripts/game/game.gd:958
+#: scripts/game/game.gd:962
 msgid "Tale preview (text, for writers)"
 msgstr ""
 
-#: scripts/game/game.gd:907
+#: scripts/game/game.gd:911
 msgid "Tales of the Tumbling Dice"
 msgstr ""
 
@@ -1580,7 +1580,7 @@ msgstr ""
 msgid "Tell it again from the start"
 msgstr ""
 
-#: scripts/game/game.gd:1297
+#: scripts/game/game.gd:1301
 msgid "Test, %d tr%s"
 msgstr ""
 
@@ -1588,15 +1588,15 @@ msgstr ""
 msgid "Testy"
 msgstr ""
 
-#: scripts/game/game.gd:1012
+#: scripts/game/game.gd:1016
 msgid "Text size"
 msgstr ""
 
-#: scripts/game/game.gd:1009
+#: scripts/game/game.gd:1013
 msgid "Text speed"
 msgstr ""
 
-#: scripts/game/game.gd:2017
+#: scripts/game/game.gd:2021
 msgid "The %s is cursed. It will not leave your Pouch."
 msgstr ""
 
@@ -1604,7 +1604,7 @@ msgstr ""
 msgid "The Assayer"
 msgstr ""
 
-#: scripts/game/game.gd:307 scripts/game/game.gd:954 scripts/game/tavern_hub.gd:168
+#: scripts/game/game.gd:311 scripts/game/game.gd:958 scripts/game/tavern_hub.gd:168
 msgid "The Chronicle"
 msgstr ""
 
@@ -1680,7 +1680,7 @@ msgstr ""
 msgid "The Steward of Seawatch House"
 msgstr ""
 
-#: scripts/game/game.gd:652
+#: scripts/game/game.gd:656
 msgid "The Teller"
 msgstr ""
 
@@ -1688,19 +1688,15 @@ msgstr ""
 msgid "The Teller tells it as it is."
 msgstr ""
 
-#: scripts/game/game.gd:2084
+#: scripts/game/game.gd:2088
 msgid "The Teller will remember you as the %s traveller."
-msgstr ""
-
-#: scripts/rules/mood.gd:32
-msgid "The Teller's Mood"
 msgstr ""
 
 #: scripts/rules/foes.gd:95
 msgid "The Tide Guard"
 msgstr ""
 
-#: scripts/game/game.gd:1958
+#: scripts/game/game.gd:1962
 msgid "The Waystone"
 msgstr ""
 
@@ -1716,7 +1712,7 @@ msgstr ""
 msgid "The autumn rains come, and the lake rises. A woman from Marrowmere sits by the fire tonight with nothing but the coat she ran in. She looks at your Pouch, where the Bellmetal hums, and then away."
 msgstr ""
 
-#: scripts/game/game.gd:1473
+#: scripts/game/game.gd:1477
 msgid "The dice tumble..."
 msgstr ""
 
@@ -1728,11 +1724,11 @@ msgstr ""
 msgid "The first snow. By morning the mountain road is shut, and it will stay shut until spring. The tavern fills with people who meant to be somewhere else."
 msgstr ""
 
-#: scripts/game/game.gd:932
+#: scripts/game/game.gd:936
 msgid "The first tale: a storm night, a stranger's borrowed dice, and a girl lost on the moor. It teaches every kind of throw."
 msgstr ""
 
-#: scripts/game/game.gd:2132
+#: scripts/game/game.gd:2136
 msgid "The full log is saved at %s"
 msgstr ""
 
@@ -1756,7 +1752,7 @@ msgstr ""
 msgid "The oldest willows in the Wood, with faces of bark and eyes of knots, and arms like whips."
 msgstr ""
 
-#: scripts/game/game.gd:936
+#: scripts/game/game.gd:940
 msgid "The patrons' tables, Hollis's shelf with your dice, old Brannoc the Dicewright, and Sister Maud's corner."
 msgstr ""
 
@@ -1764,7 +1760,7 @@ msgstr ""
 msgid "The season turns, and your %s mends on its own."
 msgstr ""
 
-#: scripts/game/game.gd:1216
+#: scripts/game/game.gd:1220
 msgid "The tale goes on."
 msgstr ""
 
@@ -1772,7 +1768,7 @@ msgstr ""
 msgid "The tavern"
 msgstr ""
 
-#: scripts/game/game.gd:1366
+#: scripts/game/game.gd:1370
 msgid "Their Resolve %d. Your Nerve %d of %d. They push with %d this round: Hold blocks it, Press wears them down."
 msgstr ""
 
@@ -1784,7 +1780,7 @@ msgstr ""
 msgid "Thirst"
 msgstr ""
 
-#: scripts/game/game.gd:1791
+#: scripts/game/game.gd:1795
 msgid "This is the last throw: it will be a %s."
 msgstr ""
 
@@ -1796,19 +1792,19 @@ msgstr ""
 msgid "Three riders in Harrow's black and gold, lances down, coming at a canter that is about to become a charge."
 msgstr ""
 
-#: scripts/game/game.gd:1416
+#: scripts/game/game.gd:1420
 msgid "Throw"
 msgstr ""
 
-#: scripts/game/game.gd:1391
+#: scripts/game/game.gd:1395
 msgid "Throw %d of up to %d"
 msgstr ""
 
-#: scripts/game/game.gd:1557
+#: scripts/game/game.gd:1561
 msgid "Throw it again (free)"
 msgstr ""
 
-#: scripts/game/game.gd:1726
+#: scripts/game/game.gd:1730
 msgid "Throw the selected die again; you keep the new result (1 Fate)."
 msgstr ""
 
@@ -1828,7 +1824,7 @@ msgstr ""
 msgid "Tongs"
 msgstr ""
 
-#: scripts/game/game.gd:1026
+#: scripts/game/game.gd:1030
 msgid "Translations live in the locale folder as .po files."
 msgstr ""
 
@@ -1836,7 +1832,7 @@ msgstr ""
 msgid "Treating a Wound costs %d Coin."
 msgstr ""
 
-#: scripts/game/game.gd:1297
+#: scripts/game/game.gd:1301
 msgid "Trial: clock %d"
 msgstr ""
 
@@ -1844,15 +1840,15 @@ msgstr ""
 msgid "Triumph"
 msgstr ""
 
-#: scripts/game/game.gd:1360
+#: scripts/game/game.gd:1364
 msgid "Try %d of %d"
 msgstr ""
 
-#: scripts/game/game.gd:1716
+#: scripts/game/game.gd:1720
 msgid "Turn the selected die one face down (1 Fate)."
 msgstr ""
 
-#: scripts/game/game.gd:1721
+#: scripts/game/game.gd:1725
 msgid "Turn the selected die one face up (1 Fate)."
 msgstr ""
 
@@ -1880,7 +1876,7 @@ msgstr ""
 msgid "Wardens"
 msgstr ""
 
-#: scripts/game/game.gd:1582
+#: scripts/game/game.gd:1586
 msgid "Watch the tray."
 msgstr ""
 
@@ -1896,15 +1892,15 @@ msgstr ""
 msgid "Weight"
 msgstr ""
 
-#: scripts/game/game.gd:1741
+#: scripts/game/game.gd:1745
 msgid "What a Read die (3 or more) does: Expose (+50% damage) or Silence one trait."
 msgstr ""
 
-#: scripts/game/game.gd:955
+#: scripts/game/game.gd:959
 msgid "What your tales have left behind: endings, rumours, standing, and the story of every die."
 msgstr ""
 
-#: scripts/game/game.gd:1380
+#: scripts/game/game.gd:1384
 msgid "Why these dice? (optional)"
 msgstr ""
 
@@ -1948,19 +1944,19 @@ msgstr ""
 msgid "Wren's Hand-bell d4"
 msgstr ""
 
-#: scripts/game/game.gd:1735
+#: scripts/game/game.gd:1739
 msgid "Wren's bell"
 msgstr ""
 
-#: scripts/game/game.gd:2023
+#: scripts/game/game.gd:2027
 msgid "You can't move that: no swaps left, no room, or it is cursed."
 msgstr ""
 
-#: scripts/game/game.gd:2068
+#: scripts/game/game.gd:2072
 msgid "You carry home: %s. Sister Maud can treat them."
 msgstr ""
 
-#: scripts/game/game.gd:1799
+#: scripts/game/game.gd:1803
 msgid "You deal %d%s"
 msgstr ""
 
@@ -1968,7 +1964,7 @@ msgstr ""
 msgid "You have no Wounds to treat."
 msgstr ""
 
-#: scripts/game/game.gd:916
+#: scripts/game/game.gd:920
 msgid "You have told %d tale%s at this table and found %d ending%s. Renown %d."
 msgstr ""
 
@@ -1984,11 +1980,11 @@ msgstr ""
 msgid "You lose 5 Coin."
 msgstr ""
 
-#: scripts/game/game.gd:1276
+#: scripts/game/game.gd:1280
 msgid "You may Defy it: spend %d Fate to turn this Fail into a Mixed. The Teller will remember."
 msgstr ""
 
-#: scripts/game/game.gd:2126
+#: scripts/game/game.gd:2130
 msgid "You picked the same dice as the table's own suggestion %d times out of %d, and beat its odds %d times. On average your picks gave up %d points of odds against it."
 msgstr ""
 
@@ -2001,18 +1997,18 @@ msgid "You start every tale with 1 Fate."
 msgstr ""
 
 #: scripts/rules/mood.gd:17
-msgid "Your Grit starts 4 lower."
+msgid "Your Grit starts 2 lower."
 msgstr ""
 
-#: scripts/game/game.gd:830
+#: scripts/game/game.gd:834
 msgid "Your Hand is drawn from the Pouch when a challenge begins."
 msgstr ""
 
-#: scripts/game/game.gd:1323
+#: scripts/game/game.gd:1327
 msgid "Your best dice: about %d a round\nagainst Resolve %d"
 msgstr ""
 
-#: scripts/game/game.gd:361
+#: scripts/game/game.gd:365
 msgid "Your dice and their stories"
 msgstr ""
 
@@ -2020,7 +2016,7 @@ msgstr ""
 msgid "Your dice, on display behind the bar. Buy plain dice, sell the ones you don't need."
 msgstr ""
 
-#: scripts/game/game.gd:2130
+#: scripts/game/game.gd:2134
 msgid "Your reasons: "
 msgstr ""
 
@@ -2052,22 +2048,22 @@ msgstr ""
 msgid "a Tide Pearl"
 msgstr ""
 
-#: scripts/game/game.gd:1803
+#: scripts/game/game.gd:1807
 msgid "block %d"
 msgstr ""
 
-#: scripts/game/game.gd:1801
+#: scripts/game/game.gd:1805
 msgid "dodge %d"
 msgstr ""
 
-#: scripts/game/game.gd:337
+#: scripts/game/game.gd:341
 msgid "endings found %d of %d: %s"
 msgstr ""
 
-#: scripts/game/game.gd:1809
+#: scripts/game/game.gd:1813
 msgid "silence %s"
 msgstr ""
 
-#: scripts/game/game.gd:1805
+#: scripts/game/game.gd:1809
 msgid "trick off %d"
 msgstr ""

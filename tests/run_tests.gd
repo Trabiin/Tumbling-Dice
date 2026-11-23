@@ -298,7 +298,7 @@ func test_combat() -> void:
 	var ts4 := [th(die("oak_might"), 6)]
 	eq(dr.simulate(ts4, S.evaluate(ts4, {}), [0]).dealt, 3, "Ghostly halves Might damage")
 	var ts5 := [th(die("oak_lore"), 6)]
-	eq(dr.simulate(ts5, S.evaluate(ts5, {}), [0]).dealt, 6, "weakness (Lore) strikes in full")
+	eq(dr.simulate(ts5, S.evaluate(ts5, {}), [0]).dealt, 12, "weakness (Lore) strikes for double")
 	var ts6 := [th(die("oak_lore"), 6), th(die("oak_might"), 6)]
 	var ev6 := S.evaluate(ts6, {})
 	var sil = dr.simulate(ts6, ev6, [4, 0], "silence")
@@ -1073,23 +1073,27 @@ func test_m6() -> void:
 	cm.new_campaign()
 	var st := TaleState.new()
 	Mood.start_tale(cm, st)
-	eq([st.grit_max, st.fate], [20, 3], "at Fair, a tale starts with 20 Grit and 3 Fate")
+	eq([st.grit_max, st.fate], [TaleState.START_GRIT, 3], "at Fair, a tale starts with %d Grit and 3 Fate" % TaleState.START_GRIT)
+	cm.mood = 1
+	eq(int(Mood.foe(cm, Foes.foe("mire_wolf")).phases[0].resolve), int(Foes.foe("mire_wolf").phases[0].resolve) + 2, "at Testy, foes have 2 more Resolve")
+	eq(int(Mood.opponent(cm, Foes.opponent("odile")).resolve), int(Foes.opponent("odile").resolve) + 2, "opponents too")
+	eq(int(Mood.challenge_def(cm, {"kind": "test", "difficulty": "standard"}).get("target", Challenge.target_for("standard"))), Challenge.target_for("standard"), "but targets stay put")
 	cm.mood = 4
 	st = TaleState.new()
 	Mood.start_tale(cm, st)
-	eq([st.grit_max, st.fate], [16, 1], "at Bitter, 16 Grit and 1 Fate")
+	eq([st.grit_max, st.fate], [TaleState.START_GRIT - Mood.BITTER_GRIT, 1], "at Bitter, %d Grit and 1 Fate" % (TaleState.START_GRIT - Mood.BITTER_GRIT))
 	eq(Mood.swaps(cm), 1, "and Waystones swap one die")
-	check(Mood.foe(cm, Foes.foe("mire_wolf")).phases[0].dice.size() == 3, "foes throw an extra die")
-	check(Foes.foe("mire_wolf").phases[0].dice.size() == 2, "without changing the foe itself")
-	eq(Mood.opponent(cm, Foes.opponent("odile")).dice.size(), 3, "opponents too")
+	eq(Mood.foe(cm, Foes.foe("mire_wolf")).phases[0].dice.size(), Foes.foe("mire_wolf").phases[0].dice.size(), "no Mood adds dice to a foe")
+	eq(int(Foes.foe("mire_wolf").phases[0].resolve), 14, "nor changes the foe itself")
 	cm.mood = 5
 	eq(int(Mood.challenge_def(cm, {"kind": "test", "difficulty": "standard"}).target), Challenge.target_for("standard") + 2, "at Black, targets are 2 higher")
-	eq(int(Mood.opponent(cm, Foes.opponent("odile")).resolve), 17, "and Resolve")
+	eq(int(Mood.opponent(cm, Foes.opponent("odile")).resolve), int(Foes.opponent("odile").resolve) + 4, "and Resolve 4 higher")
+	eq(int(Mood.challenge_def(cm, {"kind": "test", "target": 10}, -3).target), 9, "a tale's stakes add to the Mood's")
 	cm.mood = 0
 	cm.story_mode = true
 	st = TaleState.new()
 	Mood.start_tale(cm, st)
-	eq(st.grit_max, 40, "Story mode doubles Grit")
+	eq(st.grit_max, TaleState.START_GRIT * 2, "Story mode doubles Grit")
 	st.fate = 0
 	st.defy_used = true
 	check(Mood.can_defy(cm, st) and Mood.defy_cost(cm) == 0, "and Defy is always there, for free")

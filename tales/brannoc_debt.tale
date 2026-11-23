@@ -4,6 +4,7 @@ patron: Brannoc
 start: bench
 arc: brannoc
 order: 1
+stakes: 1
 pitch: Old Brannoc puts down his knife and says there's a forge under Cinder Fell where cursed dice are born, and he owes it a debt.
 offer: rumour:first_forge and trust>=1 or rumour:first_forge and renown>=15
 teller: triumph :: Brannoc will carve that one into a die, you watch. He carves everything that matters.
@@ -281,7 +282,7 @@ at: 7.0, 0.3
 type: ending
 
 + burned: Burned
-  if: defeat or wounds>=3
+  if: defeat or fallen
   [i]And the fell spat you out at dawn, scorched and black, and you walked home with your eyebrows gone.[/i]
   Brannoc treats your burns himself, with goose-grease and swearing. "My fault," he says. "My debt." He won't let you pay for anything at his bench for a month.
   do: chronicle "The Dicewright's Debt: the Black Forge burned you."

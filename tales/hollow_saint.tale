@@ -4,6 +4,7 @@ patron: The Hooded Pilgrim
 start: plea
 arc: pilgrim
 order: 2
+stakes: 4
 pitch: The pilgrim wants something from the reliquary of Saint Hollow, up on Greyfell Moor, before somebody sells it.
 offer: told:witch_sallow and not season==spring
 teller: triumph :: There's a miracle for the priory's book. They'll write it down wrong, but they'll write it down.
@@ -374,7 +375,7 @@ Dawn on Greyfell Moor. The priory bells, far below, ringing for the morning offi
 type: ending
 
 + lost: Down Among the Stones
-  if: defeat or wounds>=3
+  if: defeat or fallen
   [i]And the pilgrims found you among the saint's stones in the morning, cold as the stones themselves, and carried you down to the priory.[/i]
   Wenna comes for you in a hired cart. She doesn't say anything all the way home, and holds your hand the whole way.
   do: mark saint_lost; chronicle "The Hollow Saint: the moor got the better of you."

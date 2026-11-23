@@ -4,6 +4,7 @@ patron: Wren
 start: plea
 arc: wren
 order: 1
+stakes: -4
 pitch: A fisherman's daughter, and a bell under the lake.
 teller: triumph :: Triumph. They will sing that one at the Drowned Lamb, slightly wrong, for years.
 teller: triumph :: Even the lake went quiet for that.
@@ -662,7 +663,7 @@ act: 3
 type: ending
 
 + drowned: Drowned
-  if: defeat or wounds>=3
+  if: defeat or fallen
   [i]And so the lake kept another one.[/i]
   They say in Marrowmere that a traveller went down the abbey stair and never came up, and that the bell rang all that winter, and that by spring there were not enough fishermen left to mend the nets.
   [i]But tales can be told again. Come back to the fire when you're ready. The bell is still ringing.[/i]

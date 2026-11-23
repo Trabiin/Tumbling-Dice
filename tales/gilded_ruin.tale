@@ -4,6 +4,7 @@ patron: Mother Kettle
 start: plea
 arc: kettle
 order: 3
+stakes: 1
 pitch: Under Saltreach there's a drowned Mint full of the city's lost gold, and Mother Kettle says it's her last job. She's said that before.
 offer: told:dukes_ledger and not season==spring and not season==summer
 teller: triumph :: Now that is how you end a career. In gold, and laughing.
@@ -402,7 +403,7 @@ A sound like a door the size of a city opening. The Assayer, behind you, has fal
 type: ending
 
 + drowned: The Mint Keeps Its Own
-  if: defeat or wounds>=3
+  if: defeat or fallen
   [i]And the river came into the Mint, as it had been waiting three hundred years to do, and it took the gold, and the Duke, and very nearly you.[/i]
   Kettle dragged you out of the sluice by your collar. She doesn't talk about it. She doesn't talk much at all now. Her table in the tavern is empty most nights.
   do: mark mint_lost; chronicle "The Gilded Ruin: the river took the Mint, and the gold."

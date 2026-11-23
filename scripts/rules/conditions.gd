@@ -8,6 +8,7 @@ extends RefCounted
 ##   mat:jade                         the Pouch holds a die of that material
 ##   temper:mercy>=2                  temperament track
 ##   wounds>=1                        Wound count
+##   fallen                           you have taken Wounds enough to lose the tale
 ##   seen:drowned_before              a campaign Chronicle mark
 ##   rumour:tide_turn                 a Rumour you hold (from this tale or an earlier one)
 ##   told:drowned_bell                you have told that tale (any ending)
@@ -62,6 +63,8 @@ static func _atom(a: String, ctx: Dictionary) -> bool:
 		return camp != null and camp.done(a.substr(6))
 	if a.begins_with("missed:"):
 		return camp != null and camp.missed.has(a.substr(7))
+	if a == "fallen":
+		return state != null and state.defeated()
 	if a == "cursed":
 		return pouch != null and pouch.pouch.any(func(d): return d.get("cursed", false))
 	if a == "loaded":
@@ -131,7 +134,7 @@ static func flags_read(expr: String) -> Array:
 				if at > 0:
 					a = a.substr(0, at).strip_edges()
 					break
-			if a in ["wounds", "fate", "grit", "season", "night", "renown", "trust", "cursed", "loaded", "coin"]:
+			if a in ["wounds", "fate", "grit", "season", "night", "renown", "trust", "cursed", "loaded", "coin", "fallen"]:
 				continue
 			out.append(a)
 	return out

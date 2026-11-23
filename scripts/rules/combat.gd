@@ -177,7 +177,7 @@ func simulate(ts: Array, ev: Dictionary, assign: Array, read_mode := "expose", p
 		var stance: String = STANCES[st]
 		var v := S.slot_value(ts[i], vals[i], STANCE_ASPECT[stance])
 		if stance == "strike" and weak != "" and ts[i].die.aspect == weak:
-			v = vals[i]  # the foe's weakness hits in full
+			v = vals[i] * 2  # the foe's weakness: double
 		sv.append(v)
 
 	# Read first: Expose or Silence.

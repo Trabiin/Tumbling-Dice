@@ -4,6 +4,7 @@ patron: Wren
 start: tidings
 arc: wren
 order: 3
+stakes: 1
 pitch: The lake is rising at Marrowmere, and Wren says the drowned are holding court under it. Somebody is going to be judged.
 offer: ended:bell_market and not season==spring and not season==summer
 teller: triumph :: Even the lake goes quiet for that one.
@@ -461,7 +462,7 @@ act: 3
 type: ending
 
 + fallen: Taken by the Lake
-  if: defeat or wounds>=3
+  if: defeat or fallen
   [i]And so the lake rose, and kept rising, and the court sat on without you.[/i]
   You wake on the shore at Marrowmere at dawn, coughing up lake water, with Wren pressing on your chest. She doesn't say anything. She doesn't have to.
   [i]Get warm. Get mended. The court sits until the tide turns, and the lake is patient.[/i]

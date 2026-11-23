@@ -85,6 +85,15 @@ pouch: oak_might, oak_guile, oak_lore, oak_grace, brass_d8, dragon_d10
 saddle: oak_ward
 ```
 
+A tale's difficulty is tuned with one header line. `stakes:` raises (or, negative, lowers) every
+challenge target and every contest opponent's Resolve in the tale by that much. Fights are tuned per foe in
+`scripts/rules/foes.gd` instead, because fights are where tales are lost. Tune it with the balance probe
+(`tools/balance_probe.gd`) so the tale brings home 75 to 85% of bot tellings:
+
+```
+stakes: 2
+```
+
 - `pitch:` is required in an arc. It is what the patron says at their table.
 - `offer:` is a condition (see below), read every night in the tavern. Empty means always.
 - `expires:` must be a season, and needs a `missed:` line, which goes in the Chronicle.
@@ -164,6 +173,7 @@ Effects are separated by `;`. Words with spaces go in double quotes. Lists go in
 | `mat:jade` | The Pouch holds a die of that material |
 | `temper:mercy>=2` | A temperament track check |
 | `wounds>=1` | A Wound count check |
+| `fallen` | You have taken Wounds enough to lose the tale (use it on the defeat ending: `if: defeat or fallen`) |
 | `seen:drowned_before` | A campaign Chronicle mark exists |
 | `rumour:tide_turn` | You hold that rumour, from this tale or an earlier one |
 | `told:drowned_bell`, `ended:drowned_bell`, `missed:siege_holloway` | You have told that tale (any ending), ended it without defeat, or let it go by |

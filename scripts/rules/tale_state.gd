@@ -5,11 +5,13 @@ extends RefCounted
 const S := preload("res://scripts/rules/scoring.gd")
 
 const FATE_CAP := 6
-const MAX_WOUNDS := 3
-const START_GRIT := 20
+const MAX_WOUNDS := 2
+const START_GRIT := 11
 const START_FATE := 3
+## Grit you get back up with after a Last Stand (with a new Wound).
+const LAST_STAND_GRIT := 2
 
-## Wounds are named negative rules. Three of them and the tale is lost.
+## Wounds are named negative rules. Two of them (MAX_WOUNDS) and the tale is lost.
 const WOUNDS := {
 	"Waterlogged Lungs": "Hand size -1.",
 	"Cracked Ribs": "Maximum Grit -4.",
@@ -148,7 +150,8 @@ func _apply_wound(name: String) -> void:
 
 ## Wounds carried in from the tavern take hold at the start of the tale.
 func carry_in(list: Array) -> void:
-	for w in list:
+	# Never carry in enough Wounds to lose before the tale starts (old saves could hold two).
+	for w in list.slice(0, MAX_WOUNDS - 1):
 		wounds.append(String(w))
 		carried.append(String(w))
 		_apply_wound(String(w))

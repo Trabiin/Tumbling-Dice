@@ -11,11 +11,11 @@ extends RefCounted
 
 const LEVELS := [
 	{"name": "Fair", "text": "The Teller tells it as it is."},
-	{"name": "Testy", "text": "Foes and opponents throw one extra d4."},
+	{"name": "Testy", "text": "Every foe and every opponent has 2 more Resolve."},
 	{"name": "Grudging", "text": "You start every tale with 1 Fate."},
 	{"name": "Sour", "text": "Waystones let you swap only one die."},
-	{"name": "Bitter", "text": "Your Grit starts 4 lower."},
-	{"name": "Black", "text": "Every target and every opponent's Resolve is 2 higher."},
+	{"name": "Bitter", "text": "Your Grit starts 2 lower."},
+	{"name": "Black", "text": "Every target is 2 higher, and foes and opponents have 2 more Resolve again."},
 ]
 const MAX_LEVEL := 5
 
@@ -29,7 +29,8 @@ const FELTS := [
 	{"name": "Raven", "color": Color("#18141a")},
 ]
 
-const EXTRA_DIE := {"name": "The Teller's Mood", "sides": 4}
+## Grit lost at Bitter. Grit starts low (TaleState.START_GRIT), so this stays small.
+const BITTER_GRIT := 2
 
 
 static func level(campaign) -> int:
@@ -61,7 +62,7 @@ static func start_tale(campaign, state) -> void:
 	if story(campaign):
 		g *= 2
 	if lvl >= 4:
-		g -= 4
+		g -= BITTER_GRIT
 	state.grit_max = g
 	state.grit = g
 	if lvl >= 2:
@@ -73,45 +74,56 @@ static func swaps(campaign) -> int:
 	return 1 if level(campaign) >= 3 else 2
 
 
-## A challenge definition with the Mood applied (targets +2 at Black).
-static func challenge_def(campaign, def: Dictionary) -> Dictionary:
-	if level(campaign) < 5:
+## How much the Mood raises every target (Black) and every foe's and opponent's Resolve (2 from
+## Testy, 4 at Black). No level adds dice: an extra foe die made Black a cliff, not a step.
+static func raise_target(campaign) -> int:
+	return 2 if level(campaign) >= 5 else 0
+
+
+static func raise_resolve(campaign) -> int:
+	var lvl := level(campaign)
+	return 4 if lvl >= 5 else (2 if lvl >= 1 else 0)
+
+
+## A challenge definition with the tale's stakes and the Mood applied. stakes is the tale's own
+## `stakes:` header (see docs/tale_format.md): it raises every target in the tale by that much,
+## and Black adds 2 more.
+static func challenge_def(campaign, def: Dictionary, stakes := 0) -> Dictionary:
+	var n := raise_target(campaign) + stakes
+	if n == 0:
 		return def
 	var d := def.duplicate(true)
 	if d.has("target"):
-		d.target = int(d.target) + 2
+		d.target = maxi(1, int(d.target) + n)
 	elif d.has("progress"):
-		d.progress = int(d.progress) + 2
+		d.progress = maxi(1, int(d.progress) + n)
 	else:
-		d.target = load("res://scripts/rules/challenge.gd").target_for(String(d.get("difficulty", "standard"))) + 2
+		d.target = maxi(1, load("res://scripts/rules/challenge.gd").target_for(String(d.get("difficulty", "standard"))) + n)
 	if d.has("second"):
 		d.second = d.second.duplicate()
-		d.second.target = int(d.second.target) + 2
+		d.second.target = maxi(1, int(d.second.target) + n)
 	return d
 
 
-## An opponent for a Contest, with the Mood applied (an extra die from Testy, Resolve +2 at Black).
-static func opponent(campaign, opp: Dictionary) -> Dictionary:
-	var lvl := level(campaign)
-	if lvl < 1:
+## An opponent for a Contest, with the tale's stakes and the Mood applied to its Resolve.
+static func opponent(campaign, opp: Dictionary, stakes := 0) -> Dictionary:
+	var n := raise_resolve(campaign) + stakes
+	if n == 0:
 		return opp
 	var o := opp.duplicate(true)
-	o.dice.append(EXTRA_DIE.duplicate())
-	if lvl >= 5:
-		o.resolve = int(o.resolve) + 2
+	o.resolve = maxi(1, int(o.resolve) + n)
 	return o
 
 
-## A foe for a fight, with the Mood applied (an extra attack die from Testy, Resolve +2 at Black).
-static func foe(campaign, f: Dictionary) -> Dictionary:
-	var lvl := level(campaign)
-	if lvl < 1:
+## A foe for a fight, with the Mood applied to every phase's Resolve.
+## Tales' stakes leave fights alone (foes are tuned one by one in foes.gd), so the runner passes 0.
+static func foe(campaign, f: Dictionary, stakes := 0) -> Dictionary:
+	var n := raise_resolve(campaign) + stakes
+	if n == 0:
 		return f
 	var o := f.duplicate(true)
 	for ph in o.phases:
-		ph.dice.append({"name": EXTRA_DIE.name, "sides": 4, "kind": "attack"})
-		if lvl >= 5:
-			ph.resolve = int(ph.resolve) + 2
+		ph.resolve = maxi(1, int(ph.resolve) + n)
 	return o
 
 

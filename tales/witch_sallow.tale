@@ -4,6 +4,7 @@ patron: The Hooded Pilgrim
 start: plea
 arc: pilgrim
 order: 1
+stakes: 0
 pitch: The hooded stranger is back by the hearth, with a die of black wood that has to go to the witch in Sallow Wood before the moon is full.
 offer: told:strangers_throw and night>=5
 teller: triumph :: There. Even the Wood was impressed, and the Wood has seen everything twice.
@@ -397,7 +398,7 @@ Out of Mag's door, and the Wood is waiting. Somewhere behind you, a horn: low an
 type: ending
 
 + kept: Kept by the Wood
-  if: defeat or wounds>=3
+  if: defeat or fallen
   [i]And the Wood kept you a while. A night, a week. Long enough that when you came out, the moon had been full and gone.[/i]
   The stranger is waiting at the hearth when Hollis lets you in. They look at you for a long time, and then put a hand on your arm. "It does that," they say. "It let you go. That means it wants you back."
   do: mark wood_kept; chronicle "The Witch of Sallow Wood: the Wood kept you a while."

@@ -4,6 +4,7 @@ patron: Wren
 start: plea
 arc: wren
 order: 2
+stakes: 4
 pitch: A collector at the Saltreach river market is buying everything that came out of Marrowmere lake, and Wren thinks she knows why.
 offer: ended:drowned_bell
 expires: winter
@@ -393,7 +394,7 @@ act: 3
 type: ending
 
 + fallen: Bought and Sold
-  if: defeat or wounds>=3
+  if: defeat or fallen
   [i]And so Ormond Vane went south with the river, and four hundred servants who never complain.[/i]
   You wake in the bridge chapel with a candle burning beside you and Pell the fence sitting at your feet, of all people. "You owe me for the candle," he says.
   [i]Come back when you're mended. The market will still be there. So, I'm afraid, will Ormond.[/i]
