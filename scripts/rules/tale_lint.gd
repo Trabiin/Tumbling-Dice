@@ -30,6 +30,21 @@ static func run(tale: Dictionary, lines := {}) -> Array:
 	return L.issues
 
 
+## A translated tale must have the same shape as the original: the same tale id, scenes, options,
+## outcomes and endings (the parser's line map has one key for each). Returns readable problems.
+static func same_shape(orig: Dictionary, orig_lines: Dictionary, tr_tale: Dictionary, tr_lines: Dictionary) -> Array:
+	var out: Array = []
+	if str(orig.get("id", "")) != str(tr_tale.get("id", "")):
+		out.append("the tale id differs ('%s' against '%s')" % [tr_tale.get("id", ""), orig.get("id", "")])
+	for k in orig_lines:
+		if not tr_lines.has(k):
+			out.append("missing '%s'" % k)
+	for k in tr_lines:
+		if not orig_lines.has(k):
+			out.append("'%s' is not in the original" % k)
+	return out
+
+
 class _Lint:
 	var issues: Array = []
 	var lines := {}

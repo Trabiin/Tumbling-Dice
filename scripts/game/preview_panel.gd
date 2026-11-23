@@ -128,7 +128,7 @@ func _open(path: String) -> void:
 func _fill_scenes() -> void:
 	scene_pick.clear()
 	for id in p.tale.get("scenes", {}):
-		scene_pick.add_item("%s  (line %d)" % [id, p.line_of(id)])
+		scene_pick.add_item(tr("%s  (line %d)") % [id, p.line_of(id)])
 
 
 func _say(t: String) -> void:

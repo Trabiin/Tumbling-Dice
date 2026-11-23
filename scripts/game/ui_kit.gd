@@ -171,12 +171,18 @@ class DieTile extends Control:
 		die = d
 		custom_minimum_size = Vector2(size, size + 18)
 		mouse_filter = Control.MOUSE_FILTER_STOP
+		focus_mode = Control.FOCUS_ALL   # a controller or the arrow keys can pick it
 		tooltip_text = Dice.tooltip(d)
 		mouse_entered.connect(func(): hover = true; queue_redraw())
 		mouse_exited.connect(func(): hover = false; queue_redraw())
+		focus_entered.connect(queue_redraw)
+		focus_exited.connect(queue_redraw)
 
 	func _gui_input(e: InputEvent) -> void:
 		if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT:
+			pressed.emit(self)
+			accept_event()
+		elif e.is_action_pressed("ui_accept"):
 			pressed.emit(self)
 			accept_event()
 
@@ -205,8 +211,12 @@ class DieTile extends Control:
 		var alpha := 0.45 if dim else 1.0
 		if selected:
 			draw_colored_polygon(_shape(die.sides, c, r + 6), Color("#ffd75a", 0.95))
-		elif hover and not dim:
+		elif (hover or has_focus()) and not dim:
 			draw_colored_polygon(_shape(die.sides, c, r + 4), Color("#fff2cc", 0.7))
+		if has_focus():
+			var ring := _shape(die.sides, c, r + 8)
+			ring.append(ring[0])
+			draw_polyline(ring, Color("#3a8ad8"), 3.0, true)
 		var cols := PackedColorArray()
 		for i in pts.size():
 			cols.append(col_a.lerp(col_b, float(i) / pts.size()) * Color(1, 1, 1, alpha))

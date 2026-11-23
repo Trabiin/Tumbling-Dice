@@ -13,7 +13,8 @@ and a minimal tavern with Hollis's shelf and Brannoc the Dicewright), and **mile
 skeleton** (a year of nights and seasons, two patron arcs of six tales, Renown, Standing, Rumours,
 Wounds carried between tales, Sister Maud, materials, loading, rebinding and curses), and the first part of
 **milestone M6: content for 1.0** (the prologue, Mother Kettle's arc, the Hooded Pilgrim's arc with the frame
-story's finale, and two secret tales: fifteen tales in all). Design doc: *Tales of the Tumbling Dice: Game Design* (Claude Doc).
+story's finale, and two secret tales: fifteen tales in all; the Teller's Mood and Story mode; options for
+text speed, text size and reduced motion; controller support with remapping; and translation support). Design doc: *Tales of the Tumbling Dice: Game Design* (Claude Doc).
 
 The dice, room, flames, tale board, UI widgets and sounds are generated in GDScript and shader code.
 Furniture, clutter, board landmarks and the painted miniatures come from free CC0 kits by
@@ -39,9 +40,71 @@ narration (`fonts/OFL.txt`, `fonts/OFL-IMFellEnglish.txt`).
 | 1 to 9 | Select a thrown die while placing dice |
 | Space | Throw (tossed in from your side of the table) |
 | Enter | Confirm / continue |
+| B | Place every thrown die where it does the most good |
+| Hold Z | Lean in over the tray to read small dice |
+| V | Look between the tray and the tale board |
+| Page Up / Page Down | Scroll back through the Teller's lines |
+| Arrow keys | Move between choices (Enter chooses) |
 | F | Fast dice: skip the physics (same odds, results drawn from each die's measured faces) |
 | F4 | Show or hide the frame rate and draw calls |
 | Esc | Quit |
+
+Every key except F4 can be remapped under **Options**.
+
+### Playing with a controller
+
+Any controller Godot knows (Xbox, PlayStation, Switch Pro and most others) works with no setup.
+
+| Controller | Action |
+|---|---|
+| Left stick or d-pad | Move between choices, dice and slots |
+| A / Cross | Choose; pick or put back a die |
+| Right stick | Push to pick the chosen dice up over the tray, flick and let go to throw. How far you push sets how hard |
+| Y / Triangle | Throw (tossed in from your side) |
+| X / Square | Place dice for the most good |
+| Start | Confirm / continue |
+| Right bumper (hold) | Lean in over the tray |
+| Left bumper | Look between the tray and the board |
+| Triggers | Scroll the Teller's lines |
+| Back / Select | Fast dice on or off |
+
+Focus comes back to the same place after each card is redrawn, so a controller never loses its spot.
+The buttons can be remapped under **Options**.
+
+### Options and accessibility
+
+**Options** on the title screen holds the graphics preset and these, all saved to `user://settings.cfg`:
+
+| Option | What it does |
+|---|---|
+| Text speed | How fast the Teller's lines are written out: Slow, Normal, Fast, or At once. Clicking the parchment always shows the line at once |
+| Text size | 100%, 115% or 130%: every panel and its text |
+| Reduced motion | Stills the camera's slow sway, makes camera moves and banners instant |
+| Fast dice | Results at once, no tumbling (same odds) |
+| Language | Any translation in `locale/` (see below) |
+| Controls | Click an action, then press the new key or button |
+
+Aspects are told apart by a glyph as well as a colour, on every die tile and slot, so the colours are never
+the only clue. Hover any die to read it in full.
+
+### The Teller's Mood and Story mode
+
+**The hearth** in the tavern (between tales) sets two campaign options:
+- **The Teller's Mood**, a challenge ladder of five levels on top of Fair. They stack: Testy (foes and opponents
+  throw one extra d4), Grudging (you start every tale with 1 Fate), Sour (Waystones let you swap only one
+  die), Bitter (Grit starts 4 lower) and Black (every target and every opponent's Resolve is 2 higher). The dice
+  and the odds stay honest at every level: only targets, foes and resources change. You can choose one level
+  above the highest you have beaten, and each level beaten unlocks a new felt for the tray.
+- **Story mode**, for players who want the tales above all: Grit is doubled, and a Fail can always be Defied
+  into a Mixed, for free. Story mode earns no felts.
+
+Neither can be changed while a tale is saved part-way.
+
+### Translating
+
+Interface text is translated with standard gettext `.po` files in `locale/`, made from the template
+`locale/tumbling_dice.pot` (`godot --headless -s res://tools/extract_strings.gd` rebuilds it). Tales are
+translated as whole files in `tales/locale/<code>/`, keeping every id. See [docs/translating.md](docs/translating.md).
 
 The campaign (your dice, Coin, Chronicle, endings found) is saved to `user://campaign.json` when a tale
 ends. Run with `-- --new` to start fresh. The old dice-tray sandbox is still there: `main.tscn`.

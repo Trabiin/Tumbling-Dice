@@ -13,6 +13,7 @@ const Table := preload("res://scripts/game/table.gd")
 const Die := preload("res://scripts/die.gd")
 const Tavern := preload("res://scripts/tavern.gd")
 const Patrons := preload("res://scripts/rules/patrons.gd")
+const Mood := preload("res://scripts/rules/mood.gd")
 const Tales := preload("res://scripts/rules/tales.gd")
 const Mats := preload("res://scripts/materials.gd")
 
@@ -73,7 +74,7 @@ func _back_row(parent: Control) -> HBoxContainer:
 
 func _purse() -> String:
 	var shards: Array = g.campaign.shards
-	var line := "Coin %d   ·   Rune shards: %s" % [g.campaign.coin, ", ".join(shards) if not shards.is_empty() else "none"]
+	var line := tr("Coin %d   ·   Rune shards: %s") % [g.campaign.coin, ", ".join(shards) if not shards.is_empty() else "none"]
 	if not g.campaign.materials.is_empty():
 		line += "   ·   Materials: " + Forge.materials_text(g.campaign)
 	return line
@@ -82,7 +83,7 @@ func _purse() -> String:
 func _calendar() -> String:
 	var c = g.campaign
 	var nxt: int = c.renown_to_next()
-	var ren := "Renown %d (Pouch weight %d%s)" % [c.renown, c.pouch.weight_limit, (", %d to the next" % nxt) if nxt > 0 else ""]
+	var ren := tr("Renown %d (Pouch weight %d%s)") % [c.renown, c.pouch.weight_limit, (tr(", %d to the next") % nxt) if nxt > 0 else ""]
 	var w := ("   ·   Wounds: " + ", ".join(c.wounds)) if not c.wounds.is_empty() else ""
 	return "%s   ·   %s%s" % [c.calendar_text().capitalize(), ren, w]
 
@@ -120,7 +121,7 @@ func show_room() -> void:
 	box.add_child(flow)
 	var snap: Dictionary = g._read_tale_save()
 	if not snap.is_empty():
-		var cb := UI.seal_button("Continue the tale: %s" % snap.get("scene_title", ""), 16)
+		var cb := UI.seal_button(tr("Continue the tale: %s") % snap.get("scene_title", ""), 16)
 		cb.pressed.connect(func():
 			close()
 			g._continue_tale(snap))
@@ -148,6 +149,10 @@ func show_room() -> void:
 	mb.tooltip_text = "The healer: she treats Wounds for Coin and a night, and knows a curse when she sees one."
 	mb.pressed.connect(show_maud)
 	flow.add_child(mb)
+	var hb2 := UI.seal_button("The hearth: the Teller's Mood", 14, Color("#2a5a6a"))
+	hb2.tooltip_text = "How kindly the Teller tells it: an optional challenge ladder, or Story mode. Table felts you have earned."
+	hb2.pressed.connect(show_hearth)
+	flow.add_child(hb2)
 	var wn: int = Patrons.nights_to_next_season(c)
 	var wb := UI.seal_button("Sit by the fire tonight", 13, Color("#5a4a3a"))
 	wb.tooltip_text = "Let a night pass. Tales that are waiting may not wait for ever."
@@ -155,7 +160,7 @@ func show_room() -> void:
 	wb.pressed.connect(func(): _pass(1))
 	flow.add_child(wb)
 	if wn > 1 and not c.year_over():
-		var ws := UI.seal_button("Wait for %s (%d nights)" % [Campaign_next_season(c), wn], 13, Color("#5a4a3a"))
+		var ws := UI.seal_button(tr("Wait for %s (%d nights)") % [Campaign_next_season(c), wn], 13, Color("#5a4a3a"))
 		ws.disabled = not snap.is_empty()
 		ws.tooltip_text = "Let the nights go by until the season turns."
 		ws.pressed.connect(func(): _pass(wn))
@@ -178,7 +183,7 @@ static func Campaign_next_season(c) -> String:
 
 func _pass(n: int) -> void:
 	var lines := Patrons.pass_nights(g.campaign, n)
-	g._on_said("You sit by the fire while %s." % ("the night goes by" if n == 1 else "%d nights go by" % n), "system")
+	g._on_said(tr("You sit by the fire while %s.") % ("the night goes by" if n == 1 else tr("%d nights go by") % n), "system")
 	_tell(lines)
 	_after_change()
 	show_room()
@@ -214,6 +219,68 @@ func _room_text(offers: Array) -> String:
 	return "[i]%s[/i]" % " ".join(bits)
 
 
+# ------------------------------------------------------------------ the hearth: the Teller's Mood
+
+func show_hearth() -> void:
+	place = "hearth"
+	g._set_view("room")
+	_clear_display()
+	_render_hearth()
+
+
+func _render_hearth() -> void:
+	var c = g.campaign
+	_header("The hearth", "the Teller's Mood")
+	var box: VBoxContainer = g.card_box
+	box.add_child(UI.wrap_label("[i]How shall I tell them, then? Kindly, or the way they really went?[/i]", 15, UI.INK_SOFT, "italic"))
+	var mood_now: int = Mood.level(c)
+	box.add_child(UI.wrap_label(tr("Now: %s. %s") % ["Story mode" if Mood.story(c) else Mood.LEVELS[mood_now].name, "Grit doubled, and every Fail can be Defied for free." if Mood.story(c) else Mood.describe(mood_now)], 14, UI.INK))
+	var flow := HFlowContainer.new()
+	flow.add_theme_constant_override("h_separation", 6)
+	flow.add_theme_constant_override("v_separation", 6)
+	box.add_child(flow)
+	var locked_tale: bool = not g._read_tale_save().is_empty()
+	for i in Mood.MAX_LEVEL + 1:
+		var b := UI.seal_button("%d. %s" % [i, Mood.LEVELS[i].name], 13, Color("#6a1010") if i == mood_now and not Mood.story(c) else Color("#5a4a3a"))
+		b.tooltip_text = Mood.describe(i) + ("" if i <= Mood.max_choosable(c) else "\nWin a tale at the level below first.")
+		b.disabled = locked_tale or i > Mood.max_choosable(c)
+		var lvl: int = i
+		b.pressed.connect(func():
+			c.mood = lvl
+			c.story_mode = false
+			_after_change()
+			_render_hearth())
+		flow.add_child(b)
+	var sb := UI.seal_button(tr("Story mode: %s") % ("on" if Mood.story(c) else "off"), 13, Color("#2a5a6a"))
+	sb.tooltip_text = "For the tales above all: Grit doubled, and a Fail can always be Defied into a Mixed for free. The dice and odds stay honest."
+	sb.disabled = locked_tale
+	sb.pressed.connect(func():
+		c.story_mode = not c.story_mode
+		if c.story_mode:
+			c.mood = 0
+		_after_change()
+		_render_hearth())
+	flow.add_child(sb)
+	if locked_tale:
+		box.add_child(UI.wrap_label("A tale is half told. Finish it before changing how it's told.", 13, UI.INK_SOFT, "italic"))
+	box.add_child(UI.label("Table felts", 15, UI.INK))
+	var ff := HFlowContainer.new()
+	ff.add_theme_constant_override("h_separation", 6)
+	box.add_child(ff)
+	for i in Mood.FELTS.size():
+		var fb := UI.seal_button(Mood.FELTS[i].name, 13, Mood.FELTS[i].color.lightened(0.15))
+		fb.disabled = i > int(c.mood_best)
+		fb.tooltip_text = "Yours." if i <= int(c.mood_best) else "Win a tale at the Teller's Mood %d (%s) to earn it." % [i, Mood.LEVELS[i].name]
+		var fi: int = i
+		fb.pressed.connect(func():
+			c.felt = fi
+			g.tavern.set_felt(Mood.FELTS[fi].color)
+			_after_change()
+			_render_hearth())
+		ff.add_child(fb)
+	_back_row(box)
+
+
 # ------------------------------------------------------------------ Sister Maud's corner
 
 func show_maud() -> void:
@@ -241,7 +308,7 @@ func _render_maud() -> void:
 			lab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			row.add_child(lab)
 			var cp := Patrons.can_heal(c, true)
-			var pb := UI.seal_button("Pay %d Coin (a night)" % Patrons.heal_cost(c), 13)
+			var pb := UI.seal_button(tr("Pay %d Coin (a night)") % Patrons.heal_cost(c), 13)
 			pb.disabled = not cp.ok or not g._read_tale_save().is_empty()
 			pb.tooltip_text = cp.text if not cp.ok else "Abbey standing makes her cheaper or dearer."
 			var wi: int = i
@@ -311,11 +378,11 @@ func _render_shelf() -> void:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 8)
 		box.add_child(row)
-		var info := UI.label("%s: faces %s" % [sel.name, Dice.faces_text(sel)], 14, UI.INK)
+		var info := UI.label(tr("%s: faces %s") % [sel.name, Dice.faces_text(sel)], 14, UI.INK)
 		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(info)
 		var c := Forge.can_sell(g.campaign, sel)
-		var sb := UI.seal_button("Sell for %d Coin" % Forge.sell_price(sel), 13)
+		var sb := UI.seal_button(tr("Sell for %d Coin") % Forge.sell_price(sel), 13)
 		sb.disabled = not c.ok
 		sb.tooltip_text = c.text
 		sb.pressed.connect(func():
@@ -331,7 +398,7 @@ func _render_shelf() -> void:
 	box.add_child(stock)
 	for item in Forge.stock(g.campaign):
 		var proto := Dice.create(item.base)
-		var b := UI.seal_button("%s · %d Coin" % [proto.name.replace(" d6 of ", " d6, ").replace("Dwarven ", "").replace("Ancient ", ""), Forge.price(g.campaign, item)], 12, Color("#5a4a3a"))
+		var b := UI.seal_button(tr("%s · %d Coin") % [proto.name.replace(" d6 of ", " d6, ").replace("Dwarven ", "").replace("Ancient ", ""), Forge.price(g.campaign, item)], 12, Color("#5a4a3a"))
 		b.tooltip_text = Dice.tooltip(proto)
 		b.disabled = not Forge.can_buy(g.campaign, item).ok
 		b.pressed.connect(func():
@@ -403,9 +470,9 @@ func _render_bench() -> void:
 	if sel_face >= 0 and sel_face < sel.faces.size():
 		for delta in [1, -1]:
 			var c := Forge.can_recarve(g.campaign, sel, sel_face, delta)
-			var b := UI.seal_button("Carve it %s (%d Coin)" % ["up 1" if delta > 0 else "down 1", Forge.RECARVE_COST], 13)
+			var b := UI.seal_button(tr("Carve it %s (%d Coin)") % ["up 1" if delta > 0 else "down 1", Forge.RECARVE_COST], 13)
 			b.disabled = not c.ok
-			b.tooltip_text = c.text if not c.ok else "Faces may rise by %d in all (this die: %+d so far)." % [Forge.RECARVE_LIMIT, Forge.carved(sel)]
+			b.tooltip_text = c.text if not c.ok else tr("Faces may rise by %d in all (this die: %+d so far).") % [Forge.RECARVE_LIMIT, Forge.carved(sel)]
 			b.pressed.connect(func():
 				say(Forge.recarve(g.campaign, sel, sel_face, delta).text)
 				_after_change()
@@ -417,7 +484,7 @@ func _render_bench() -> void:
 				runes[String(s).to_lower()] = true
 		for r in runes:
 			var c2 := Forge.can_inscribe(g.campaign, sel, sel_face, r)
-			var ib := UI.seal_button("Inscribe %s (%d Coin + shard)" % [r.capitalize(), Forge.INSCRIBE_COST], 13, Color("#2a5a6a"))
+			var ib := UI.seal_button(tr("Inscribe %s (%d Coin + shard)") % [r.capitalize(), Forge.INSCRIBE_COST], 13, Color("#2a5a6a"))
 			ib.disabled = not c2.ok
 			ib.tooltip_text = c2.text if not c2.ok else Dice.RUNES[r]
 			ib.pressed.connect(func():
@@ -429,7 +496,7 @@ func _render_bench() -> void:
 			acts.add_child(UI.label("No rune shards to inscribe with. Melting a rune die gives its shards.", 13, UI.INK_SOFT, "italic"))
 		if g.campaign.material_count("lead") > 0 or g.campaign.trust >= Forge.LOAD_TRUST:
 			var cl := Forge.can_load(g.campaign, sel, sel_face)
-			var lb := UI.seal_button("Load it to favour the %d (%d Coin + Lead)" % [int(sel.faces[sel_face].n), Forge.LOAD_COST], 13, Color("#5a2a4a"))
+			var lb := UI.seal_button(tr("Load it to favour the %d (%d Coin + Lead)") % [int(sel.faces[sel_face].n), Forge.LOAD_COST], 13, Color("#5a2a4a"))
 			lb.disabled = not cl.ok
 			lb.tooltip_text = cl.text if not cl.ok else "It will land on that face about three times in four. Card sharps can spot a loaded die."
 			lb.pressed.connect(func():
@@ -443,7 +510,7 @@ func _render_bench() -> void:
 		if g.campaign.material_count("binding_" + asp) < 1 or asp == sel.aspect:
 			continue
 		var cr := Forge.can_rebind(g.campaign, sel, asp)
-		var rb := UI.seal_button("Rebind to %s (%d Coin + binding)" % [Dice.ASPECT_NAMES[asp], Forge.REBIND_COST], 13, Color("#2a5a6a"))
+		var rb := UI.seal_button(tr("Rebind to %s (%d Coin + binding)") % [Dice.ASPECT_NAMES[asp], Forge.REBIND_COST], 13, Color("#2a5a6a"))
 		rb.disabled = not cr.ok
 		rb.tooltip_text = cr.text if not cr.ok else "Once in a die's life. It forgets half its notches."
 		rb.pressed.connect(func():
@@ -453,7 +520,7 @@ func _render_bench() -> void:
 		acts.add_child(rb)
 	if not Dice.cracked_faces(sel).is_empty():
 		var cmn := Forge.can_mend(g.campaign, sel)
-		var mnb := UI.seal_button("Mend a cracked face (%d Coin)" % Forge.MEND_COST, 13, Color("#2a5a6a"))
+		var mnb := UI.seal_button(tr("Mend a cracked face (%d Coin)") % Forge.MEND_COST, 13, Color("#2a5a6a"))
 		mnb.disabled = not cmn.ok
 		mnb.tooltip_text = cmn.text
 		mnb.pressed.connect(func():
@@ -483,9 +550,9 @@ func _gifts(box: VBoxContainer) -> void:
 	var row := HFlowContainer.new()
 	row.add_theme_constant_override("h_separation", 6)
 	box.add_child(row)
-	row.add_child(UI.label("Brannoc's trust: %d" % g.campaign.trust, 14, UI.INK))
+	row.add_child(UI.label(tr("Brannoc's trust: %d") % g.campaign.trust, 14, UI.INK))
 	for m in rare:
-		var gb := UI.seal_button("Give him %s" % Forge.material_name(m), 13, Color("#5a4a3a"))
+		var gb := UI.seal_button(tr("Give him %s") % Forge.material_name(m), 13, Color("#5a4a3a"))
 		gb.tooltip_text = Forge.MATERIALS[m].text + " Trust lets him Load (1) and Rebind (2) your dice."
 		gb.pressed.connect(func():
 			say(Forge.give(g.campaign, m).text)

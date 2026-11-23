@@ -15,6 +15,14 @@ const ARCHETYPES := {
 	"swindler": ["loaded_d6", "amethyst_d6", "oak_guile", "bone_d6", "bone_d4", "oak_grace", "oak_lore", "oak_might", "oak_ward", "brass_d8", "brass_d4"],
 }
 
+## What each build reaches for on the shelf once its starting dice are packed (dice won in tales).
+const ARCH_ASPECTS := {
+	"balanced": ["might", "guile", "lore", "grace", "ward", "wild"],
+	"bruiser": ["might", "ward", "wild"],
+	"sage": ["lore", "grace", "wild"],
+	"swindler": ["guile", "grace", "wild"],
+}
+
 var rng := RandomNumberGenerator.new()
 var archetype := "balanced"
 var choice_policy := "random"     # "random" or "first"
@@ -31,6 +39,23 @@ func pack(campaign, kind: String) -> void:
 			if d.base == b and not p.pouch.has(d):
 				p.add(d)
 				break
+	# Then the best dice won in tales that suit the build, while the weight allows.
+	var likes: Array = ARCH_ASPECTS.get(kind, ARCH_ASPECTS.balanced)
+	var extra: Array = p.shelf().filter(func(d): return likes.has(d.aspect) and not d.get("ally", false) and not d.has("loaded_face") or kind == "swindler" and d.has("loaded_face"))
+	extra.sort_custom(func(a, b): return Dice.mean_n(a) / maxf(1.0, float(a.weight)) > Dice.mean_n(b) / maxf(1.0, float(b.weight)))
+	for d in extra:
+		if p.can_add(d):
+			# Swap out a starter Oak die of an aspect the build doesn't lean on, if it makes room.
+			p.add(d)
+		else:
+			for o in p.pouch:
+				if String(o.base).begins_with("oak_") and not likes.has(o.aspect) and int(o.weight) >= int(d.weight) - (p.weight_limit - p.weight()):
+					p.remove(o)
+					if p.can_add(d):
+						p.add(d)
+					else:
+						p.add(o)
+					break
 	for d in p.shelf():
 		p.bag(d)
 

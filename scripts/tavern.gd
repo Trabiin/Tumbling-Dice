@@ -18,6 +18,7 @@ const BACK_WALL_Z := -150.0
 const SHELF_TOP := Vector3(-62.0, FLOOR_Y + 53.5, BACK_WALL_Z + 9.0)
 const BENCH_TOP := Vector3(-178.0, FLOOR_Y + 58.0, BACK_WALL_Z + 22.0)
 
+var felt_mat: ShaderMaterial   # the tray's velvet, recoloured by the Teller's Mood felts
 var _flickers: Array = []          # [light, base_energy, speed, phase]
 var _time := 0.0
 var _noise := FastNoiseLite.new()
@@ -297,7 +298,8 @@ func _build_tray() -> void:
 	var wall_t := 0.9
 	var wall_h := 1.6
 	# velvet bed
-	_box(Vector3(TRAY.x, 0.3, TRAY.y), Vector3(0, -0.15, 0), Mats.velvet(Color("#163c3e")))
+	felt_mat = Mats.velvet(Color("#163c3e"))
+	_box(Vector3(TRAY.x, 0.3, TRAY.y), Vector3(0, -0.15, 0), felt_mat)
 	_collider(Vector3(TRAY.x + 4, 1, TRAY.y + 4), Vector3(0, -0.5, 0), "felt")
 
 	var frame := Mats.wood({"col_light": Color("#7a4a26"), "col_dark": Color("#3a1e0c"),
@@ -941,3 +943,9 @@ func _build_fire(floor_c: Vector3) -> void:
 	glow.light_cull_mask = 0xFFFFF & ~2
 	add_child(glow)
 	_flicker(glow, 9.0)
+
+
+## Recolour the tray's velvet (the Teller's Mood felts).
+func set_felt(color: Color) -> void:
+	if felt_mat != null:
+		felt_mat.set_shader_parameter("color", color)
