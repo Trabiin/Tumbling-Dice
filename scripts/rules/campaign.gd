@@ -48,6 +48,10 @@ var missed: Array = []         # tale ids that went by without you
 var rumour_ids: Array = []     # rumours by id, for conditions (rumour:tide_turn)
 var events_seen: Array = []    # season events that have already happened
 var debts := {}                # who you owe: "maud" -> nights of work, etc.
+var mood := 0                  # the Teller's Mood, 0 (Fair) to 5 (Black): see mood.gd
+var mood_best := 0             # the highest Mood a tale has been won at (unlocks felts)
+var story_mode := false        # Story mode: Grit doubled, Defy always free
+var felt := 0                  # which table felt the tray wears
 
 
 func new_campaign() -> void:
@@ -73,6 +77,10 @@ func new_campaign() -> void:
 	rumour_ids.clear()
 	events_seen.clear()
 	debts.clear()
+	mood = 0
+	mood_best = 0
+	story_mode = false
+	felt = 0
 	apply_renown()
 
 
@@ -229,6 +237,7 @@ func to_dict() -> Dictionary:
 		"map_memory": map_memory, "forged": forged,
 		"night": night, "renown": renown, "wounds": wounds, "materials": materials, "trust": trust,
 		"tales": tales, "missed": missed, "rumour_ids": rumour_ids, "events_seen": events_seen, "debts": debts,
+		"mood": mood, "mood_best": mood_best, "story_mode": story_mode, "felt": felt,
 	}
 
 
@@ -285,6 +294,10 @@ func from_dict(d: Dictionary) -> void:
 	rumour_ids = d.get("rumour_ids", [])
 	events_seen = d.get("events_seen", [])
 	debts = d.get("debts", {})
+	mood = int(d.get("mood", 0))
+	mood_best = int(d.get("mood_best", 0))
+	story_mode = bool(d.get("story_mode", false))
+	felt = int(d.get("felt", 0))
 	for k in standing:
 		standing[k] = int(standing[k])
 	apply_renown()

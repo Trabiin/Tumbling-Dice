@@ -1,0 +1,2073 @@
+# Tales of the Tumbling Dice: interface text.
+# Made by tools/extract_strings.gd; do not edit by hand.
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+
+#: scripts/game/game.gd:1700
+msgid "\nFull value for %s dice, half for others."
+msgstr ""
+
+#: scripts/game/game.gd:1325
+msgid "\nLoaded dice: %d%% caught"
+msgstr ""
+
+#: scripts/game/game.gd:1671
+msgid "\nThis face: %s"
+msgstr ""
+
+#: scripts/game/game.gd:379
+msgid "   (%d notch%s)"
+msgstr ""
+
+#: scripts/game/game.gd:1990
+msgid "   weight %d / %d"
+msgstr ""
+
+#: scripts/game/game.gd:1319
+msgid "  (clock %d)"
+msgstr ""
+
+#: scripts/game/game.gd:1799
+msgid " (fire %d)"
+msgstr ""
+
+#: scripts/game/game.gd:1025
+msgid " (system)"
+msgstr ""
+
+#: scripts/game/game.gd:1451
+msgid " Chance she spots your loaded die: %d%%."
+msgstr ""
+
+#: scripts/game/game.gd:2125
+msgid "%d challenges, %d throws.   %s"
+msgstr ""
+
+#: scripts/game/game.gd:587
+msgid "%d fps · %s · %d draws"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:186
+msgid "%d nights go by"
+msgstr ""
+
+#: scripts/game/game.gd:1927
+msgid "%d of %d   (Mixed from %d, Triumph at %d)"
+msgstr ""
+
+#: scripts/game/game.gd:1372
+msgid "%s  (Resolve %d)"
+msgstr ""
+
+#: scripts/game/preview_panel.gd:131
+msgid "%s  (line %d)"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:401
+msgid "%s · %d Coin"
+msgstr ""
+
+#: scripts/rules/tale_runner.gd:828
+msgid "%s, beaten"
+msgstr ""
+
+#: scripts/game/game.gd:324
+msgid "%s.   Tales told: %d.   Renown: %d.   Coin: %d."
+msgstr ""
+
+#: scripts/game/game.gd:1651
+msgid "%s: Resolve %d, %s"
+msgstr ""
+
+#: scripts/game/game.gd:1652
+msgid "%s: Resolve %d, pushing %d"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:381
+msgid "%s: faces %s"
+msgstr ""
+
+#: scripts/rules/preview.gd:138
+msgid "(hidden, needs %s) %s"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:86
+msgid ", %d to the next"
+msgstr ""
+
+#: scripts/game/game.gd:1810
+msgid ". You take %d."
+msgstr ""
+
+#: scripts/game/game.gd:1274
+msgid "A Fail"
+msgstr ""
+
+#: scripts/game/game.gd:1413
+msgid "A Grace Test against its speed (%d). Escaping routes the tale differently."
+msgstr ""
+
+#: scripts/rules/forge.gd:39
+msgid "A card sharp's ribbon. It can rebind a die to Guile."
+msgstr ""
+
+#: scripts/rules/forge.gd:41
+msgid "A dancer's ribbon. It can rebind a die to Grace."
+msgstr ""
+
+#: scripts/rules/forge.gd:42
+msgid "A link of an old shield-chain. It can rebind a die to Ward."
+msgstr ""
+
+#: scripts/rules/forge.gd:40
+msgid "A page of a lost book. It can rebind a die to Lore."
+msgstr ""
+
+#: scripts/rules/foes.gd:228
+msgid "A saint of bark and bone in a robe of moss, six hundred years in the ground, empty behind the eyes."
+msgstr ""
+
+#: scripts/rules/forge.gd:43
+msgid "A sliver of the drowned abbey's bronze. Brannoc would give a lot to work it."
+msgstr ""
+
+#: scripts/rules/forge.gd:37
+msgid "A slug of soft lead. Brannoc can sink it behind a face."
+msgstr ""
+
+#: scripts/rules/forge.gd:38
+msgid "A strip of a warrior's oath-cord. It can rebind a die to Might."
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:265
+msgid "A tale is half told. Finish it before changing how it's told."
+msgstr ""
+
+#: scripts/rules/foes.gd:84
+msgid "A thin man in river-green, with a silver-headed cane and the patient smile of somebody who buys the dead."
+msgstr ""
+
+#: scripts/rules/dice.gd:231
+msgid "Abbess's Rosary d12"
+msgstr ""
+
+#: scripts/game/game.gd:1201
+msgid "Act %d"
+msgstr ""
+
+#: scripts/rules/foes.gd:335
+msgid "Age"
+msgstr ""
+
+#: scripts/dice_catalog.gd:13 scripts/rules/dice.gd:50
+msgid "Ancient Bone"
+msgstr ""
+
+#: scripts/rules/dice.gd:189
+msgid "Ancient Bone d6"
+msgstr ""
+
+#: scripts/rules/foes.gd:243
+msgid "Antler"
+msgstr ""
+
+#: scripts/rules/foes.gd:210
+msgid "Antlers on his helm, a spear of ash, and a horse made of fog. He has seen out every guest who ever left the Wood in a hurry."
+msgstr ""
+
+#: scripts/rules/foes.gd:256
+msgid "Anvil"
+msgstr ""
+
+#: scripts/dice_catalog.gd:23 scripts/rules/dice.gd:48
+msgid "Arcane Amethyst"
+msgstr ""
+
+#: scripts/rules/dice.gd:192
+msgid "Arcane Amethyst d6"
+msgstr ""
+
+#: scripts/rules/dice.gd:282
+msgid "Ashgrove's Oath d10"
+msgstr ""
+
+#: scripts/rules/dice.gd:321
+msgid "Assayer's Weight d8"
+msgstr ""
+
+#: scripts/rules/foes.gd:313
+msgid "Assessor Grisewold"
+msgstr ""
+
+#: scripts/rules/patrons.gd:42
+msgid "Autumn, and the road from the north fills with carts. The Pretender's men are taking the harvest, and the people of the hill farms are walking south ahead of them."
+msgstr ""
+
+#: scripts/rules/foes.gd:119
+msgid "Axe"
+msgstr ""
+
+#: scripts/game/game.gd:1057
+msgid "Back"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:69
+msgid "Back to the room"
+msgstr ""
+
+#: scripts/game/game.gd:2088 scripts/game/game.gd:2136
+msgid "Back to the tavern"
+msgstr ""
+
+#: scripts/rules/foes.gd:182
+msgid "Balance"
+msgstr ""
+
+#: scripts/rules/foes.gd:206 scripts/rules/foes.gd:231 scripts/rules/foes.gd:243
+msgid "Bark"
+msgstr ""
+
+#: scripts/game/game.gd:940
+msgid "Begin the tale again from the start"
+msgstr ""
+
+#: scripts/game/game.gd:931
+msgid "Begin: The Stranger's Throw"
+msgstr ""
+
+#: scripts/rules/dice.gd:52
+msgid "Bellmetal"
+msgstr ""
+
+#: scripts/rules/dice.gd:234
+msgid "Bellmetal Shard d8"
+msgstr ""
+
+#: scripts/rules/dice.gd:226
+msgid "Bellmetal d20"
+msgstr ""
+
+#: scripts/rules/forge.gd:43
+msgid "Bellmetal scrap"
+msgstr ""
+
+#: scripts/rules/foes.gd:260
+msgid "Bellows"
+msgstr ""
+
+#: scripts/game/game.gd:1749
+msgid "Best"
+msgstr ""
+
+#: scripts/rules/mood.gd:17
+msgid "Bitter"
+msgstr ""
+
+#: scripts/rules/mood.gd:18
+msgid "Black"
+msgstr ""
+
+#: scripts/rules/dice.gd:359
+msgid "Black Iron d8"
+msgstr ""
+
+#: scripts/rules/forge.gd:45
+msgid "Black iron"
+msgstr ""
+
+#: scripts/rules/foes.gd:314
+msgid "Bluff"
+msgstr ""
+
+#: scripts/rules/foes.gd:79 scripts/rules/foes.gd:161
+msgid "Boathook"
+msgstr ""
+
+#: scripts/rules/dice.gd:197
+msgid "Bone d4"
+msgstr ""
+
+#: scripts/rules/patrons.gd:28
+msgid "Brannoc"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:144 scripts/game/tavern_hub.gd:425
+msgid "Brannoc's bench"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:553
+msgid "Brannoc's trust: %d"
+msgstr ""
+
+#: scripts/rules/foes.gd:116
+msgid "Brask's Deserters"
+msgstr ""
+
+#: scripts/rules/dice.gd:267
+msgid "Brask's Old d6"
+msgstr ""
+
+#: scripts/rules/dice.gd:205
+msgid "Brass d4"
+msgstr ""
+
+#: scripts/game/practice_log.gd:33
+msgid "Break them %d%%, Nerve lost %.1f"
+msgstr ""
+
+#: scripts/game/game.gd:1449
+msgid "Break them this round: %d%%. Nerve lost: about %.1f."
+msgstr ""
+
+#: scripts/rules/dice.gd:211
+msgid "Brine d6"
+msgstr ""
+
+#: scripts/rules/foes.gd:169
+msgid "Buckler"
+msgstr ""
+
+#: scripts/game/game.gd:1729
+msgid "Bump table"
+msgstr ""
+
+#: scripts/tale/practice.gd:48
+msgid "Calm it"
+msgstr ""
+
+#: scripts/rules/foes.gd:87
+msgid "Cane"
+msgstr ""
+
+#: scripts/rules/patrons.gd:21
+msgid "Captain Ashgrove"
+msgstr ""
+
+#: scripts/rules/foes.gd:316
+msgid "Captain Maelis of the River Watch"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:473
+msgid "Carve it %s (%d Coin)"
+msgstr ""
+
+#: scripts/rules/preview.gd:166
+msgid "Caught with a loaded die"
+msgstr ""
+
+#: scripts/game/game.gd:920 scripts/game/game.gd:2081
+msgid "Chronicle: "
+msgstr ""
+
+#: scripts/rules/dice.gd:362
+msgid "Cinder-Glass d10"
+msgstr ""
+
+#: scripts/rules/foes.gd:253
+msgid "Cinders and old iron in the shape of a smith, with a furnace door for a face, a thousand years at the anvil."
+msgstr ""
+
+#: scripts/rules/mood.gd:25
+msgid "Claret"
+msgstr ""
+
+#: scripts/game/game.gd:1375
+msgid "Clarity (Elven Jade): next round it throws %s."
+msgstr ""
+
+#: scripts/rules/dice.gd:49
+msgid "Clarity: while it is in your Hand you see the odds of a foe's next throw."
+msgstr ""
+
+#: scripts/game/game.gd:1956
+msgid "Click a die on the shelf to pack it; click a packed die to put it back. The Pouch is your deck for the whole tale; the Saddlebag waits at the Waystone, where you may swap up to 2 dice."
+msgstr ""
+
+#: scripts/game/game.gd:1033
+msgid "Click an action, then press the key or controller button for it. A key replaces its keys, a button its buttons. Escape cancels. On a controller, the left stick and d-pad move between choices, A chooses, and a flick of the right stick throws the dice."
+msgstr ""
+
+#: scripts/game/game.gd:965
+msgid "Click choices and dice, or use a controller. Space throws, Enter continues, F toggles fast dice, hold Z to look closer. Hover a die to read it."
+msgstr ""
+
+#: scripts/rules/foes.gd:87
+msgid "Cloak"
+msgstr ""
+
+#: scripts/game/game.gd:310
+msgid "Close"
+msgstr ""
+
+#: scripts/rules/foes.gd:119
+msgid "Club"
+msgstr ""
+
+#: scripts/game/game.gd:1538
+msgid "Cocked: %s"
+msgstr ""
+
+#: scripts/game/game.gd:794 scripts/game/game.gd:802
+msgid "Coin %d"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:77
+msgid "Coin %d   ·   Rune shards: %s"
+msgstr ""
+
+#: scripts/dice_catalog.gd:52
+msgid "Combat d6"
+msgstr ""
+
+#: scripts/game/preview_panel.gd:82
+msgid "Command (type help)"
+msgstr ""
+
+#: scripts/game/game.gd:1756
+msgid "Confirm"
+msgstr ""
+
+#: scripts/game/game.gd:1219 scripts/rules/preview.gd:154
+msgid "Continue"
+msgstr ""
+
+#: scripts/game/game.gd:924 scripts/game/tavern_hub.gd:124
+msgid "Continue the tale: %s"
+msgstr ""
+
+#: scripts/game/game.gd:1032
+msgid "Controls"
+msgstr ""
+
+#: scripts/rules/foes.gd:183
+msgid "Counting-arms"
+msgstr ""
+
+#: scripts/rules/foes.gd:175 scripts/rules/foes.gd:197
+msgid "Crossbow"
+msgstr ""
+
+#: scripts/rules/foes.gd:110
+msgid "Crush"
+msgstr ""
+
+#: scripts/rules/foes.gd:58 scripts/rules/foes.gd:161 scripts/rules/foes.gd:195
+msgid "Cudgel"
+msgstr ""
+
+#: scripts/rules/foes.gd:338 scripts/rules/foes.gd:338
+msgid "Cunning"
+msgstr ""
+
+#: scripts/rules/dice.gd:270
+msgid "Cut-Badge d6"
+msgstr ""
+
+#: scripts/game/game.gd:1358
+msgid "Danger %d of %d: %s"
+msgstr ""
+
+#: scripts/game/game.gd:1280
+msgid "Defy (%d Fate)"
+msgstr ""
+
+#: scripts/rules/preview.gd:147
+msgid "Defy the Fail (3 Fate): make it Mixed"
+msgstr ""
+
+#: scripts/game/game.gd:2070
+msgid "Dice you came home with"
+msgstr ""
+
+#: scripts/game/game.gd:1663
+msgid "Dice:"
+msgstr ""
+
+#: scripts/game/game.gd:1259
+msgid "Done, with tries to spare"
+msgstr ""
+
+#: scripts/rules/foes.gd:272 scripts/rules/foes.gd:272 scripts/rules/foes.gd:299 scripts/rules/foes.gd:317
+msgid "Doubt"
+msgstr ""
+
+#: scripts/rules/foes.gd:69
+msgid "Drag"
+msgstr ""
+
+#: scripts/dice_catalog.gd:9 scripts/rules/dice.gd:47
+msgid "Dragon's Blood"
+msgstr ""
+
+#: scripts/rules/dice.gd:180
+msgid "Dragon's Blood d10"
+msgstr ""
+
+#: scripts/rules/dice.gd:202
+msgid "Dragon's Blood d12"
+msgstr ""
+
+#: scripts/rules/dice.gd:53
+msgid "Driftwood"
+msgstr ""
+
+#: scripts/rules/foes.gd:91
+msgid "Drown"
+msgstr ""
+
+#: scripts/rules/foes.gd:107
+msgid "Drowned"
+msgstr ""
+
+#: scripts/rules/dice.gd:208
+msgid "Drowned Man's Knuckle d4"
+msgstr ""
+
+#: scripts/rules/foes.gd:76
+msgid "Drowned men in good black coats, bought out of the river and made to stand up. Their buttons are new."
+msgstr ""
+
+#: scripts/rules/foes.gd:96
+msgid "Drowned soldiers of some old war, in green bronze, standing to attention on the lake floor."
+msgstr ""
+
+#: scripts/rules/foes.gd:325
+msgid "Duke Orrin Mallory"
+msgstr ""
+
+#: scripts/rules/dice.gd:306
+msgid "Duke's Ledger d10"
+msgstr ""
+
+#: scripts/rules/foes.gd:317 scripts/rules/foes.gd:341
+msgid "Duty"
+msgstr ""
+
+#: scripts/dice_catalog.gd:19 scripts/rules/dice.gd:51
+msgid "Dwarven Brass"
+msgstr ""
+
+#: scripts/rules/dice.gd:183
+msgid "Dwarven Brass d8"
+msgstr ""
+
+#: scripts/dice_catalog.gd:16 scripts/rules/dice.gd:49
+msgid "Elven Jade"
+msgstr ""
+
+#: scripts/rules/dice.gd:199
+msgid "Elven Jade d10"
+msgstr ""
+
+#: scripts/rules/dice.gd:186
+msgid "Elven Jade d8"
+msgstr ""
+
+#: scripts/rules/mood.gd:28
+msgid "Ember"
+msgstr ""
+
+#: scripts/rules/dice.gd:47
+msgid "Ember: its highest face sets a foe Burning (2 damage a round for 3 rounds)."
+msgstr ""
+
+#: scripts/game/game.gd:2065
+msgid "Ending: %s"
+msgstr ""
+
+#: scripts/game/game.gd:2066
+msgid "Endings found in %s: %d of %d   ·   Renown %d   ·   Coin %d"
+msgstr ""
+
+#: scripts/rules/foes.gd:320 scripts/rules/foes.gd:320
+msgid "Etiquette"
+msgstr ""
+
+#: scripts/rules/foes.gd:191
+msgid "Every knife Mother Kettle owns, and Mother Kettle behind them with a crossbow, looking sorry about it."
+msgstr ""
+
+#: scripts/game/game.gd:1260
+msgid "Every slot is met: that is a Success. Throw again for a Triumph (6 over in total), or take it. Pushing costs dice from your Pouch."
+msgstr ""
+
+#: scripts/rules/mood.gd:18
+msgid "Every target and every opponent's Resolve is 2 higher."
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:475
+msgid "Faces may rise by %d in all (this die: %+d so far)."
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:453
+msgid "Faces: "
+msgstr ""
+
+#: scripts/rules/preview.gd:160
+msgid "Fail"
+msgstr ""
+
+#: scripts/rules/mood.gd:13
+msgid "Fair"
+msgstr ""
+
+#: scripts/rules/dice.gd:368
+msgid "Fair Folk's d6"
+msgstr ""
+
+#: scripts/rules/foes.gd:43 scripts/rules/foes.gd:152 scripts/rules/foes.gd:152
+msgid "Fang"
+msgstr ""
+
+#: scripts/game/game.gd:656 scripts/game/game.gd:1019
+msgid "Fast dice"
+msgstr ""
+
+#: scripts/game/game.gd:629
+msgid "Fate"
+msgstr ""
+
+#: scripts/game/game.gd:1711
+msgid "Fate %d:"
+msgstr ""
+
+#: scripts/game/game.gd:804
+msgid "Fatigue %d"
+msgstr ""
+
+#: scripts/rules/foes.gd:305 scripts/rules/foes.gd:305 scripts/rules/foes.gd:329
+msgid "Fear"
+msgstr ""
+
+#: scripts/rules/foes.gd:328
+msgid "Ferrant the lock-keeper"
+msgstr ""
+
+#: scripts/game/practice_log.gd:38
+msgid "Finish it %d%%, deal %.1f, take %.1f"
+msgstr ""
+
+#: scripts/game/game.gd:1455
+msgid "Finish it this round: %d%%. Damage dealt about %.1f, taken about %.1f (of %d coming)."
+msgstr ""
+
+#: scripts/rules/foes.gd:347
+msgid "Fire"
+msgstr ""
+
+#: scripts/rules/dice.gd:214
+msgid "Fisher's Bone d6"
+msgstr ""
+
+#: scripts/rules/foes.gd:221
+msgid "Five burglars in pilgrim grey, with bark on their sleeves and the Wood's green at the edges of their eyes."
+msgstr ""
+
+#: scripts/rules/foes.gd:117
+msgid "Five men in what is left of the Greyfell livery, with the badges cut off. They were soldiers once. They remember how."
+msgstr ""
+
+#: scripts/game/game.gd:1412
+msgid "Flee"
+msgstr ""
+
+#: scripts/rules/mood.gd:14
+msgid "Foes and opponents throw one extra d4."
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:255
+msgid "For the tales above all: Grit doubled, and a Fail can always be Defied into a Mixed for free. The dice and odds stay honest."
+msgstr ""
+
+#: scripts/game/game.gd:1006
+msgid "Frame rate"
+msgstr ""
+
+#: scripts/rules/forge.gd:44
+msgid "From the centre of a lightning-struck oak. Rare, and Brannoc knows it."
+msgstr ""
+
+#: scripts/rules/forge.gd:45
+msgid "From the old watchtower's bell-cage. Dwarf-forged, they say."
+msgstr ""
+
+#: scripts/rules/foes.gd:144
+msgid "Fury"
+msgstr ""
+
+#: scripts/rules/dice.gd:300
+msgid "Gilded Swan d8"
+msgstr ""
+
+#: scripts/rules/dice.gd:324
+msgid "Gilded d20"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:555
+msgid "Give him %s"
+msgstr ""
+
+#: scripts/rules/dice.gd:48
+msgid "Glint: when it lands even it counts in full in any slot."
+msgstr ""
+
+#: scripts/game/game.gd:1001
+msgid "Graphics"
+msgstr ""
+
+#: scripts/rules/foes.gd:50 scripts/rules/foes.gd:50 scripts/rules/foes.gd:78 scripts/rules/foes.gd:78
+msgid "Grasp"
+msgstr ""
+
+#: scripts/rules/foes.gd:314
+msgid "Greed"
+msgstr ""
+
+#: scripts/rules/dice.gd:250
+msgid "Green Bronze d8"
+msgstr ""
+
+#: scripts/rules/forge.gd:46
+msgid "Grey and cold, from the Tide Court's floor."
+msgstr ""
+
+#: scripts/rules/foes.gd:48
+msgid "Grey men in sodden wool, lake water pouring from their sleeves."
+msgstr ""
+
+#: scripts/rules/dice.gd:53
+msgid "Grey, salt-stiff, older than it looks."
+msgstr ""
+
+#: scripts/rules/dice.gd:258
+msgid "Greyfell Banner d8"
+msgstr ""
+
+#: scripts/rules/foes.gd:65 scripts/rules/foes.gd:69 scripts/rules/foes.gd:110 scripts/rules/foes.gd:231
+msgid "Grief"
+msgstr ""
+
+#: scripts/game/game.gd:797
+msgid "Grit %d/%d"
+msgstr ""
+
+#: scripts/game/game.gd:790
+msgid "Grit -"
+msgstr ""
+
+#: scripts/game/game.gd:611
+msgid "Grit 20/20"
+msgstr ""
+
+#: scripts/rules/mood.gd:15
+msgid "Grudging"
+msgstr ""
+
+#: scripts/rules/foes.gd:308 scripts/rules/foes.gd:308
+msgid "Grumble"
+msgstr ""
+
+#: scripts/rules/foes.gd:275 scripts/rules/foes.gd:275 scripts/rules/foes.gd:284 scripts/rules/foes.gd:284
+msgid "Haggle"
+msgstr ""
+
+#: scripts/rules/foes.gd:186 scripts/rules/foes.gd:256
+msgid "Hammer"
+msgstr ""
+
+#: scripts/game/game.gd:702
+msgid "Hand"
+msgstr ""
+
+#: scripts/rules/foes.gd:129
+msgid "Harrow's Sappers"
+msgstr ""
+
+#: scripts/rules/foes.gd:137 scripts/rules/foes.gd:301
+msgid "Harrow, the Pretender"
+msgstr ""
+
+#: scripts/rules/dice.gd:355
+msgid "Hearthstool d10"
+msgstr ""
+
+#: scripts/rules/forge.gd:44
+msgid "Heartwood"
+msgstr ""
+
+#: scripts/game/game.gd:1006
+msgid "Hidden"
+msgstr ""
+
+#: scripts/rules/foes.gd:173
+msgid "Hired swords from across the river, paid in gold they haven't seen yet, and not happy about it."
+msgstr ""
+
+#: scripts/rules/dice.gd:217
+msgid "Hobb's Oak d6"
+msgstr ""
+
+#: scripts/rules/contest.gd:43
+msgid "Hold"
+msgstr ""
+
+#: scripts/tale/practice.gd:31
+msgid "Hold on"
+msgstr ""
+
+#: scripts/rules/patrons.gd:29
+msgid "Hollis"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:395
+msgid "Hollis has, behind the bar:"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:140 scripts/game/tavern_hub.gd:362
+msgid "Hollis's shelf"
+msgstr ""
+
+#: scripts/rules/dice.gd:279
+msgid "Holloway Bell d12"
+msgstr ""
+
+#: scripts/rules/foes.gd:88
+msgid "Hollowman"
+msgstr ""
+
+#: scripts/rules/foes.gd:213
+msgid "Hooves"
+msgstr ""
+
+#: scripts/rules/foes.gd:214
+msgid "Hounds"
+msgstr ""
+
+#: scripts/game/game.gd:1967
+msgid "Hover a die to read it."
+msgstr ""
+
+#: scripts/game/game.gd:1301
+msgid "How do you go about it? Your Hand is drawn below."
+msgstr ""
+
+#: scripts/game/game.gd:1010
+msgid "How fast the Teller's lines are written out. Click the parchment to show a line at once."
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:153
+msgid "How kindly the Teller tells it: an optional challenge ladder, or Story mode. Table felts you have earned."
+msgstr ""
+
+#: scripts/rules/dice.gd:334
+msgid "Huntsman's Ash d10"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:487
+msgid "Inscribe %s (%d Coin + shard)"
+msgstr ""
+
+#: scripts/game/game.gd:935
+msgid "Into the tavern"
+msgstr ""
+
+#: scripts/rules/foes.gd:347
+msgid "Iron"
+msgstr ""
+
+#: scripts/rules/dice.gd:312
+msgid "Isolde's Ring d8"
+msgstr ""
+
+#: scripts/rules/dice.gd:52
+msgid "It hums when the lake is near."
+msgstr ""
+
+#: scripts/game/game.gd:1373
+msgid "It throws: %s."
+msgstr ""
+
+#: scripts/rules/foes.gd:290 scripts/rules/foes.gd:290
+msgid "Judgement"
+msgstr ""
+
+#: scripts/game/preview_panel.gd:51
+msgid "Jump to"
+msgstr ""
+
+#: scripts/rules/preview.gd:141
+msgid "Keep your dice"
+msgstr ""
+
+#: scripts/rules/dice.gd:223
+msgid "Kettle's Knife d8"
+msgstr ""
+
+#: scripts/rules/foes.gd:54
+msgid "Kettle's Knives"
+msgstr ""
+
+#: scripts/rules/dice.gd:352
+msgid "King's Antler d12"
+msgstr ""
+
+#: scripts/rules/foes.gd:57 scripts/rules/foes.gd:57 scripts/rules/foes.gd:194 scripts/rules/foes.gd:194
+msgid "Knife"
+msgstr ""
+
+#: scripts/rules/foes.gd:322
+msgid "Lady Isolde Mallory"
+msgstr ""
+
+#: scripts/rules/foes.gd:126
+msgid "Lance"
+msgstr ""
+
+#: scripts/game/game.gd:1025
+msgid "Language"
+msgstr ""
+
+#: scripts/rules/foes.gd:162
+msgid "Lantern"
+msgstr ""
+
+#: scripts/rules/foes.gd:205 scripts/rules/foes.gd:205
+msgid "Lash"
+msgstr ""
+
+#: scripts/rules/forge.gd:37
+msgid "Lead"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:158
+msgid "Let a night pass. Tales that are waiting may not wait for ever."
+msgstr ""
+
+#: scripts/game/game.gd:1283
+msgid "Let it stand"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:165
+msgid "Let the nights go by until the season turns."
+msgstr ""
+
+#: scripts/rules/dice.gd:50
+msgid "Lightfoot: when it lands cocked you choose either leaning face for free."
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:499
+msgid "Load it to favour the %d (%d Coin + Lead)"
+msgstr ""
+
+#: scripts/dice_catalog.gd:48 scripts/rules/dice.gd:195
+msgid "Loaded d6"
+msgstr ""
+
+#: scripts/rules/foes.gd:138
+msgid "Lord Marshal Harrow, who would be king, in black plate with a gold circlet welded to the helm. He fights like a man who has never once doubted he was right."
+msgstr ""
+
+#: scripts/game/game.gd:2079
+msgid "Lost: "
+msgstr ""
+
+#: scripts/game/game.gd:1002
+msgid "Low suits tablets and Chromebooks; High is the full look."
+msgstr ""
+
+#: scripts/rules/foes.gd:337
+msgid "Mag Sallow"
+msgstr ""
+
+#: scripts/rules/dice.gd:337
+msgid "Mag Sallow's Bone d6"
+msgstr ""
+
+#: scripts/rules/foes.gd:298
+msgid "Magistrate Coyle"
+msgstr ""
+
+#: scripts/rules/dice.gd:276
+msgid "Magistrate's Seal d10"
+msgstr ""
+
+#: scripts/game/game.gd:1012
+msgid "Makes every panel and its text larger."
+msgstr ""
+
+#: scripts/rules/dice.gd:309
+msgid "Masque d6"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:301
+msgid "Maud has you sit on the bench and pokes at you until you say ow. \"Which one first?\""
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:299
+msgid "Maud looks you up and down. \"Nothing wrong with you that sleep won't fix. Off you go.\""
+msgstr ""
+
+#: scripts/rules/patrons.gd:201
+msgid "Maud treats your %s for nothing, and then hands you a mop. Two nights of boiling bandages and carrying slops later, you are square. (two nights)"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:532
+msgid "Melt it down"
+msgstr ""
+
+#: scripts/rules/foes.gd:130
+msgid "Men with picks and pitch, digging under Holloway's wall by lantern light."
+msgstr ""
+
+#: scripts/rules/foes.gd:142
+msgid "Men-at-arms"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:523
+msgid "Mend a cracked face (%d Coin)"
+msgstr ""
+
+#: scripts/rules/mood.gd:26
+msgid "Midnight"
+msgstr ""
+
+#: scripts/rules/foes.gd:41
+msgid "Mire Wolf"
+msgstr ""
+
+#: scripts/rules/foes.gd:216
+msgid "Mist"
+msgstr ""
+
+#: scripts/rules/preview.gd:162
+msgid "Mixed"
+msgstr ""
+
+#: scripts/game/game.gd:1248
+msgid "Mixed: choose the price"
+msgstr ""
+
+#: scripts/rules/foes.gd:350 scripts/rules/foes.gd:350
+msgid "Moonstone"
+msgstr ""
+
+#: scripts/rules/dice.gd:365
+msgid "Moonstone d8"
+msgstr ""
+
+#: scripts/rules/foes.gd:149
+msgid "Moor Hounds"
+msgstr ""
+
+#: scripts/rules/mood.gd:27
+msgid "Moss"
+msgstr ""
+
+#: scripts/rules/foes.gd:274 scripts/rules/foes.gd:277 scripts/rules/foes.gd:331 scripts/rules/patrons.gd:23
+msgid "Mother Kettle"
+msgstr ""
+
+#: scripts/rules/foes.gd:190
+msgid "Mother Kettle's Crew"
+msgstr ""
+
+#: scripts/rules/dice.gd:315
+msgid "Mother Kettle's Own d6"
+msgstr ""
+
+#: scripts/rules/foes.gd:280
+msgid "Mother Ysolde"
+msgstr ""
+
+#: scripts/rules/foes.gd:62
+msgid "Mother Ysolde, forty years under the lake, her habit drifting like weed."
+msgstr ""
+
+#: scripts/game/game.gd:2013
+msgid "No room for the %s: the Pouch holds weight %d and the Saddlebag %d."
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:496
+msgid "No rune shards to inscribe with. Melting a rune die gives its shards."
+msgstr ""
+
+#: scripts/game/game.gd:944
+msgid "No story, no stakes: twenty challenges to learn the dice. Your choices are logged for playtesting."
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:237
+msgid "Now: %s. %s"
+msgstr ""
+
+#: scripts/game/game.gd:1719
+msgid "Nudge +1"
+msgstr ""
+
+#: scripts/game/game.gd:1714
+msgid "Nudge -1"
+msgstr ""
+
+#: scripts/rules/dice.gd:46
+msgid "Oak"
+msgstr ""
+
+#: scripts/rules/dice.gd:178
+msgid "Oak d6 of Grace"
+msgstr ""
+
+#: scripts/rules/dice.gd:176
+msgid "Oak d6 of Guile"
+msgstr ""
+
+#: scripts/rules/dice.gd:177
+msgid "Oak d6 of Lore"
+msgstr ""
+
+#: scripts/rules/dice.gd:175
+msgid "Oak d6 of Might"
+msgstr ""
+
+#: scripts/rules/dice.gd:179
+msgid "Oak d6 of Ward"
+msgstr ""
+
+#: scripts/rules/dice.gd:261
+msgid "Oathbreaker's d10"
+msgstr ""
+
+#: scripts/rules/foes.gd:271
+msgid "Odile, keeper of the Drowned Lamb"
+msgstr ""
+
+#: scripts/game/game.gd:1016 scripts/game/game.gd:1019
+msgid "Off"
+msgstr ""
+
+#: scripts/rules/foes.gd:307
+msgid "Old Absalom, the bridge-keeper"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:443
+msgid "Old Brannoc taps the bench. \"Put one down, then. Let's see what it's made of.\""
+msgstr ""
+
+#: scripts/rules/dice.gd:318
+msgid "Old Mint d12"
+msgstr ""
+
+#: scripts/game/game.gd:1241
+msgid "On second thought, no wager"
+msgstr ""
+
+#: scripts/game/game.gd:1736
+msgid "Once in the climax: re-throw every die showing 1."
+msgstr ""
+
+#: scripts/game/game.gd:985
+msgid "Options"
+msgstr ""
+
+#: scripts/game/game.gd:962
+msgid "Options: graphics, text, motion, controls, language"
+msgstr ""
+
+#: scripts/rules/foes.gd:286
+msgid "Ormond Vane"
+msgstr ""
+
+#: scripts/rules/foes.gd:83
+msgid "Ormond Vane, Collector"
+msgstr ""
+
+#: scripts/rules/foes.gd:75
+msgid "Ormond's Hollowmen"
+msgstr ""
+
+#: scripts/rules/dice.gd:273
+msgid "Outrider's Spur d8"
+msgstr ""
+
+#: scripts/rules/foes.gd:43
+msgid "Pack"
+msgstr ""
+
+#: scripts/game/game.gd:1955
+msgid "Packing the Pouch"
+msgstr ""
+
+#: scripts/rules/foes.gd:335
+msgid "Patience"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:311
+msgid "Pay %d Coin (a night)"
+msgstr ""
+
+#: scripts/tale/practice.gd:120
+msgid "Pay in Coin (lose 2 Coin)"
+msgstr ""
+
+#: scripts/tale/practice.gd:119
+msgid "Pay in Grit (lose 2 Grit)"
+msgstr ""
+
+#: scripts/rules/foes.gd:283
+msgid "Pell the fence"
+msgstr ""
+
+#: scripts/rules/dice.gd:349
+msgid "Penhallow's Black d6"
+msgstr ""
+
+#: scripts/rules/foes.gd:132 scripts/rules/foes.gd:132
+msgid "Pick"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:508
+msgid "Pick a face to carve, inscribe or load."
+msgstr ""
+
+#: scripts/rules/foes.gd:133
+msgid "Pitch"
+msgstr ""
+
+#: scripts/game/game.gd:1750
+msgid "Place every die where it does the most good."
+msgstr ""
+
+#: scripts/rules/dice.gd:46
+msgid "Plain oak. Cheap, honest, light."
+msgstr ""
+
+#: scripts/game/game.gd:959
+msgid "Play a tale as text with no dice: pick any outcome, jump to scenes, reload after editing the .tale file."
+msgstr ""
+
+#: scripts/game/game.gd:828
+msgid "Pouch %d\nDiscard %d\nHand size %d"
+msgstr ""
+
+#: scripts/rules/foes.gd:326
+msgid "Power"
+msgstr ""
+
+#: scripts/game/game.gd:2120
+msgid "Practice done"
+msgstr ""
+
+#: scripts/game/game.gd:943
+msgid "Practice table: 20 challenges"
+msgstr ""
+
+#: scripts/rules/contest.gd:42
+msgid "Press"
+msgstr ""
+
+#: scripts/game/game.gd:1794
+msgid "Press %d against Resolve %d. Hold %d against their %d: you lose %d Nerve."
+msgstr ""
+
+#: scripts/game/game.gd:1043
+msgid "Press a key or button..."
+msgstr ""
+
+#: scripts/rules/foes.gd:296
+msgid "Pride"
+msgstr ""
+
+#: scripts/rules/foes.gd:340
+msgid "Prior Anselm"
+msgstr ""
+
+#: scripts/rules/foes.gd:287 scripts/rules/foes.gd:287 scripts/rules/foes.gd:326
+msgid "Purse"
+msgstr ""
+
+#: scripts/rules/foes.gd:310
+msgid "Purser Quill"
+msgstr ""
+
+#: scripts/game/game.gd:1267
+msgid "Push for a Triumph"
+msgstr ""
+
+#: scripts/rules/foes.gd:168 scripts/rules/foes.gd:168
+msgid "Rapier"
+msgstr ""
+
+#: scripts/rules/mood.gd:29
+msgid "Raven"
+msgstr ""
+
+#: scripts/game/game.gd:1731
+msgid "Re-throw every die showing its lowest face (2 Fate)."
+msgstr ""
+
+#: scripts/game/game.gd:1740
+msgid "Read: %s"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:513
+msgid "Rebind to %s (%d Coin + binding)"
+msgstr ""
+
+#: scripts/game/game.gd:1016
+msgid "Reduced motion"
+msgstr ""
+
+#: scripts/rules/dice.gd:241
+msgid "Register of the Drowned d10"
+msgstr ""
+
+#: scripts/rules/dice.gd:346
+msgid "Reliquary Silver d6"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:86
+msgid "Renown %d (Pouch weight %d%s)"
+msgstr ""
+
+#: scripts/game/game.gd:1724
+msgid "Reroll"
+msgstr ""
+
+#: scripts/game/game.gd:1052
+msgid "Reset controls"
+msgstr ""
+
+#: scripts/rules/dice.gd:297
+msgid "Riverfolk Oar d6"
+msgstr ""
+
+#: scripts/rules/preview.gd:167
+msgid "Roll the dice for real (the bot throws)"
+msgstr ""
+
+#: scripts/rules/foes.gd:247
+msgid "Root"
+msgstr ""
+
+#: scripts/rules/foes.gd:232
+msgid "Roots"
+msgstr ""
+
+#: scripts/game/game.gd:1369
+msgid "Round %d"
+msgstr ""
+
+#: scripts/game/game.gd:1365
+msgid "Round %d of %d"
+msgstr ""
+
+#: scripts/rules/foes.gd:227
+msgid "Saint Hollow"
+msgstr ""
+
+#: scripts/rules/dice.gd:343
+msgid "Saint's Bone d8"
+msgstr ""
+
+#: scripts/rules/dice.gd:244
+msgid "Saltreach Silver d6"
+msgstr ""
+
+#: scripts/game/game.gd:925
+msgid "Saved %s."
+msgstr ""
+
+#: scripts/rules/foes.gd:278 scripts/rules/foes.gd:278 scripts/rules/foes.gd:302 scripts/rules/foes.gd:302
+msgid "Scorn"
+msgstr ""
+
+#: scripts/rules/foes.gd:299
+msgid "Seal"
+msgstr ""
+
+#: scripts/rules/foes.gd:44
+msgid "Second Wolf"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:385
+msgid "Sell for %d Coin"
+msgstr ""
+
+#: scripts/rules/foes.gd:295
+msgid "Sergeant Brask"
+msgstr ""
+
+#: scripts/game/game.gd:1973
+msgid "Set out"
+msgstr ""
+
+#: scripts/game/game.gd:2360
+msgid "Shake them... and let go. Flick to throw hard. Right-click to put them back."
+msgstr ""
+
+#: scripts/rules/foes.gd:296
+msgid "Shame"
+msgstr ""
+
+#: scripts/rules/foes.gd:99 scripts/rules/foes.gd:120 scripts/rules/foes.gd:141
+msgid "Shield"
+msgstr ""
+
+#: scripts/game/game.gd:1006
+msgid "Shown"
+msgstr ""
+
+#: scripts/rules/foes.gd:197 scripts/rules/foes.gd:332 scripts/rules/foes.gd:332
+msgid "Shuffle"
+msgstr ""
+
+#: scripts/rules/dice.gd:303
+msgid "Silas Crane's d6"
+msgstr ""
+
+#: scripts/rules/patrons.gd:198
+msgid "Sister Maud sets your %s, mutters a prayer over it and a worse word under it, and sends you up to bed. (-%d Coin, a night)"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:148 scripts/game/tavern_hub.gd:295
+msgid "Sister Maud's corner"
+msgstr ""
+
+#: scripts/rules/foes.gd:220
+msgid "Sister Thorn's Crew"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:157
+msgid "Sit by the fire tonight"
+msgstr ""
+
+#: scripts/rules/foes.gd:159
+msgid "Six men in the Duke's blue with boathooks and lanterns, and a sergeant who has been waiting all evening for this."
+msgstr ""
+
+#: scripts/game/game.gd:1020
+msgid "Skip the physics and show results at once. The odds are identical."
+msgstr ""
+
+#: scripts/game/game.gd:662
+msgid "Skip the physics and show results at once. The odds are identical: results come from each die's measured faces."
+msgstr ""
+
+#: scripts/rules/dice.gd:220
+msgid "Smuggler's Hook d6"
+msgstr ""
+
+#: scripts/rules/mood.gd:16
+msgid "Sour"
+msgstr ""
+
+#: scripts/main.gd:288
+msgid "Space: throw    1-9: one die    T: next dice set    E: special dice    G: gallery"
+msgstr ""
+
+#: scripts/rules/foes.gd:257
+msgid "Sparks"
+msgstr ""
+
+#: scripts/rules/foes.gd:98 scripts/rules/foes.gd:98 scripts/rules/foes.gd:213 scripts/rules/foes.gd:216
+msgid "Spear"
+msgstr ""
+
+#: scripts/rules/foes.gd:224
+msgid "Staff"
+msgstr ""
+
+#: scripts/game/game.gd:1232 scripts/rules/preview.gd:140
+msgid "Stake a die"
+msgstr ""
+
+#: scripts/rules/challenge.gd:66
+msgid "Stand"
+msgstr ""
+
+#: scripts/game/game.gd:355
+msgid "Standing"
+msgstr ""
+
+#: scripts/game/game.gd:948
+msgid "Start a new campaign"
+msgstr ""
+
+#: scripts/rules/dice.gd:51
+msgid "Steadfast: never cocks, and the tray's quakes cannot move it."
+msgstr ""
+
+#: scripts/game/game.gd:1017
+msgid "Stills the camera's slow sway, makes camera moves and banners instant. The dice still tumble: turn on Fast dice to skip that too."
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:254
+msgid "Story mode: %s"
+msgstr ""
+
+#: scripts/rules/dice.gd:286
+msgid "Stranger's Ember d8"
+msgstr ""
+
+#: scripts/rules/dice.gd:289
+msgid "Stranger's Glass d6"
+msgstr ""
+
+#: scripts/rules/dice.gd:292
+msgid "Stranger's Willow d8"
+msgstr ""
+
+#: scripts/rules/preview.gd:163
+msgid "Success"
+msgstr ""
+
+#: scripts/game/practice_log.gd:29
+msgid "Success or better %d%%"
+msgstr ""
+
+#: scripts/rules/patrons.gd:36
+msgid "Summer comes in loud. The midsummer fair sets up in the square, and Hollis gets fine dice in from the river traders."
+msgstr ""
+
+#: scripts/rules/foes.gd:311 scripts/rules/foes.gd:311
+msgid "Suspicion"
+msgstr ""
+
+#: scripts/game/game.gd:1959
+msgid "Swaps left: %d. Click a die to move it between Pouch and Saddlebag. Cursed dice cannot leave the Pouch."
+msgstr ""
+
+#: scripts/rules/foes.gd:126 scripts/rules/foes.gd:141 scripts/rules/foes.gd:144 scripts/rules/foes.gd:175
+msgid "Sword"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:266
+msgid "Table felts"
+msgstr ""
+
+#: scripts/game/game.gd:1546
+msgid "Take %d (%s)"
+msgstr ""
+
+#: scripts/tale/practice.gd:75
+msgid "Take it on."
+msgstr ""
+
+#: scripts/rules/preview.gd:148
+msgid "Take the Fail"
+msgstr ""
+
+#: scripts/game/game.gd:1264
+msgid "Take the Success"
+msgstr ""
+
+#: scripts/game/preview_panel.gd:44
+msgid "Tale preview"
+msgstr ""
+
+#: scripts/game/game.gd:958
+msgid "Tale preview (text, for writers)"
+msgstr ""
+
+#: scripts/game/game.gd:907
+msgid "Tales of the Tumbling Dice"
+msgstr ""
+
+#: scripts/rules/mood.gd:24
+msgid "Tavern teal"
+msgstr ""
+
+#: scripts/rules/preview.gd:156
+msgid "Tell it again from the start"
+msgstr ""
+
+#: scripts/game/game.gd:1297
+msgid "Test, %d tr%s"
+msgstr ""
+
+#: scripts/rules/mood.gd:14
+msgid "Testy"
+msgstr ""
+
+#: scripts/game/game.gd:1012
+msgid "Text size"
+msgstr ""
+
+#: scripts/game/game.gd:1009
+msgid "Text speed"
+msgstr ""
+
+#: scripts/game/game.gd:2017
+msgid "The %s is cursed. It will not leave your Pouch."
+msgstr ""
+
+#: scripts/rules/foes.gd:178
+msgid "The Assayer"
+msgstr ""
+
+#: scripts/game/game.gd:307 scripts/game/game.gd:954 scripts/game/tavern_hub.gd:168
+msgid "The Chronicle"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:145
+msgid "The Dicewright: recarve, inscribe, load, rebind, mend, melt."
+msgstr ""
+
+#: scripts/rules/foes.gd:61
+msgid "The Drowned Abbess"
+msgstr ""
+
+#: scripts/rules/foes.gd:292
+msgid "The Drowned Court"
+msgstr ""
+
+#: scripts/rules/foes.gd:172
+msgid "The Duke's Last Men"
+msgstr ""
+
+#: scripts/rules/foes.gd:158
+msgid "The Duke's River Watch"
+msgstr ""
+
+#: scripts/rules/foes.gd:166
+msgid "The Duke's household guard, in silver masks for the masque, with very real swords under the silk."
+msgstr ""
+
+#: scripts/rules/foes.gd:334
+msgid "The Eldest Willow"
+msgstr ""
+
+#: scripts/rules/foes.gd:304
+msgid "The Holloway council"
+msgstr ""
+
+#: scripts/rules/patrons.gd:25
+msgid "The Hooded Pilgrim"
+msgstr ""
+
+#: scripts/rules/foes.gd:289
+msgid "The Judge of the Tide Court"
+msgstr ""
+
+#: scripts/rules/foes.gd:239 scripts/rules/foes.gd:343
+msgid "The King of Hollows"
+msgstr ""
+
+#: scripts/rules/foes.gd:102
+msgid "The Lake's Wrath"
+msgstr ""
+
+#: scripts/rules/foes.gd:240
+msgid "The Old Wood gathered into one shape: antlers of willow, a face of bark, eyes like green light under deep water."
+msgstr ""
+
+#: scripts/rules/foes.gd:123
+msgid "The Pretender's Outriders"
+msgstr ""
+
+#: scripts/rules/foes.gd:349
+msgid "The Queen of Hours"
+msgstr ""
+
+#: scripts/rules/foes.gd:165
+msgid "The Seawatch Guard"
+msgstr ""
+
+#: scripts/rules/foes.gd:252 scripts/rules/foes.gd:346
+msgid "The Smith of the Black Forge"
+msgstr ""
+
+#: scripts/rules/foes.gd:319
+msgid "The Steward of Seawatch House"
+msgstr ""
+
+#: scripts/game/game.gd:652
+msgid "The Teller"
+msgstr ""
+
+#: scripts/rules/mood.gd:13
+msgid "The Teller tells it as it is."
+msgstr ""
+
+#: scripts/game/game.gd:2084
+msgid "The Teller will remember you as the %s traveller."
+msgstr ""
+
+#: scripts/rules/mood.gd:32
+msgid "The Teller's Mood"
+msgstr ""
+
+#: scripts/rules/foes.gd:95
+msgid "The Tide Guard"
+msgstr ""
+
+#: scripts/game/game.gd:1958
+msgid "The Waystone"
+msgstr ""
+
+#: scripts/rules/foes.gd:202
+msgid "The Willow Court"
+msgstr ""
+
+#: scripts/rules/foes.gd:209
+msgid "The Wood's Huntsman"
+msgstr ""
+
+#: scripts/rules/patrons.gd:39
+msgid "The autumn rains come, and the lake rises. A woman from Marrowmere sits by the fire tonight with nothing but the coat she ran in. She looks at your Pouch, where the Bellmetal hums, and then away."
+msgstr ""
+
+#: scripts/game/game.gd:1473
+msgid "The dice tumble..."
+msgstr ""
+
+#: scripts/game/preview_panel.gd:144
+msgid "The file has errors; fix them and press Reload file."
+msgstr ""
+
+#: scripts/rules/patrons.gd:45
+msgid "The first snow. By morning the mountain road is shut, and it will stay shut until spring. The tavern fills with people who meant to be somewhere else."
+msgstr ""
+
+#: scripts/game/game.gd:932
+msgid "The first tale: a storm night, a stranger's borrowed dice, and a girl lost on the moor. It teaches every kind of throw."
+msgstr ""
+
+#: scripts/game/game.gd:2132
+msgid "The full log is saved at %s"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:149
+msgid "The healer: she treats Wounds for Coin and a night, and knows a curse when she sees one."
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:233
+msgid "The hearth"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:152
+msgid "The hearth: the Teller's Mood"
+msgstr ""
+
+#: scripts/rules/foes.gd:179
+msgid "The old Mint's keeper: a man of gilded brass and clockwork, three hundred years at his scales, weighing everything that comes into the vault, including you."
+msgstr ""
+
+#: scripts/rules/foes.gd:203
+msgid "The oldest willows in the Wood, with faces of bark and eyes of knots, and arms like whips."
+msgstr ""
+
+#: scripts/game/game.gd:936
+msgid "The patrons' tables, Hollis's shelf with your dice, old Brannoc the Dicewright, and Sister Maud's corner."
+msgstr ""
+
+#: scripts/rules/patrons.gd:161
+msgid "The season turns, and your %s mends on its own."
+msgstr ""
+
+#: scripts/game/game.gd:1216
+msgid "The tale goes on."
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:114
+msgid "The tavern"
+msgstr ""
+
+#: scripts/game/game.gd:1366
+msgid "Their Resolve %d. Your Nerve %d of %d. They push with %d this round: Hold blocks it, Press wears them down."
+msgstr ""
+
+#: scripts/rules/foes.gd:103
+msgid "There is no judge on the throne. There is only the water, and the water is angry."
+msgstr ""
+
+#: scripts/rules/foes.gd:329
+msgid "Thirst"
+msgstr ""
+
+#: scripts/game/game.gd:1791
+msgid "This is the last throw: it will be a %s."
+msgstr ""
+
+#: scripts/rules/foes.gd:55
+msgid "Three of Mother Kettle's crew, and the knives come out together."
+msgstr ""
+
+#: scripts/rules/foes.gd:124
+msgid "Three riders in Harrow's black and gold, lances down, coming at a canter that is about to become a charge."
+msgstr ""
+
+#: scripts/game/game.gd:1416
+msgid "Throw"
+msgstr ""
+
+#: scripts/game/game.gd:1391
+msgid "Throw %d of up to %d"
+msgstr ""
+
+#: scripts/game/game.gd:1557
+msgid "Throw it again (free)"
+msgstr ""
+
+#: scripts/game/game.gd:1726
+msgid "Throw the selected die again; you keep the new result (1 Fate)."
+msgstr ""
+
+#: scripts/rules/dice.gd:253
+msgid "Tide Pearl d12"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:173
+msgid "Title"
+msgstr ""
+
+#: scripts/rules/foes.gd:65 scripts/rules/foes.gd:91 scripts/rules/foes.gd:186 scripts/rules/foes.gd:235
+msgid "Toll"
+msgstr ""
+
+#: scripts/rules/foes.gd:260
+msgid "Tongs"
+msgstr ""
+
+#: scripts/game/game.gd:1026
+msgid "Translations live in the locale folder as .po files."
+msgstr ""
+
+#: scripts/rules/patrons.gd:183
+msgid "Treating a Wound costs %d Coin."
+msgstr ""
+
+#: scripts/game/game.gd:1297
+msgid "Trial: clock %d"
+msgstr ""
+
+#: scripts/rules/preview.gd:164
+msgid "Triumph"
+msgstr ""
+
+#: scripts/game/game.gd:1360
+msgid "Try %d of %d"
+msgstr ""
+
+#: scripts/game/game.gd:1716
+msgid "Turn the selected die one face down (1 Fate)."
+msgstr ""
+
+#: scripts/game/game.gd:1721
+msgid "Turn the selected die one face up (1 Fate)."
+msgstr ""
+
+#: scripts/rules/foes.gd:47
+msgid "Two Drowned"
+msgstr ""
+
+#: scripts/rules/foes.gd:150
+msgid "Two lean grey hounds gone wild on the moor, ribs showing, circling the stone."
+msgstr ""
+
+#: scripts/rules/foes.gd:106
+msgid "Undertow"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:163
+msgid "Wait for %s (%d nights)"
+msgstr ""
+
+#: scripts/rules/dice.gd:237
+msgid "Wanderer's Wild d4"
+msgstr ""
+
+#: scripts/rules/foes.gd:66
+msgid "Wardens"
+msgstr ""
+
+#: scripts/game/game.gd:1582
+msgid "Watch the tray."
+msgstr ""
+
+#: scripts/rules/foes.gd:106
+msgid "Wave"
+msgstr ""
+
+#: scripts/rules/mood.gd:16
+msgid "Waystones let you swap only one die."
+msgstr ""
+
+#: scripts/rules/foes.gd:182
+msgid "Weight"
+msgstr ""
+
+#: scripts/game/game.gd:1741
+msgid "What a Read die (3 or more) does: Expose (+50% damage) or Silence one trait."
+msgstr ""
+
+#: scripts/game/game.gd:955
+msgid "What your tales have left behind: endings, rumours, standing, and the story of every die."
+msgstr ""
+
+#: scripts/game/game.gd:1380
+msgid "Why these dice? (optional)"
+msgstr ""
+
+#: scripts/rules/dice.gd:331
+msgid "Willow-Court d8"
+msgstr ""
+
+#: scripts/rules/foes.gd:244
+msgid "Willows"
+msgstr ""
+
+#: scripts/rules/foes.gd:247
+msgid "Winter"
+msgstr ""
+
+#: scripts/rules/dice.gd:340
+msgid "Wisp-Light d4"
+msgstr ""
+
+#: scripts/rules/foes.gd:323 scripts/rules/foes.gd:323
+msgid "Wit"
+msgstr ""
+
+#: scripts/rules/foes.gd:344 scripts/rules/foes.gd:344
+msgid "Wood"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:317
+msgid "Work it off (two nights)"
+msgstr ""
+
+#: scripts/rules/foes.gd:341
+msgid "Worry"
+msgstr ""
+
+#: scripts/rules/patrons.gd:19
+msgid "Wren"
+msgstr ""
+
+#: scripts/rules/dice.gd:247
+msgid "Wren's Hand-bell d4"
+msgstr ""
+
+#: scripts/game/game.gd:1735
+msgid "Wren's bell"
+msgstr ""
+
+#: scripts/game/game.gd:2023
+msgid "You can't move that: no swaps left, no room, or it is cursed."
+msgstr ""
+
+#: scripts/game/game.gd:2068
+msgid "You carry home: %s. Sister Maud can treat them."
+msgstr ""
+
+#: scripts/game/game.gd:1799
+msgid "You deal %d%s"
+msgstr ""
+
+#: scripts/rules/patrons.gd:181
+msgid "You have no Wounds to treat."
+msgstr ""
+
+#: scripts/game/game.gd:916
+msgid "You have told %d tale%s at this table and found %d ending%s. Renown %d."
+msgstr ""
+
+#: scripts/rules/dice.gd:85
+msgid "You lose 1 Fate."
+msgstr ""
+
+#: scripts/rules/dice.gd:265
+msgid "You lose 3 Grit."
+msgstr ""
+
+#: scripts/rules/dice.gd:328
+msgid "You lose 5 Coin."
+msgstr ""
+
+#: scripts/game/game.gd:1276
+msgid "You may Defy it: spend %d Fate to turn this Fail into a Mixed. The Teller will remember."
+msgstr ""
+
+#: scripts/game/game.gd:2126
+msgid "You picked the same dice as the table's own suggestion %d times out of %d, and beat its odds %d times. On average your picks gave up %d points of odds against it."
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:186
+msgid "You sit by the fire while %s."
+msgstr ""
+
+#: scripts/rules/mood.gd:15
+msgid "You start every tale with 1 Fate."
+msgstr ""
+
+#: scripts/rules/mood.gd:17
+msgid "Your Grit starts 4 lower."
+msgstr ""
+
+#: scripts/game/game.gd:830
+msgid "Your Hand is drawn from the Pouch when a challenge begins."
+msgstr ""
+
+#: scripts/game/game.gd:1323
+msgid "Your best dice: about %d a round\nagainst Resolve %d"
+msgstr ""
+
+#: scripts/game/game.gd:361
+msgid "Your dice and their stories"
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:141
+msgid "Your dice, on display behind the bar. Buy plain dice, sell the ones you don't need."
+msgstr ""
+
+#: scripts/game/game.gd:2130
+msgid "Your reasons: "
+msgstr ""
+
+#: scripts/game/tavern_hub.gd:273
+msgid "Yours."
+msgstr ""
+
+#: scripts/rules/forge.gd:41
+msgid "a Binding of Grace"
+msgstr ""
+
+#: scripts/rules/forge.gd:39
+msgid "a Binding of Guile"
+msgstr ""
+
+#: scripts/rules/forge.gd:40
+msgid "a Binding of Lore"
+msgstr ""
+
+#: scripts/rules/forge.gd:38
+msgid "a Binding of Might"
+msgstr ""
+
+#: scripts/rules/forge.gd:42
+msgid "a Binding of Ward"
+msgstr ""
+
+#: scripts/rules/forge.gd:46
+msgid "a Tide Pearl"
+msgstr ""
+
+#: scripts/game/game.gd:1803
+msgid "block %d"
+msgstr ""
+
+#: scripts/game/game.gd:1801
+msgid "dodge %d"
+msgstr ""
+
+#: scripts/game/game.gd:337
+msgid "endings found %d of %d: %s"
+msgstr ""
+
+#: scripts/game/game.gd:1809
+msgid "silence %s"
+msgstr ""
+
+#: scripts/game/game.gd:1805
+msgid "trick off %d"
+msgstr ""

@@ -33,6 +33,21 @@ const QUALITY := {
 static var preset := ""
 static var show_fps := false
 
+## Accessibility. Text speed is how fast the Teller's lines are written out; reduced motion stills
+## the camera's breathing, makes camera moves and banners instant, and drops the tray's shake.
+## Text size scales every panel. None of these touch the dice or the odds.
+const TEXT_SPEEDS := ["slow", "normal", "fast", "instant"]
+const TEXT_SPEED_NAMES := {"slow": "Slow", "normal": "Normal", "fast": "Fast", "instant": "At once"}
+const TEXT_CPS := {"slow": 40.0, "normal": 90.0, "fast": 220.0, "instant": 0.0}
+const TEXT_SIZES := [1.0, 1.15, 1.3]
+static var text_speed := "normal"
+static var reduced_motion := false
+static var text_size := 1.0
+## The language: "" follows the system; otherwise a locale code with a translation in res://locale.
+static var locale := ""
+## Remapped controls: action name -> Array of serialized events (see controls.gd). Empty = defaults.
+static var bindings := {}
+
 
 static func default_preset() -> String:
 	if OS.has_feature("mobile") or OS.get_name() in ["Android", "iOS"] \
@@ -46,6 +61,16 @@ static func load_settings() -> void:
 	if cf.load(PATH) == OK:
 		preset = str(cf.get_value("graphics", "preset", ""))
 		show_fps = bool(cf.get_value("graphics", "show_fps", false))
+		text_speed = str(cf.get_value("access", "text_speed", "normal"))
+		reduced_motion = bool(cf.get_value("access", "reduced_motion", false))
+		text_size = float(cf.get_value("access", "text_size", 1.0))
+		locale = str(cf.get_value("language", "locale", ""))
+		var b = cf.get_value("controls", "bindings", {})
+		bindings = b if b is Dictionary else {}
+	if not text_speed in TEXT_SPEEDS:
+		text_speed = "normal"
+	if not text_size in TEXT_SIZES:
+		text_size = 1.0
 	if not preset in PRESETS:
 		preset = default_preset()
 
@@ -54,11 +79,28 @@ static func save_settings() -> void:
 	var cf := ConfigFile.new()
 	cf.set_value("graphics", "preset", preset)
 	cf.set_value("graphics", "show_fps", show_fps)
+	cf.set_value("access", "text_speed", text_speed)
+	cf.set_value("access", "reduced_motion", reduced_motion)
+	cf.set_value("access", "text_size", text_size)
+	cf.set_value("language", "locale", locale)
+	cf.set_value("controls", "bindings", bindings)
 	cf.save(PATH)
 
 
 static func q() -> Dictionary:
 	return QUALITY.get(preset, QUALITY.high)
+
+
+static func cycle(list: Array, cur):
+	return list[(list.find(cur) + 1) % list.size()]
+
+
+## Seconds to write out n characters of the Teller's lines at the chosen speed.
+static func type_seconds(n: int) -> float:
+	var cps: float = TEXT_CPS.get(text_speed, 90.0)
+	if cps <= 0.0:
+		return 0.0
+	return clampf(n / cps, 0.05, 6.0)
 
 
 static func next_preset() -> String:

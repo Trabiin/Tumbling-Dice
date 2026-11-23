@@ -17,7 +17,7 @@ extends Node3D
 ##   --preview       open the writers' text preview at start
 ##   --quit-at-scene=<n>  quit (with the tale saved) once n scenes have been visited
 ##   --continue      with --autoplay: continue the saved tale instead of starting over
-##   --screens       screenshot the title and the Chronicle, then quit
+##   --screens       screenshot the title, the Chronicle and Options, then quit
 ##   --quality=<p>   graphics preset for this run: low, medium or high (not saved)
 ##   --shot-phases=a,b  only screenshot these phases (e.g. foe_throw,ending)
 ##   --board-test=<scenes>[+flag=value...]  show the tale board after these scenes, screenshot, quit
@@ -48,6 +48,9 @@ const Fig := preload("res://scripts/figures.gd")
 const Kits := preload("res://scripts/kits.gd")
 const Hub := preload("res://scripts/game/tavern_hub.gd")
 const Patrons := preload("res://scripts/rules/patrons.gd")
+const Mood := preload("res://scripts/rules/mood.gd")
+const Controls := preload("res://scripts/game/controls.gd")
+const I18n := preload("res://scripts/game/i18n.gd")
 
 const PANEL_W := 392.0
 const CARD_W := 856.0
@@ -137,6 +140,10 @@ func _ready() -> void:
 	if opt_quality != "":
 		Settings.preset = opt_quality
 	Settings.apply_engine()
+	Controls.apply()
+	I18n.setup(Settings.locale)
+	get_tree().root.content_scale_factor = Settings.text_size
+	get_viewport().gui_focus_changed.connect(_on_focus_changed)
 	tavern = Tavern.new()
 	tavern.map_space = true
 	add_child(tavern)
@@ -170,6 +177,7 @@ func _ready() -> void:
 		# For screenshots and testing: jump the calendar (tales that ran out are missed on the way).
 		Patrons.pass_nights(campaign, maxi(0, opt_night - campaign.night))
 	Mats.set_window_season(campaign.season())
+	tavern.set_felt(Mood.FELTS[clampi(campaign.felt, 0, Mood.FELTS.size() - 1)].color)
 	_build_ui()
 	hub = Hub.new(self)
 	_show_title()
@@ -192,6 +200,10 @@ func _ready() -> void:
 		await _shot("title")
 		_show_chronicle()
 		await _shot("chronicle")
+		_show_options()
+		pad_mode = true   # show the controller's focus highlight
+		await _wait(5)
+		await _shot("options")
 		get_tree().quit()
 		return
 	if opt_board_test != "":
@@ -313,7 +325,7 @@ func _show_chronicle() -> void:
 	v.add_theme_constant_override("separation", 6)
 	sc.add_child(v)
 	var c = campaign
-	v.add_child(UI.label("%s.   Tales told: %d.   Renown: %d.   Coin: %d." % [c.calendar_text(), c.tales_played, c.renown, c.coin], 15, UI.INK))
+	v.add_child(UI.label(tr("%s.   Tales told: %d.   Renown: %d.   Coin: %d.") % [c.calendar_text(), c.tales_played, c.renown, c.coin], 15, UI.INK))
 	# Every tale in the two arcs: how it ended, or that it went by.
 	var tale_lines: Array = []
 	for h in Patrons.catalog():
@@ -326,7 +338,7 @@ func _show_chronicle() -> void:
 		if c.missed.has(h.id):
 			status = "went by without you"
 		elif c.told(h.id):
-			status = "endings found %d of %d: %s" % [names.size(), ends.size(), ", ".join(names)]
+			status = tr("endings found %d of %d: %s") % [names.size(), ends.size(), ", ".join(names)]
 		else:
 			status = "not yet told"
 		tale_lines.append("%s (%s): %s" % [h.title, Patrons.patron_of(h).get("name", ""), status])
@@ -368,7 +380,7 @@ func _show_chronicle() -> void:
 		if d.get("epithet", "") != "":
 			name_line += ", " + d.epithet
 		if d.notches > 0:
-			name_line += "   (%d notch%s)" % [d.notches, "" if d.notches == 1 else "es"]
+			name_line += tr("   (%d notch%s)") % [d.notches, "" if d.notches == 1 else "es"]
 		if d.get("grudge", "") != "":
 			name_line += "   holds a grudge"
 		col.add_child(UI.label(name_line, 15, UI.INK, "ui"))
@@ -404,6 +416,7 @@ func _apply_quality(rebuild: bool) -> void:
 		tavern.map_space = true
 		add_child(tavern)
 		move_child(tavern, 0)
+		tavern.set_felt(Mood.FELTS[clampi(campaign.felt, 0, Mood.FELTS.size() - 1)].color)
 		if runner != null and practice == null and board.has_board():
 			_board_setup(runner.tale)
 			_refresh_board(false)
@@ -415,6 +428,8 @@ func _apply_quality(rebuild: bool) -> void:
 
 var _cam_rest := Transform3D()
 var _breath := 0.0
+var _magnify := 0.0
+const MAGNIFY_AT := Vector3(0.0, 0.0, 0.5)   # the middle of the tray
 
 
 func _frame_camera() -> void:
@@ -446,7 +461,7 @@ func _set_view(mode: String, instant := false) -> void:
 	var to: Transform3D = _cam_board if mode == "board" else views.get(mode, _cam_tray)
 	if _cam_tween != null:
 		_cam_tween.kill()
-	if instant:
+	if instant or Settings.reduced_motion:
 		_cam_rest = to
 		return
 	var from := _cam_rest
@@ -556,10 +571,20 @@ func _refresh_board(animate := true) -> void:
 
 
 func _process(delta: float) -> void:
-	_breath += delta
+	if not Settings.reduced_motion:
+		_breath += delta
 	var off := Vector3(sin(_breath * 0.37) * 0.12, sin(_breath * 0.29 + 1.0) * 0.07, sin(_breath * 0.21) * 0.08)
-	camera.transform = _cam_rest.translated(off).rotated_local(Vector3.FORWARD, sin(_breath * 0.17) * 0.003)
+	var xf := _cam_rest.translated(off).rotated_local(Vector3.FORWARD, sin(_breath * 0.17) * 0.003)
+	# Hold to magnify: the camera leans in over the tray.
+	var want := 1.0 if (Input.is_action_pressed("magnify") and cam_mode == "tray") else 0.0
+	_magnify = want if Settings.reduced_motion else move_toward(_magnify, want, delta * 4.0)
+	if _magnify > 0.0:
+		var near_pos := xf.origin.lerp(MAGNIFY_AT, 0.55)
+		var near := Transform3D.IDENTITY.translated(near_pos).looking_at(MAGNIFY_AT, Vector3.UP)
+		xf = xf.interpolate_with(near, smoothstep(0.0, 1.0, _magnify))
+	camera.transform = xf
 	_process_hold(delta)
+	_process_pad(delta)
 	if fps_label != null:
 		fps_label.visible = Settings.show_fps
 		if Settings.show_fps:
@@ -751,6 +776,12 @@ func _show_banner(text: String, color: Color) -> void:
 	banner.add_theme_color_override("font_color", color)
 	banner.modulate.a = 0.0
 	var tw := create_tween()
+	if Settings.reduced_motion:
+		# No fading: the banner simply stands, then goes.
+		tw.tween_property(banner, "modulate:a", 1.0, 0.0)
+		tw.tween_interval(1.8)
+		tw.tween_property(banner, "modulate:a", 0.0, 0.0)
+		return
 	tw.tween_property(banner, "modulate:a", 1.0, 0.15)
 	tw.tween_interval(1.6)
 	tw.tween_property(banner, "modulate:a", 0.0, 0.6)
@@ -764,17 +795,17 @@ func _refresh_status() -> void:
 		grit_bar.max_value = 20
 		grit_bar.value = 20
 		fate_pips.set_count(0, TaleState.FATE_CAP)
-		info_label.text = "Coin %d" % campaign.coin
+		info_label.text = tr("Coin %d") % campaign.coin
 		return
 	var st = runner.state
-	grit_label.text = "Grit %d/%d" % [maxi(0, st.grit), st.grit_max]
+	grit_label.text = tr("Grit %d/%d") % [maxi(0, st.grit), st.grit_max]
 	grit_bar.max_value = st.grit_max
 	grit_bar.value = maxi(0, st.grit)
 	fate_pips.set_count(st.fate, TaleState.FATE_CAP)
 	var bits: Array[String] = []
-	bits.append("Coin %d" % campaign.coin)
+	bits.append(tr("Coin %d") % campaign.coin)
 	var p = runner.pouch
-	bits.append("Fatigue %d" % p.fatigue)
+	bits.append(tr("Fatigue %d") % p.fatigue)
 	if not st.wounds.is_empty():
 		bits.append("Wounds: " + ", ".join(st.wounds))
 	if st.pity():
@@ -795,8 +826,10 @@ func _refresh_hand(selectable: bool) -> void:
 		tile.dim = not selectable and runner.phase != "approach"
 		if selectable:
 			tile.pressed.connect(_toggle_die)
+		else:
+			tile.focus_mode = Control.FOCUS_NONE
 		hand_row.add_child(tile)
-	hand_info.text = "Pouch %d\nDiscard %d\nHand size %d" % [p.draw_pile.size(), p.discard.size(), p.hand_size()]
+	hand_info.text = tr("Pouch %d\nDiscard %d\nHand size %d") % [p.draw_pile.size(), p.discard.size(), p.hand_size()]
 	if p.hand.is_empty():
 		var l := UI.label("Your Hand is drawn from the Pouch when a challenge begins.", 13, Color("#a8946a"), "italic")
 		l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -843,9 +876,12 @@ func _type_from(start: int) -> void:
 		_type_tween.kill()
 		start = mini(start, log_text.visible_characters if log_text.visible_characters >= 0 else start)
 	log_text.visible_characters = start
-	var secs := clampf((total - start) / 90.0, 0.05, 2.5)
+	var secs := Settings.type_seconds(total - start)
 	if fast_dice or opt_autoplay:
-		secs = 0.05
+		secs = minf(secs, 0.05)
+	if secs <= 0.0:
+		log_text.visible_characters = -1
+		return
 	_type_tween = create_tween()
 	_type_tween.tween_property(log_text, "visible_characters", total, secs)
 	_type_tween.tween_callback(func(): log_text.visible_characters = -1)
@@ -881,7 +917,7 @@ func _show_title() -> void:
 	v.add_child(UI.rule())
 	var intro := "Pull up a stool by the fire. Your dice are yours: what you carry, what you throw, and what they have been through."
 	if campaign.tales_played > 0:
-		intro = "You have told %d tale%s at this table and found %d ending%s. Renown %d." % [campaign.tales_played,
+		intro = tr("You have told %d tale%s at this table and found %d ending%s. Renown %d.") % [campaign.tales_played,
 			"" if campaign.tales_played == 1 else "s", campaign.endings_seen.size(), "" if campaign.endings_seen.size() == 1 else "s", campaign.renown]
 	v.add_child(UI.wrap_label(intro, 17))
 	if not campaign.chronicle.is_empty():
@@ -889,11 +925,18 @@ func _show_title() -> void:
 		v.add_child(ch)
 	var snap := _read_tale_save()
 	if not snap.is_empty():
-		var cb := UI.seal_button("Continue the tale: %s" % snap.get("scene_title", ""), 18)
-		cb.tooltip_text = "Saved %s." % str(snap.get("saved_at", "")).replace("T", " at ")
+		var cb := UI.seal_button(tr("Continue the tale: %s") % snap.get("scene_title", ""), 18)
+		cb.tooltip_text = tr("Saved %s.") % str(snap.get("saved_at", "")).replace("T", " at ")
 		cb.pressed.connect(func(): _continue_tale(snap))
 		v.add_child(cb)
-	var hb := UI.seal_button("Into the tavern", 18 if snap.is_empty() else 15)
+	# A new campaign begins with the prologue (it can be skipped: the stranger stays by the hearth).
+	var fresh: bool = snap.is_empty() and campaign.tales_played == 0 and not campaign.told(PROLOGUE_ID)
+	if fresh:
+		var pb0 := UI.seal_button("Begin: The Stranger's Throw", 18)
+		pb0.tooltip_text = "The first tale: a storm night, a stranger's borrowed dice, and a girl lost on the moor. It teaches every kind of throw."
+		pb0.pressed.connect(func(): _begin_tale(PROLOGUE_PATH))
+		v.add_child(pb0)
+	var hb := UI.seal_button("Into the tavern" + (" (skip the first tale)" if fresh else ""), 15 if (fresh or not snap.is_empty()) else 18)
 	hb.tooltip_text = "The patrons' tables, Hollis's shelf with your dice, old Brannoc the Dicewright, and Sister Maud's corner."
 	hb.pressed.connect(_show_tavern)
 	v.add_child(hb)
@@ -920,25 +963,106 @@ func _show_title() -> void:
 	tp.tooltip_text = "Play a tale as text with no dice: pick any outcome, jump to scenes, reload after editing the .tale file."
 	tp.pressed.connect(_show_preview)
 	v.add_child(tp)
-	var grow := HBoxContainer.new()
-	grow.add_theme_constant_override("separation", 8)
-	v.add_child(grow)
-	var gb := UI.seal_button("Graphics: %s" % Settings.NAMES[Settings.preset], 13, Color("#5a4a3a"))
-	gb.tooltip_text = "Low suits tablets and Chromebooks; High is the full look. Saved for next time."
-	gb.pressed.connect(func():
-		Settings.preset = Settings.next_preset()
-		Settings.save_settings()
-		_apply_quality(true)
-		_show_title())
-	grow.add_child(gb)
-	var fb := UI.seal_button("Frame rate: %s" % ("shown" if Settings.show_fps else "hidden"), 13, Color("#5a4a3a"))
-	fb.pressed.connect(func():
-		Settings.show_fps = not Settings.show_fps
-		Settings.save_settings()
-		_show_title())
-	grow.add_child(fb)
-	var help := UI.wrap_label("Click choices and dice. Space throws, Enter continues, F toggles fast dice. Hover a die to read it.", 13, UI.INK_SOFT, "italic")
+	var ob := UI.seal_button("Options: graphics, text, motion, controls, language", 13, Color("#5a4a3a"))
+	ob.pressed.connect(_show_options)
+	v.add_child(ob)
+	var help := UI.wrap_label("Click choices and dice, or use a controller. Space throws, Enter continues, F toggles fast dice, hold Z to look closer. Hover a die to read it.", 13, UI.INK_SOFT, "italic")
 	v.add_child(help)
+
+
+## Options: graphics, the accessibility settings, controls (with remapping) and the language.
+func _show_options() -> void:
+	UI.clear(overlay)
+	var p := UI.panel(UI.PAPER, 20)
+	p.custom_minimum_size = Vector2(640, 0)
+	p.position = Vector2(140, 24)
+	overlay.add_child(p)
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(620, 620)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.follow_focus = true
+	p.add_child(scroll)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 8)
+	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(v)
+	v.add_child(UI.label("Options", 26, Color("#6a1010"), "title"))
+	var row := func(label: String, value: String, tip: String, act: Callable) -> void:
+		var h := HBoxContainer.new()
+		h.add_theme_constant_override("separation", 10)
+		v.add_child(h)
+		var l := UI.label(label, 15, UI.INK)
+		l.custom_minimum_size.x = 200
+		h.add_child(l)
+		var b := UI.seal_button(value, 14, Color("#5a4a3a"))
+		b.tooltip_text = tip
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.pressed.connect(func():
+			act.call()
+			Settings.save_settings()
+			_show_options())
+		h.add_child(b)
+	row.call(tr("Graphics"), tr(Settings.NAMES[Settings.preset]),
+		tr("Low suits tablets and Chromebooks; High is the full look."),
+		func():
+			Settings.preset = Settings.next_preset()
+			_apply_quality(true))
+	row.call(tr("Frame rate"), tr("Shown") if Settings.show_fps else tr("Hidden"), "",
+		func(): Settings.show_fps = not Settings.show_fps)
+	v.add_child(UI.rule())
+	row.call(tr("Text speed"), tr(Settings.TEXT_SPEED_NAMES[Settings.text_speed]),
+		tr("How fast the Teller's lines are written out. Click the parchment to show a line at once."),
+		func(): Settings.text_speed = Settings.cycle(Settings.TEXT_SPEEDS, Settings.text_speed))
+	row.call(tr("Text size"), "%d%%" % roundi(Settings.text_size * 100), tr("Makes every panel and its text larger."),
+		func():
+			Settings.text_size = Settings.cycle(Settings.TEXT_SIZES, Settings.text_size)
+			get_tree().root.content_scale_factor = Settings.text_size)
+	row.call(tr("Reduced motion"), tr("On") if Settings.reduced_motion else tr("Off"),
+		tr("Stills the camera's slow sway, makes camera moves and banners instant. The dice still tumble: turn on Fast dice to skip that too."),
+		func(): Settings.reduced_motion = not Settings.reduced_motion)
+	row.call(tr("Fast dice"), tr("On") if fast_dice else tr("Off"),
+		tr("Skip the physics and show results at once. The odds are identical."),
+		func():
+			fast_dice = not fast_dice
+			fast_toggle.button_pressed = fast_dice)
+	var langs: Array = I18n.loaded.duplicate()
+	row.call(tr("Language"), I18n.name_of(I18n.current()) + ("" if Settings.locale != "" else tr(" (system)")),
+		tr("Translations live in the locale folder as .po files."),
+		func():
+			var i := langs.find(I18n.current())
+			Settings.locale = langs[(i + 1) % langs.size()] if langs.size() > 1 else ""
+			I18n.set_locale(Settings.locale))
+	v.add_child(UI.rule())
+	v.add_child(UI.label("Controls", 18, Color("#6a1010"), "title"))
+	v.add_child(UI.wrap_label("Click an action, then press the key or controller button for it. A key replaces its keys, a button its buttons. Escape cancels. On a controller, the left stick and d-pad move between choices, A chooses, and a flick of the right stick throws the dice.", 13, UI.INK_SOFT, "italic"))
+	var labels := Controls.labels()
+	for a in Controls.ACTIONS:
+		var name: String = a[0]
+		var h := HBoxContainer.new()
+		h.add_theme_constant_override("separation", 10)
+		v.add_child(h)
+		var l := UI.label(labels[name], 14, UI.INK)
+		l.custom_minimum_size.x = 300
+		h.add_child(l)
+		var b := UI.card_button(tr("Press a key or button...") if _rebinding == name else Controls.describe_action(name), 13, "ui")
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.pressed.connect(func():
+			_rebinding = name
+			_show_options())
+		h.add_child(b)
+	var brow := HBoxContainer.new()
+	brow.add_theme_constant_override("separation", 10)
+	v.add_child(brow)
+	var rb := UI.seal_button("Reset controls", 13, Color("#5a4a3a"))
+	rb.pressed.connect(func():
+		Controls.reset()
+		_show_options())
+	brow.add_child(rb)
+	var back := UI.seal_button("Back", 15)
+	back.pressed.connect(func():
+		_rebinding = ""
+		_show_title())
+	brow.add_child(back)
 
 
 func _begin_tale(path := "") -> void:
@@ -953,6 +1077,8 @@ func _begin_tale(path := "") -> void:
 # ---------------------------------------------------------------- mid-tale saves
 
 const TALE_SAVE := "user://tale_save.json"
+const PROLOGUE_ID := "strangers_throw"
+const PROLOGUE_PATH := "res://tales/strangers_throw.tale"
 var tale_path := ""
 
 
@@ -1076,7 +1202,7 @@ func _show_choices() -> void:
 	_card_clear()
 	_refresh_hand(false)
 	table.clear_foe()
-	_card_title(runner.scene.title, "Act %d" % runner.scene.get("act", 1))
+	_card_title(runner.scene.title, tr("Act %d") % runner.scene.get("act", 1))
 	var opts: Array = runner.visible_options()
 	for i in opts.size():
 		var o: Dictionary = opts[i]
@@ -1150,11 +1276,12 @@ func _show_push() -> void:
 func _show_defy() -> void:
 	_card_clear()
 	_card_title("A Fail", "once per tale")
-	card_box.add_child(UI.wrap_label("You may Defy it: spend 3 Fate to turn this Fail into a Mixed. The Teller will remember.", 15))
+	var dcost: int = Mood.defy_cost(campaign)
+	card_box.add_child(UI.wrap_label((tr("You may Defy it: spend %d Fate to turn this Fail into a Mixed. The Teller will remember.") % dcost) if dcost > 0 else "Story mode: you may Defy it for free, and turn this Fail into a Mixed.", 15))
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
 	card_box.add_child(row)
-	var a := UI.seal_button("Defy (3 Fate)", 15)
+	var a := UI.seal_button(tr("Defy (%d Fate)") % dcost if dcost > 0 else "Defy", 15)
 	a.pressed.connect(func(): runner.defy(true))
 	row.add_child(a)
 	var b := UI.seal_button("Let it stand", 15, Color("#5a4a3a"))
@@ -1171,7 +1298,7 @@ func _show_approaches() -> void:
 	var info := ""
 	if o.has("challenge"):
 		var def: Dictionary = runner.challenge_def(runner.approaches()[0])
-		info = "Trial: clock %d" % def.get("danger", 3) if def.get("kind", "test") == "trial" else ("Test, %d tr%s" % [def.get("tries", 1), "y" if def.get("tries", 1) == 1 else "ies"])
+		info = tr("Trial: clock %d") % def.get("danger", 3) if def.get("kind", "test") == "trial" else (tr("Test, %d tr%s") % [def.get("tries", 1), "y" if def.get("tries", 1) == 1 else "ies"])
 	else:
 		info = "Contest"
 	_card_title(o.challenge.get("title", "") if o.has("challenge") else o.contest.get("title", ""), info)
@@ -1193,13 +1320,13 @@ func _show_approaches() -> void:
 			bar.set_tiers(odds.tiers, odds.exact)
 			var def2: Dictionary = runner.challenge_def(ap)
 			var vb := VBoxContainer.new()
-			vb.add_child(UI.label("%s %d%s" % [Dice.ASPECT_NAMES[ap.aspect], def2.target, "  (clock %d)" % def2.danger if def2.get("kind", "") == "trial" else ""], 11, UI.INK_SOFT))
+			vb.add_child(UI.label("%s %d%s" % [Dice.ASPECT_NAMES[ap.aspect], def2.target, tr("  (clock %d)") % def2.danger if def2.get("kind", "") == "trial" else ""], 11, UI.INK_SOFT))
 			vb.add_child(bar)
 			row.add_child(vb)
 		else:
-			var txt := "Your best dice: about %d a round\nagainst Resolve %d" % [roundi(odds.expected), odds.resolve]
+			var txt := tr("Your best dice: about %d a round\nagainst Resolve %d") % [roundi(odds.expected), odds.resolve]
 			if odds.get("catch", 0.0) > 0.0:
-				txt += "\nLoaded dice: %d%% caught" % roundi(odds.catch * 100)
+				txt += tr("\nLoaded dice: %d%% caught") % roundi(odds.catch * 100)
 			var l := UI.label(txt, 12, UI.INK)
 			l.custom_minimum_size.x = 270
 			row.add_child(l)
@@ -1232,24 +1359,24 @@ func _show_throw() -> void:
 			var run = a.run
 			var sub := ""
 			if run.kind == "trial":
-				sub = "Danger %d of %d: %s" % [run.danger, run.danger_size, run.danger_text]
+				sub = tr("Danger %d of %d: %s") % [run.danger, run.danger_size, run.danger_text]
 			elif run.tries_total > 1:
-				sub = "Try %d of %d" % [run.tries_used + 1, run.tries_total]
+				sub = tr("Try %d of %d") % [run.tries_used + 1, run.tries_total]
 			_card_title(run.title if run.title != "" else "Challenge", sub)
 			_slot_rows(run, [])
 		"contest":
 			var c = a.run
-			_card_title(c.opponent.name, "Round %d of %d" % [c.round_no, c.rounds_max])
-			card_box.add_child(UI.label("Their Resolve %d. Your Nerve %d of %d. They push with %d this round: Hold blocks it, Press wears them down." % [maxi(0, c.resolve), c.nerve, Contest.NERVE, c.pressure], 14))
+			_card_title(c.opponent.name, tr("Round %d of %d") % [c.round_no, c.rounds_max])
+			card_box.add_child(UI.label(tr("Their Resolve %d. Your Nerve %d of %d. They push with %d this round: Hold blocks it, Press wears them down.") % [maxi(0, c.resolve), c.nerve, Contest.NERVE, c.pressure], 14))
 		"combat":
 			var c = a.run
-			var sub2 := "Round %d" % c.round_no
+			var sub2 := tr("Round %d") % c.round_no
 			if c.danger_size > 0:
 				sub2 += ", %s %d of %d" % [c.danger_text, c.danger, c.danger_size]
-			_card_title("%s  (Resolve %d)" % [c.foe.name, maxi(0, c.resolve)], sub2)
-			card_box.add_child(UI.label("It throws: %s." % c.intent_text(), 15, Color("#8a2a1a")))
+			_card_title(tr("%s  (Resolve %d)") % [c.foe.name, maxi(0, c.resolve)], sub2)
+			card_box.add_child(UI.label(tr("It throws: %s.") % c.intent_text(), 15, Color("#8a2a1a")))
 			if runner.pouch.hand.any(func(d): return Dice.trait_of(d) == "clarity"):
-				card_box.add_child(UI.label("Clarity (Elven Jade): next round it throws %s." % Odds.foe_throw_odds(c.phase().dice), 12, UI.INK_SOFT, "italic"))
+				card_box.add_child(UI.label(tr("Clarity (Elven Jade): next round it throws %s.") % Odds.foe_throw_odds(c.phase().dice), 12, UI.INK_SOFT, "italic"))
 	if practice != null and a.type != "laststand":
 		var rrow := HBoxContainer.new()
 		rrow.add_theme_constant_override("separation", 6)
@@ -1265,7 +1392,7 @@ func _show_throw() -> void:
 	var orow := HBoxContainer.new()
 	orow.add_theme_constant_override("separation", 12)
 	card_box.add_child(orow)
-	var lbl := UI.label("Throw %d of up to %d" % [selected.size(), max_n], 14, UI.INK)
+	var lbl := UI.label(tr("Throw %d of up to %d") % [selected.size(), max_n], 14, UI.INK)
 	lbl.custom_minimum_size.x = 150
 	orow.add_child(lbl)
 	if a.type in ["challenge", "laststand", "flee"]:
@@ -1287,7 +1414,7 @@ func _show_throw() -> void:
 	brow.add_child(hint)
 	if runner.can_flee():
 		var fb := UI.seal_button("Flee", 14, Color("#5a4a3a"))
-		fb.tooltip_text = "A Grace Test against its speed (%d). Escaping routes the tale differently." % a.run.foe.speed
+		fb.tooltip_text = tr("A Grace Test against its speed (%d). Escaping routes the tale differently.") % a.run.foe.speed
 		fb.pressed.connect(func(): runner.flee())
 		brow.add_child(fb)
 	var tb := UI.seal_button("Throw", 17)
@@ -1323,13 +1450,13 @@ func _update_odds() -> void:
 			odds_text.text = " ".join(notes)
 		"contest":
 			var o := Odds.contest_round(a.run, selected, ctx, 300)
-			var t := "Break them this round: %d%%. Nerve lost: about %.1f." % [roundi(o["break"] * 100), o.taken]
+			var t := tr("Break them this round: %d%%. Nerve lost: about %.1f.") % [roundi(o["break"] * 100), o.taken]
 			if o.caught > 0.0:
-				t += " Chance she spots your loaded die: %d%%." % roundi(o.caught * 100)
+				t += tr(" Chance she spots your loaded die: %d%%.") % roundi(o.caught * 100)
 			odds_text.text = t
 		"combat":
 			var o := Odds.combat_round(a.run, selected, ctx, runner.state.grit, 250)
-			odds_text.text = "Finish it this round: %d%%. Damage dealt about %.1f, taken about %.1f (of %d coming)." % [roundi(o.kill * 100), o.dealt, o.taken, a.run.incoming()]
+			odds_text.text = tr("Finish it this round: %d%%. Damage dealt about %.1f, taken about %.1f (of %d coming).") % [roundi(o.kill * 100), o.dealt, o.taken, a.run.incoming()]
 
 
 ## Throw the selected dice. With `release` (a velocity from a drag), the dice already held over
@@ -1412,7 +1539,7 @@ func _settle_cocked() -> void:
 		_rethrow_cocked(idx)
 		return
 	_card_clear()
-	_card_title("Cocked: %s" % t.die.name, "it leans between two faces")
+	_card_title(tr("Cocked: %s") % t.die.name, "it leans between two faces")
 	card_box.add_child(UI.label(runner.teller.line("cocked", {"die": t.die.name}), 15, UI.INK_SOFT, "italic"))
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
@@ -1420,7 +1547,7 @@ func _settle_cocked() -> void:
 	var cost: int = runner.steady_cost(t)
 	for f in [t.face, t.alt]:
 		var n := Dice.face_n(t.die, f)
-		var b := UI.seal_button("Take %d (%s)" % [n, "free" if cost == 0 else "1 Fate"], 15)
+		var b := UI.seal_button(tr("Take %d (%s)") % [n, "free" if cost == 0 else "1 Fate"], 15)
 		b.disabled = cost > runner.state.fate
 		b.pressed.connect(func():
 			if runner.pay_steady(t):
@@ -1525,8 +1652,8 @@ func _render_assign() -> void:
 	var thrown: Array = runner.thrown
 	var title := "Place your dice"
 	match a.type:
-		"combat": title = "%s: Resolve %d, %s" % [a.run.foe.name, maxi(0, a.run.resolve), a.run.intent_text()]
-		"contest": title = "%s: Resolve %d, pushing %d" % [a.run.opponent.name, maxi(0, a.run.resolve), a.run.pressure]
+		"combat": title = tr("%s: Resolve %d, %s") % [a.run.foe.name, maxi(0, a.run.resolve), a.run.intent_text()]
+		"contest": title = tr("%s: Resolve %d, pushing %d") % [a.run.opponent.name, maxi(0, a.run.resolve), a.run.pressure]
 		_: title = a.run.title if a.run.title != "" else "Place your dice"
 	_card_title(title)
 	# combos and notes
@@ -1545,7 +1672,7 @@ func _render_assign() -> void:
 		tile.big = str(S.raw(t)) + (("" if S.rune(t) == "" else Dice.RUNE_GLYPH[S.rune(t)]))
 		tile.selected = sel_chip == i
 		tile.badge = _slot_names()[assign_arr[i]] if assign_arr[i] >= 0 else "-"
-		tile.tooltip_text = Dice.tooltip(t.die) + ("\nThis face: %s" % Dice.RUNES.get(S.rune(t), "") if S.rune(t) != "" else "")
+		tile.tooltip_text = Dice.tooltip(t.die) + (tr("\nThis face: %s") % Dice.RUNES.get(S.rune(t), "") if S.rune(t) != "" else "")
 		tile.pressed.connect(func(_t): _select_chip(i))
 		chips.add_child(tile)
 	# slots
@@ -1574,7 +1701,7 @@ func _render_assign() -> void:
 			"combat":
 				line2 = Combat.STANCE_TEXT[Combat.STANCES[s]].left(30)
 		b.text = "%s [%s]\n%s" % [names[s], Dice.ASPECT_GLYPH[aspects[s]], line2]
-		b.tooltip_text = Combat.STANCE_TEXT.get(Combat.STANCES[s] if a.type == "combat" else "", "") + ("\nFull value for %s dice, half for others." % Dice.ASPECT_NAMES[aspects[s]] if aspects[s] != "any" else "\nEvery die counts in full.")
+		b.tooltip_text = Combat.STANCE_TEXT.get(Combat.STANCES[s] if a.type == "combat" else "", "") + (tr("\nFull value for %s dice, half for others.") % Dice.ASPECT_NAMES[aspects[s]] if aspects[s] != "any" else "\nEvery die counts in full.")
 		b.pressed.connect(func(): _place(s))
 		srow.add_child(b)
 	# preview line
@@ -1585,7 +1712,7 @@ func _render_assign() -> void:
 	var arow := HBoxContainer.new()
 	arow.add_theme_constant_override("separation", 6)
 	card_box.add_child(arow)
-	var fl := UI.label("Fate %d:" % runner.state.fate, 13, UI.INK)
+	var fl := UI.label(tr("Fate %d:") % runner.state.fate, 13, UI.INK)
 	arow.add_child(fl)
 	var has_sel := sel_chip >= 0
 	var nd := UI.seal_button("Nudge -1", 12, Color("#7a5a1a"))
@@ -1614,7 +1741,7 @@ func _render_assign() -> void:
 		bell.pressed.connect(_bell)
 		arow.add_child(bell)
 	if a.type == "combat":
-		var rm := UI.seal_button("Read: %s" % read_mode.capitalize(), 12, Color("#1f5a3a"))
+		var rm := UI.seal_button(tr("Read: %s") % read_mode.capitalize(), 12, Color("#1f5a3a"))
 		rm.tooltip_text = "What a Read die (3 or more) does: Expose (+50% damage) or Silence one trait."
 		rm.pressed.connect(func():
 			read_mode = "silence" if read_mode == "expose" else "expose"
@@ -1665,26 +1792,26 @@ func _preview_text(p: Dictionary) -> String:
 	match a.type:
 		"challenge", "laststand", "flee":
 			if p.final:
-				return "This is the last throw: it will be a %s." % S.TIER_NAMES[p.tier]
+				return tr("This is the last throw: it will be a %s.") % S.TIER_NAMES[p.tier]
 			return "Progress carries over to the next try."
 		"contest":
-			var t := "Press %d against Resolve %d. Hold %d against their %d: you lose %d Nerve." % [p.press, maxi(0, a.run.resolve), p.hold, a.run.pressure, p.taken]
+			var t := tr("Press %d against Resolve %d. Hold %d against their %d: you lose %d Nerve.") % [p.press, maxi(0, a.run.resolve), p.hold, a.run.pressure, p.taken]
 			if p.broken:
 				t += " They break!"
 			return t
 		"combat":
-			var bits: Array[String] = ["You deal %d%s" % [p.total_dealt, " (fire %d)" % p.burn if p.burn > 0 else ""]]
+			var bits: Array[String] = [tr("You deal %d%s") % [p.total_dealt, tr(" (fire %d)") % p.burn if p.burn > 0 else ""]]
 			if p.evaded > 0:
-				bits.append("dodge %d" % p.evaded)
+				bits.append(tr("dodge %d") % p.evaded)
 			if p.blocked > 0:
-				bits.append("block %d" % p.blocked)
+				bits.append(tr("block %d") % p.blocked)
 			if p.tricked > 0:
-				bits.append("trick off %d" % p.tricked)
+				bits.append(tr("trick off %d") % p.tricked)
 			if p.exposed:
 				bits.append("exposed")
 			if p.silenced != "":
-				bits.append("silence %s" % p.silenced)
-			var t := ", ".join(bits) + ". You take %d." % p.taken
+				bits.append(tr("silence %s") % p.silenced)
+			var t := ", ".join(bits) + tr(". You take %d.") % p.taken
 			if p.hamstrung:
 				t += " Hamstrung!"
 			if p.killed:
@@ -1801,7 +1928,7 @@ func _slot_rows(run, _unused) -> void:
 		bar.add_theme_stylebox_override("background", bg)
 		bar.add_theme_stylebox_override("fill", fg)
 		row.add_child(bar)
-		row.add_child(UI.label("%d of %d   (Mixed from %d, Triumph at %d)" % [run.progress[k], sl.target, maxi(0, sl.target - S.MIXED_WINDOW), sl.target + S.TRIUMPH_SURPLUS], 13, UI.INK))
+		row.add_child(UI.label(tr("%d of %d   (Mixed from %d, Triumph at %d)") % [run.progress[k], sl.target, maxi(0, sl.target - S.MIXED_WINDOW), sl.target + S.TRIUMPH_SURPLUS], 13, UI.INK))
 
 
 # ===================================================================== the Pouch
@@ -1833,7 +1960,7 @@ func _show_pouch_screen(mode: String) -> void:
 		v.add_child(UI.wrap_label("Click a die on the shelf to pack it; click a packed die to put it back. The Pouch is your deck for the whole tale; the Saddlebag waits at the Waystone, where you may swap up to 2 dice.", 15))
 	else:
 		v.add_child(UI.label("The Waystone", 22, Color("#6a1010"), "title"))
-		v.add_child(UI.wrap_label("Swaps left: %d. Click a die to move it between Pouch and Saddlebag. Cursed dice cannot leave the Pouch." % pouch.swaps_left, 15))
+		v.add_child(UI.wrap_label(tr("Swaps left: %d. Click a die to move it between Pouch and Saddlebag. Cursed dice cannot leave the Pouch.") % pouch.swaps_left, 15))
 	var cols := HBoxContainer.new()
 	cols.add_theme_constant_override("separation", 14)
 	v.add_child(cols)
@@ -1864,7 +1991,7 @@ func _pouch_column(parent: Control, title: String, dice: Array, where: String, w
 	parent.add_child(col)
 	var head := title
 	if limit > 0:
-		head += "   weight %d / %d" % [w, limit]
+		head += tr("   weight %d / %d") % [w, limit]
 	col.add_child(UI.label(head, 15, UI.INK))
 	var bg := PanelContainer.new()
 	bg.add_theme_stylebox_override("panel", UI.paper_box(Color(0.15, 0.09, 0.05, 0.9), Color("#8a5a2a"), 6, 6))
@@ -1887,11 +2014,11 @@ func _move_die(d: Dictionary, where: String) -> void:
 		match where:
 			"shelf":
 				if not pouch.add(d) and not pouch.bag(d):
-					_detail.text = "No room for the %s: the Pouch holds weight %d and the Saddlebag %d." % [d.name, pouch.weight_limit, pouch.saddle_limit]
+					_detail.text = tr("No room for the %s: the Pouch holds weight %d and the Saddlebag %d.") % [d.name, pouch.weight_limit, pouch.saddle_limit]
 					return
 			"pouch":
 				if not pouch.remove(d):
-					_detail.text = "The %s is cursed. It will not leave your Pouch." % d.name
+					_detail.text = tr("The %s is cursed. It will not leave your Pouch.") % d.name
 					return
 			"bag":
 				pouch.unbag(d)
@@ -1939,10 +2066,10 @@ func _show_ending() -> void:
 			etitle = en.title
 	var tid: String = runner.tale.get("id", "")
 	var found: int = campaign.endings_seen.filter(func(e): return String(e).begins_with(tid + ":")).size()
-	v.add_child(UI.label("Ending: %s" % etitle, 26, Color("#6a1010"), "title"))
-	v.add_child(UI.label("Endings found in %s: %d of %d   ·   Renown %d   ·   Coin %d" % [runner.tale.get("title", ""), found, all_endings.size(), campaign.renown, campaign.coin], 14, UI.INK_SOFT))
+	v.add_child(UI.label(tr("Ending: %s") % etitle, 26, Color("#6a1010"), "title"))
+	v.add_child(UI.label(tr("Endings found in %s: %d of %d   ·   Renown %d   ·   Coin %d") % [runner.tale.get("title", ""), found, all_endings.size(), campaign.renown, campaign.coin], 14, UI.INK_SOFT))
 	if not campaign.wounds.is_empty():
-		v.add_child(UI.wrap_label("You carry home: %s. Sister Maud can treat them." % ", ".join(campaign.wounds), 14, Color("#8a2a1a")))
+		v.add_child(UI.wrap_label(tr("You carry home: %s. Sister Maud can treat them.") % ", ".join(campaign.wounds), 14, Color("#8a2a1a")))
 	if not st.gained.is_empty():
 		v.add_child(UI.label("Dice you came home with", 15, UI.INK))
 		var row := HBoxContainer.new()
@@ -1958,7 +2085,7 @@ func _show_ending() -> void:
 		v.add_child(UI.wrap_label("Chronicle: " + c, 15, UI.INK, "italic"))
 	var ep: String = st.epithet()
 	if ep != "":
-		v.add_child(UI.wrap_label("The Teller will remember you as the %s traveller." % ep, 15, UI.INK_SOFT, "italic"))
+		v.add_child(UI.wrap_label(tr("The Teller will remember you as the %s traveller.") % ep, 15, UI.INK_SOFT, "italic"))
 	var row2 := HBoxContainer.new()
 	row2.alignment = BoxContainer.ALIGNMENT_END
 	v.add_child(row2)
@@ -1999,14 +2126,14 @@ func _show_practice_summary() -> void:
 	var tl: Array[String] = []
 	for t in S.TIER_NAMES:
 		tl.append("%s %d" % [t, int(tiers.get(t, 0))])
-	v.add_child(UI.label("%d challenges, %d throws.   %s" % [sm.challenges, sm.throws, "   ".join(tl)], 15, UI.INK))
-	v.add_child(UI.wrap_label("You picked the same dice as the table's own suggestion %d times out of %d, and beat its odds %d times. On average your picks gave up %d points of odds against it." % [sm.same, sm.throws, sm.better, roundi(sm.given_up * 100)], 15, UI.INK))
+	v.add_child(UI.label(tr("%d challenges, %d throws.   %s") % [sm.challenges, sm.throws, "   ".join(tl)], 15, UI.INK))
+	v.add_child(UI.wrap_label(tr("You picked the same dice as the table's own suggestion %d times out of %d, and beat its odds %d times. On average your picks gave up %d points of odds against it.") % [sm.same, sm.throws, sm.better, roundi(sm.given_up * 100)], 15, UI.INK))
 	var rl: Array[String] = []
 	for r in sm.reasons:
 		rl.append("%s %d" % [r, sm.reasons[r]])
 	v.add_child(UI.wrap_label("Your reasons: " + ", ".join(rl), 14, UI.INK_SOFT, "italic"))
 	if path != "":
-		v.add_child(UI.wrap_label("The full log is saved at %s" % path, 12, UI.INK_SOFT))
+		v.add_child(UI.wrap_label(tr("The full log is saved at %s") % path, 12, UI.INK_SOFT))
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_END
 	v.add_child(row)
@@ -2030,6 +2157,25 @@ func _show_practice_summary() -> void:
 
 # ===================================================================== input
 
+func _input(event: InputEvent) -> void:
+	# Which hands are on the game: a controller or the arrow keys bring back focus highlights,
+	# the mouse puts them away.
+	if event is InputEventJoypadButton or (event is InputEventJoypadMotion and absf(event.axis_value) > 0.5):
+		pad_mode = true
+	elif event is InputEventKey and event.pressed and event.keycode in [KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_TAB]:
+		pad_mode = true
+	elif event is InputEventMouseButton and event.pressed:
+		pad_mode = false
+	if _rebinding != "":
+		var code := Controls.code_of(event)
+		if code != "" and event.is_pressed() and not event.is_echo():
+			if code != "key:%d" % KEY_ESCAPE:
+				Controls.rebind(_rebinding, code)
+			_rebinding = ""
+			get_viewport().set_input_as_handled()
+			_show_options()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and cam_mode == "board" and not dragging:
 		var txt: String = board.hover_text(event.position, camera)
@@ -2039,32 +2185,125 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton or event is InputEventMouseMotion:
 		_tray_mouse(event)
 		return
-	if not (event is InputEventKey and event.pressed and not event.echo):
-		return
-	if runner and runner.phase == "assign" and not busy and event.keycode >= KEY_1 and event.keycode <= KEY_9:
-		var i: int = event.keycode - KEY_1
-		if i < runner.thrown.size():
-			_select_chip(i)
-		return
-	match event.keycode:
-		KEY_ESCAPE:
-			get_tree().quit()
-		KEY_F:
-			fast_dice = not fast_dice
-			fast_toggle.button_pressed = fast_dice
-		KEY_F4:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if runner and runner.phase == "assign" and not busy and event.keycode >= KEY_1 and event.keycode <= KEY_9:
+			var i: int = event.keycode - KEY_1
+			if i < runner.thrown.size():
+				_select_chip(i)
+			return
+		if event.keycode == KEY_F4:
 			Settings.show_fps = not Settings.show_fps
 			Settings.save_settings()
-		KEY_SPACE:
-			if runner and runner.phase == "throw":
-				_do_throw()
-		KEY_ENTER, KEY_KP_ENTER:
-			if runner == null:
-				return
-			match runner.phase:
-				"outcome": _continue()
-				"assign": _confirm()
-				"throw": _do_throw()
+			return
+	if event.is_echo() or not event.is_pressed():
+		return
+	if event.is_action_pressed("quit"):
+		get_tree().quit()
+	elif event.is_action_pressed("fast_dice"):
+		fast_dice = not fast_dice
+		fast_toggle.button_pressed = fast_dice
+	elif event.is_action_pressed("view"):
+		if runner != null:
+			_set_view("tray" if cam_mode == "board" else "board")
+	elif event.is_action_pressed("best"):
+		if runner and runner.phase == "assign" and not busy:
+			assign_arr = runner.suggestion.assign.duplicate()
+			read_mode = runner.suggestion.get("read_mode", "expose")
+			_render_assign()
+	elif event.is_action_pressed("throw"):
+		if runner and runner.phase == "throw":
+			_do_throw()
+	elif event.is_action_pressed("confirm"):
+		if runner == null:
+			return
+		match runner.phase:
+			"outcome": _continue()
+			"assign": _confirm()
+			"throw": _do_throw()
+
+
+# ===================================================================== controller
+
+var pad_mode := false
+var _focus_key := []             # where focus was, as [container, index], to restore it after a redraw
+var _stick_peak := Vector2.ZERO  # the right stick's furthest push in the current flick
+var _rebinding := ""             # the action waiting for a key or button on the Options screen
+
+
+func _on_focus_changed(c: Control) -> void:
+	if c == null:
+		return
+	var box := _focus_box()
+	if box != null:
+		var list := _focusables(box)
+		_focus_key = [box, list.find(c)]
+
+
+## The panel focus belongs in: an open overlay (title, Options, Chronicle), else the card.
+func _focus_box() -> Control:
+	if overlay != null and overlay.get_child_count() > 0:
+		return overlay
+	if card != null and card.visible:
+		return card
+	return null
+
+
+func _focusables(box: Node) -> Array:
+	var out: Array = []
+	var stack: Array = [box]
+	if box == card and hand_panel.visible:
+		stack = [card, hand_panel]   # the Hand's dice are picked alongside the card
+	while not stack.is_empty():
+		var n: Node = stack.pop_front()
+		if n is Control and not (n as Control).is_visible_in_tree():
+			continue
+		if n != box and n != hand_panel and n is Control and (n as Control).focus_mode == Control.FOCUS_ALL \
+				and not (n is BaseButton and (n as BaseButton).disabled) and not n is ScrollContainer:
+			out.append(n)
+		stack = n.get_children() + stack   # depth first, in reading order
+	return out
+
+
+func _process_pad(delta: float) -> void:
+	# Keep something focused while a controller is in use: after a card is redrawn, focus goes back
+	# to the same place in it (or the first thing that can be chosen).
+	if pad_mode and get_viewport().gui_get_focus_owner() == null:
+		var box := _focus_box()
+		if box != null:
+			var list := _focusables(box)
+			if not list.is_empty():
+				var i := 0
+				if _focus_key.size() == 2 and _focus_key[0] == box:
+					i = clampi(int(_focus_key[1]), 0, list.size() - 1)
+				(list[i] as Control).grab_focus()
+	# The Teller's lines scroll on the triggers (or Page Up / Page Down).
+	var sc := Input.get_action_strength("log_down") - Input.get_action_strength("log_up")
+	if absf(sc) > 0.1 and log_text != null:
+		var bar := log_text.get_v_scroll_bar()
+		bar.value += sc * delta * 600.0
+	# Throwing with the right stick: push to pick the dice up over the tray, flick and let the
+	# stick spring back to throw. Held still at the edge and released gently, they drop.
+	if runner == null or runner.phase != "throw" or busy or selected.is_empty():
+		_stick_peak = Vector2.ZERO
+		return
+	var stick := Vector2(Input.get_joy_axis(0, JOY_AXIS_RIGHT_X), Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y))
+	if stick.length() > Controls.STICK_DEADZONE:
+		if not table.is_holding():
+			table.hold_player(selected, Table.clamp_hold(MAGNIFY_AT))
+			pad_holding = true
+		if stick.length() >= _stick_peak.length():
+			_stick_peak = stick
+		var right := Vector3(camera.basis.x.x, 0, camera.basis.x.z).normalized()
+		var away := Vector3(-camera.basis.z.x, 0, -camera.basis.z.z).normalized()
+		table.move_hold(Table.clamp_hold(MAGNIFY_AT + (right * stick.x - away * stick.y) * 2.5), delta)
+	elif pad_holding:
+		pad_holding = false
+		var vel := Controls.stick_velocity(_stick_peak, camera.basis, Table.MAX_THROW)
+		_stick_peak = Vector2.ZERO
+		_do_throw(vel)
+
+
+var pad_holding := false
 
 
 # ===================================================================== hands on the tray
@@ -2172,7 +2411,7 @@ func _shot(tag: String) -> void:
 	await RenderingServer.frame_post_draw
 	var img := get_viewport().get_texture().get_image()
 	shots_taken += 1
-	var path := "%s/%02d_%s.png" % [opt_shots, shots_taken, tag]
+	var path := tr("%s/%02d_%s.png") % [opt_shots, shots_taken, tag]
 	img.save_png(path)
 	print("shot ", path)
 

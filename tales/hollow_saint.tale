@@ -1,0 +1,416 @@
+title: The Hollow Saint
+id: hollow_saint
+patron: The Hooded Pilgrim
+start: plea
+arc: pilgrim
+order: 2
+pitch: The pilgrim wants something from the reliquary of Saint Hollow, up on Greyfell Moor, before somebody sells it.
+offer: told:witch_sallow and not season==spring
+teller: triumph :: There's a miracle for the priory's book. They'll write it down wrong, but they'll write it down.
+teller: triumph :: Even the saint would have got up off her plinth for that.
+teller: mixed :: Through, and the moor takes its toll. The moor always has.
+teller: fail :: Wrong. Well, saints have bad days too. Ask any of them.
+teller: loaded_caught :: The Prior's eyes go to {die}. "In a house of God," he says, sadly. "Really."
+teller: rest :: A crypt full of candles and old bones, and the long quiet of a place where people have prayed for six hundred years.
+
+// The Hooded Pilgrim's arc, tale 2 of 3. Saint Hollow's priory on Greyfell Moor, where the
+// Teller and his sister Wenna were foundlings. The saint's reliquary holds the Wood's own dice.
+// Reads The Witch of Sallow Wood (the Teller's name, the promise to the table, the black die),
+// and Ormond Vane (Wren's arc) or the Duke (Kettle's arc) turns up as the buyer. Who ends up
+// with the saint's dice is read by The Teller's Tale.
+
+## plea: Wenna's Story
+act: 1
+tile: inn
+at: 0, 0
+token: promised_wenna => candle "A promise to Wenna"
+
+? seen:teller_named :: Wenna sits by the hearth with her hood down. Without it she's a small old woman with white hair cut short like a soldier's and eyes the colour of the hearthstone. She nods to the empty stool by the chimney breast when you sit down, as if introducing you.
+? not seen:teller_named :: The hooded stranger is at the hearth again. Tonight, for the first time, they lower the hood: an old woman, white hair cut short, eyes the colour of the hearthstone. "Wenna," she says. "We've been introduced, more or less."
+"My brother and I were foundlings," she says. "Left on the step of Saint Hollow's priory, up on Greyfell Moor, sixty years back. The sisters raised us. Saint Hollow raised us, they used to say." She turns a die over and over in her fingers. "There's something in the saint's reliquary that I need for the longest night. And the Prior is going to sell it."
+? seen:wood_sworn :: "You promised the Wood you'd come to its table," she says. "So did I, once. You'll want every advantage."
+? seen:die_given :: "The willows have Aldous's black die now," she says. "So I'll need something else to bargain with."
+? seen:ormond_escaped :: "He's selling it to a collector from Saltreach," she adds. "A thin man in green. Vane."
+? seen:duke_fled and not seen:ormond_escaped :: "He's selling it to a duke on the run," she adds. "Mallory. He needs things to sell."
+[i]Greyfell. I haven't thought about Greyfell in a long time. Sister Agnes and her switch. The bells at dawn. Wenna in the orchard, stealing apples, and me keeping watch.[/i]
+
+* promise: "I'll get it."
+  temper: duty +1
+  do: flag promised_wenna; regard 1
+  goto: prepare
+  reply: Wenna puts her hand over yours, briefly. It's cold, and very light, like a bird's foot. "Thank you," she says. "He'd never ask you. So I'm asking."
+
+* what: "What's in the reliquary?"
+  temper: honesty +1
+  do: flag asked_relic
+  goto: prepare
+  reply: "Dice," says Wenna. "Three of them. Bone, and old as the moor. The Wood's own dice, that the first prior stole from its table, to save a child. The saint, they called her. Hollow, because when she died they found her empty inside, like a tree." [i]Like a willow. We used to whisper about it in the dormitory.[/i]
+
+* ask: "What were you two like, as children?"
+  temper: mercy +1
+  do: flag asked_childhood
+  goto: prepare
+  reply: Wenna laughs, the dry-leaf laugh, and for a moment she looks sixty years younger. "He told stories, and I got us into trouble, and he talked us out of it. Every time. Until the last time." [i]...She always says that.[/i]
+
+## prepare: Packing for the Moor
+act: 1
+type: prepare
+goto: road
+
+Hollis has your Pouch on the bar. "Greyfell Moor in autumn," he says, and pours you something for the cold. "Pilgrims' road. Watch out for the pilgrims."
+[i]Choose what you carry. A priory wants good manners and a good memory. A reliquary wants clever hands. The moor wants stout boots.[/i]
+
+## road: The Pilgrims' Road
+act: 1
+on enter: random_flag weather [fog, wind, bright]; if season==winter then flag weather snow
+tile: road
+at: 1.4, 0.3
+
+The pilgrims' road crosses Greyfell Moor in a long grey line, marked by little stone cairns, each with a candle-niche. There are pilgrims on it even now: a dozen of them, in grey, walking to Saint Hollow's with their eyes down and their lips moving.
+? weather==fog :: Fog on the moor. The cairns come out of it one by one like people.
+? weather==wind :: The wind off the moor is like a knife, and the pilgrims lean into it.
+? weather==bright :: Cold blue sky, and the priory's tower in sight from ten miles off.
+? weather==snow :: Snow on the moor road, and the pilgrims' footprints filling in behind them.
+? seen:watch_lost or seen:banner_home :: You pass the turning to the old Greyfell watchtower. Somebody has tied a strip of grey cloth to the signpost.
+At the back of the line, a pilgrim who walks differently from the others: not praying, but watching. When she sees you watching her, she smiles and puts a finger to her lips.
+
+* walk: Walk with the pilgrims, and pray, or seem to.
+  challenge: kind=test difficulty=standard tries=2 title="Among the pilgrims"
+  approach grace: Walk as they walk, eyes down, and listen to what they whisper.
+  approach lore: Know the saint's litany, and say it with them, word for word.
+  approach ward: Carry the old woman's bundle, the one who can hardly walk. Nobody suspects the kind.
+  > triumph: By noon the pilgrims have adopted you. One of them, an old monk, tells you the reliquary is opened only for the Prior and the buyer, tomorrow at dawn. And the watcher at the back of the line is a thief, he says: he's seen her before.
+    do: flag pilgrims_friends; flag dawn_known; flag thief_seen
+    goto: priory
+  > success: You walk in with the pilgrims, unremarked, and hear that the reliquary is to be opened tomorrow.
+    do: flag pilgrims_friends; flag dawn_known
+    goto: priory
+  > mixed: You get there with them. It costs.
+    do: flag pilgrims_friends
+    goto: priory
+    cost: Your boots, and your feet in them (lose 3 Grit) :: grit -3
+    cost: An alms for the poor box (lose 5 Coin) :: coin -5
+  > fail: The pilgrims walk too slowly, and pray too loudly, and you lose your temper on the second hill and stride on alone into the fog. You reach the priory at dusk, cold, and nobody knows you.
+    do: grit -2
+    goto: priory
+
+* follow: Follow the watcher who isn't praying.
+  temper: duty -1
+  challenge: kind=test difficulty=standard tries=2 title="Following the watcher"
+  approach guile: Fall back, and back, and keep her in sight without her knowing.
+  approach grace: Stroll up alongside and chat. Two non-pilgrims among pilgrims: natural.
+  approach lore: Read her trail: the boots of a burglar, and a rope in her pack.
+  > triumph: You follow her to a shepherd's fold off the road, where four more like her are waiting with a cart, and you hear the whole plan: they're going to rob the reliquary tonight, before the sale. She calls herself Sister Thorn. She's not a sister.
+    do: flag thief_seen; flag plan_known; fate 1
+    goto: priory
+  > success: She leads you off the road to a shepherd's fold, and four friends with a cart. Thieves. You slip away before they see you.
+    do: flag thief_seen
+    goto: priory
+  > mixed: You follow her. She knows.
+    do: flag thief_seen
+    goto: priory
+    cost: She doubles back and trips you down a gully (lose 3 Grit) :: grit -3
+    cost: She marks your face (the thieves will be ready) :: flag thieves_wary
+  > fail: She loses you in the fog, easily, and you have to find the priory on your own, late, with the uncomfortable feeling of being laughed at.
+    do: fatigue 1
+    goto: priory
+
+## priory: Saint Hollow's Priory
+act: 2
+tile: abbey
+at: 2.8, -0.4
+token: records_read => seal "The foundlings' register"
+
+Saint Hollow's is grey stone on a grey hill, with a squat tower and a walled orchard, and bells. The Prior, Anselm, is a tall thin worried man with ink on his fingers and holes in his shoes. The priory roof leaks. The priory is broke.
+? seen:ormond_escaped :: In the guest-house, a black barge-coach with green lanterns: Ormond Vane's. The collector is already here.
+? seen:duke_fled and not seen:ormond_escaped :: In the guest-house, a carriage with the arms painted out. The Duke of Saltreach is already here.
+? not seen:ormond_escaped and not seen:duke_fled :: In the guest-house, a fat merchant from the south with a strongbox and two guards.
+? pilgrims_friends :: The old monk from the road waves you in through the gate.
+"The reliquary," says Prior Anselm, when you ask. "Yes. Tomorrow. I'm sorry. I truly am. But the roof, you see. And the winter."
+
+* prior: Persuade the Prior not to sell.
+  contest: opponent=prior_anselm title="Prior Anselm"
+  mod: pilgrims_friends => resolve=-2
+  mod: seen:abbess_freed => resolve=-2
+  approach lore: The saint's own rule: what was given to the house can't be sold from it.
+  approach grace: He doesn't want to sell. Let him say so.
+  approach guile: Tell him the buyer means to use the dice for something terrible. It may even be true.
+  > triumph: Anselm sits down on the chapter-house bench and puts his face in his hands. "No," he says. "No, you're right. I'll tell him tonight." He takes you down to the crypt himself and shows you the reliquary, and the foundlings' register beside it, open at a page with two names on it.
+    do: flag prior_won; flag records_read; regard 1
+    goto: crypt
+  > success: "I'll think on it," Anselm says, which means no sale tomorrow. He lets you sleep in the crypt with the pilgrims.
+    do: flag prior_won
+    goto: crypt
+  > mixed: He'll wait. For a price.
+    do: flag prior_won
+    goto: crypt
+    cost: A gift to the roof fund (lose 10 Coin) :: coin -10
+    cost: Two nights' work in the orchard (tired for a while) :: fatigue 2
+  > fail: Anselm shakes his head, sadly. "The roof," he says. "I'm sorry." You'll have to find another way.
+    goto: crypt
+  > caught: Anselm sees the lead in your die and looks at you with enormous disappointment. "Out," he says. "In a house of God." You go round to the crypt by the orchard wall instead.
+    do: flag caught_cheating
+    goto: crypt
+
+* records: Ask to see the priory's old registers.
+  temper: honesty +1
+  challenge: kind=test difficulty=easy tries=2 title="The foundlings' register"
+  approach lore: Read sixty years of a priory's dull handwriting, fast.
+  approach grace: Charm the old librarian, Sister Agnes, ninety and sharp as a switch.
+  > triumph: Sister Agnes remembers. "Aldous and Wenna," she says. "Penhallow, we called them, for the hill they were found on. He told stories. She stole apples. And then one midsummer she took the fever, and he went into Sallow Wood to bargain for her, and came back the next morning white as milk, and she lived, and he was never right after." She turns the page. "He left that year. She went after him. Neither ever came back." She looks at you. "Did they?"
+    do: flag records_read; flag agnes_told; fate 1
+    goto: crypt
+  > success: In the register for that year, two names: Aldous and Wenna, foundlings, of Penhallow. And a note in the margin: [i]A. went into the Wood at midsummer for his sister's life. She recovered.[/i]
+    do: flag records_read
+    goto: crypt
+  > mixed: You find it. It takes all night.
+    do: flag records_read
+    goto: crypt
+    cost: Candle-ache behind your eyes (tired for a while) :: fatigue 2
+    cost: A donation for the candles (lose 4 Coin) :: coin -4
+  > fail: Sixty years of registers, and the year you want has been torn out. Somebody got here first. Agnes, asleep in her chair, smiles in her sleep.
+    goto: crypt
+
+## crypt: The Crypt of Saint Hollow
+act: 2
+type: waystone
+on enter: rest 12
+tile: shrine
+at: 4.2, 0.3
+
+The crypt is low and warm with candles, and full of the sleeping pilgrims, and in the middle of it, on a stone plinth, the reliquary: a little house of silver with a crystal window. Behind the crystal, on a red cushion, nothing at all.
+Nothing. It's empty.
+? thief_seen :: You think of Sister Thorn, the watcher on the road, and her friends with the cart.
+? records_read :: And in the register beside it, the names you've just read, in a hand sixty years old: Aldous. Wenna.
+[i]Empty. She always was. That's what the sisters said: Saint Hollow, empty inside. But the dice were in that window when I was a boy. I saw them. I saw them the morning I left.[/i]
+
+* track: Find out who took them.
+  challenge: kind=test difficulty=standard tries=2 title="The empty reliquary"
+  mod: thief_seen => progress=-3
+  approach lore: The silver house has a false back. Somebody knew it.
+  approach guile: Think like a thief: who had the key, who had the time, who had the cart?
+  approach ward: Wake the pilgrims, and ask them, gently, one by one.
+  > triumph: The false back of the reliquary has been opened from below, through a drain that runs out to the orchard. Cart tracks in the orchard mud, going up onto the moor toward the old stones. And the thieves dropped something: a crust of willow bark. Whoever has the saint's dice is taking them to the Wood.
+    do: flag trail_found; flag going_to_wood; fate 1
+    goto: moor
+  > success: Out through a drain to the orchard, and cart tracks in the mud, going up onto the moor.
+    do: flag trail_found
+    goto: moor
+  > mixed: You find the way they went. They have a long start.
+    do: flag trail_found
+    goto: moor
+    cost: Down the drain on your belly (lose 3 Grit) :: grit -3
+    cost: You wake the Prior's buyer too (he'll want them back) :: flag buyer_follows
+  > fail: You find nothing, until a pilgrim, waking, mutters that she heard a cart go up onto the moor an hour ago. You go after it, late.
+    do: flag late
+    goto: moor
+
+* pray: Kneel at the empty reliquary and pray, for once.
+  temper: mercy +1
+  do: flag prayed; regard 1
+  goto: moor
+  reply: You don't know any prayers to Saint Hollow. You say something anyway. And when you look up, there's a draught coming from behind the reliquary, from a drain nobody has noticed, and on the drain's grating, a single strand of red cushion thread, pointing out toward the moor. [i]Or a draught. Call it what you like.[/i]
+
+## moor: The Saint's Stones
+act: 3
+type: encounter
+tile: forest
+at: 5.6, -0.4
+token: thieves_beaten => foe "Sister Thorn's crew"
+
+Up on the top of the moor, above the priory, a ring of old stones like the ring in Sallow Wood, and in the middle of it, a cart, and five figures in grey. Sister Thorn, and her friends. They're not running. They're kneeling, and in front of them on a flat stone, three old bone dice glow faintly, like coals in ash.
+? going_to_wood :: Bark on their sleeves. Leaves in their hair. Their eyes have gone green at the edges. The Wood has them.
+? late :: They've had an hour. The dice glow brighter than they should.
+? buyer_follows :: Behind you, lanterns: the buyer's men, coming up the hill.
+Sister Thorn looks up at you. Her voice is somebody else's: old, and very far off, like wind in willows. "Ours," it says. "Stolen from our table. We want them back."
+
+* fight: Take the dice from them.
+  temper: duty +1
+  combat: foe=reliquary_thieves
+  mod: thieves_wary => ambushed=1
+  mod: prayed => resolve=-3
+  > triumph: The thieves go down, and the green goes out of their eyes, and they sit up in the heather blinking like people woken from a dream. Sister Thorn starts to cry. You pick up the three bone dice. They're warm.
+    do: flag thieves_beaten; flag have_dice
+    goto: saint
+  > success: The last of them falls, and the dice are yours.
+    do: flag thieves_beaten; flag have_dice
+    goto: saint
+  > mixed: You take them. Not cleanly.
+    do: flag thieves_beaten; flag have_dice
+    goto: saint
+    cost: A knife in the ribs (lose 5 Grit) :: grit -5
+    cost: One die rolls away into the heather and is lost :: flag one_lost
+  > fail: They throw you down among the stones. But they hesitate over the dice, as if they're afraid to touch them, and in that moment you have them, and you run.
+    do: grit -4; flag have_dice
+    goto: saint
+
+* wake: Wake them from the Wood's dream.
+  temper: mercy +1
+  challenge: kind=trial progress=16 danger=3 danger_text="The dice glow brighter." title="Waking the thieves"
+  mod: records_read => progress=-2
+  mod: late => progress=2
+  approach lore: Their names. Sister Thorn has a name. So do the rest. Say them.
+  approach grace: Sit down among them, and talk, the way you'd talk to a sleepwalker.
+  approach ward [progress=14]: Put yourself between them and the dice, and hold on.
+  > triumph: One by one the green goes out of their eyes. Sister Thorn, whose name is Bet, holds your hand and shakes. "It was in my dreams," she says. "For a year. Telling me to bring them home." She gives you the dice herself.
+    do: flag thieves_woken; flag have_dice; regard 1
+    goto: saint
+  > success: They wake, one by one, and stare at the dice in horror, and back away from them.
+    do: flag thieves_woken; flag have_dice
+    goto: saint
+  > mixed: They wake. The Wood doesn't let go easily.
+    do: flag thieves_woken; flag have_dice
+    goto: saint
+    cost: The Wood's cold goes into you instead (lose 4 Grit) :: grit -4
+    cost: One die is gone when they wake, back to the Wood :: flag one_lost
+  > fail: They don't wake. They rise, and the Wood rises in them, and you snatch the dice off the stone and run while they follow, slow and green-eyed, through the heather.
+    do: grit -3; flag have_dice
+    goto: saint
+
+* let: Let them take the dice. The Wood was robbed first.
+  temper: honesty +1
+  do: flag let_go; standing wood 2
+  goto: saint
+  reply: You step back. Sister Thorn lifts the dice in both hands, and the green in her eyes flares, and something in the stones sighs with relief. [i]That's... fair. I'd never thought of it like that. The first prior was a thief, wasn't she. A kind one. Still a thief.[/i]
+
+## saint: Saint Hollow
+act: 3
+type: challenge
+tile: abbey
+at: 7.0, 0.3
+token: saint_rests => dove "Saint Hollow, at rest"
+
+The ground in the middle of the stones opens like a door. Up out of it, slowly, in a robe of moss and old linen, comes a figure of bark and bone, the height of a tall woman, with a face like a carved saint's and nothing behind the eyes at all. Empty. Hollow.
+"I took them from the table," it says, in a voice like a door creaking in the wind. "To save a child. I have kept them six hundred years. I am so tired."
+? have_dice :: It reaches for the dice in your hand.
+? let_go :: It turns to Sister Thorn, and the dice, and the Wood in her, and its face is so sad you can hardly bear it.
+? records_read :: "Aldous," it says, looking straight at you. "No. Not Aldous. Somebody who has heard him. Good."
+
+* rest: Help the saint lay them down, and rest.
+  temper: mercy +1
+  challenge: kind=test difficulty=standard tries=2 title="Laying the saint to rest"
+  approach lore: The old rite for the dead. Every word, in order.
+  approach ward: Hold her hand, which is wood and bone, until it stops moving.
+  approach grace: Tell her the children she saved grew up. They did. One of them is in this tale.
+  > triumph: The saint lies down in the heather between the stones, and puts the dice in her own hollow chest, and closes, like a door. Where she lay, by morning, there's a little willow. And three bone dice, in its roots, waiting for whoever the saint thinks should have them. You.
+    do: flag saint_rests; flag have_dice; flag saint_blessing; regard 1
+    goto: choice
+  > success: She lies down and is still, and the dice lie on her breast, and she lets you take them.
+    do: flag saint_rests; flag have_dice
+    goto: choice
+  > mixed: She rests. Not easily.
+    do: flag saint_rests; flag have_dice
+    goto: choice
+    cost: Her grief goes into you (lose 4 Grit) :: grit -4
+    cost: She keeps one of the three :: flag one_lost
+  > fail: She won't lie down. She can't. She stands among the stones, weeping sap, and you back away with the dice. She lets you go. She'll stand there until somebody finishes this.
+    do: flag saint_stands; flag have_dice
+    goto: choice
+
+* fight: She's the Wood's now. Put her down.
+  temper: duty +1
+  combat: foe=hollow_saint
+  mod: thieves_woken => resolve=-3
+  > triumph: The saint falls into the heather in pieces of bark and bone, and among the pieces, three warm dice, and a little green shoot, already growing.
+    do: flag saint_felled; flag have_dice
+    goto: choice
+  > success: She falls, and is still. The dice lie in the heather.
+    do: flag saint_felled; flag have_dice
+    goto: choice
+  > mixed: She falls. She takes something with her.
+    do: flag saint_felled; flag have_dice
+    goto: choice
+    cost: Her bark-fingers in your chest (lose 5 Grit) :: grit -5
+    cost: One die goes down into the ground with her :: flag one_lost
+  > fail: She knocks you flat among the stones and goes back down into the earth, slowly, still weeping. The ground closes. In the heather where she stood, the dice.
+    do: grit -4; flag have_dice
+    goto: choice
+
+## choice: The Saint's Dice
+act: 3
+tile: road
+at: 8.3, -0.2
+
+Dawn on Greyfell Moor. The priory bells, far below, ringing for the morning office.
+? have_dice and not one_lost :: Three old bone dice in your palm, warm as a held hand, the Wood's own. You can feel them wanting to go home.
+? have_dice and one_lost :: Two old bone dice in your palm. The third is gone.
+? let_go :: Sister Thorn and the dice are gone, into the morning mist, walking toward Sallow Wood.
+? buyer_follows :: Down the hill, the buyer's lanterns, still coming.
+
+* wenna: Take them to Wenna, for the longest night.
+  if: have_dice
+  temper: duty +1
+  do: flag dice_wenna
+  goto: ending
+  reply: You put them inside your shirt, against your skin, and walk down off the moor. [i]Wenna. She'll want to throw them herself. She mustn't. She's not strong enough any more. Don't let her.[/i]
+
+* priory: Give them back to the priory. They're the saint's.
+  if: have_dice
+  temper: honesty +1
+  do: flag dice_priory; standing abbey 2
+  goto: ending
+  reply: Prior Anselm takes them with shaking hands. "The roof can leak," he says. "It's leaked before." The buyer goes home empty-handed, furious.
+
+* wood: Take them back to the Wood yourself.
+  if: have_dice
+  temper: mercy +1
+  do: flag dice_wood; standing wood 2
+  goto: ending
+  reply: You walk to the edge of Sallow Wood, which is closer to Greyfell than you'd thought, and lay the dice in the roots of the first willow. A twig bends down and touches your hair, once, almost kindly. [i]That's... that changes things, at the table. The Wood remembers a gift as long as it remembers a theft.[/i]
+
+* sell: Sell them to the buyer, and fix the priory roof.
+  if: have_dice
+  temper: honesty -1
+  do: flag dice_sold; coin 30; standing abbey 1
+  goto: ending
+  reply: The buyer pays, gold on the nail, and goes off down the moor with the Wood's dice in a velvet bag, and you give half of it to Prior Anselm for the roof. [i]Well. Now nobody we know has them. That might be wise. It might be the worst thing you've ever done. Tales are like that.[/i]
+
+* home: Go home. The Wood has them now.
+  if: let_go
+  goto: ending
+  reply: You walk down off the moor alone. [i]Fair. It was fair. I keep telling myself.[/i]
+
+## ending: How It Ended
+type: ending
+
++ lost: Down Among the Stones
+  if: defeat or wounds>=3
+  [i]And the pilgrims found you among the saint's stones in the morning, cold as the stones themselves, and carried you down to the priory.[/i]
+  Wenna comes for you in a hired cart. She doesn't say anything all the way home, and holds your hand the whole way.
+  do: mark saint_lost; chronicle "The Hollow Saint: the moor got the better of you."
+
++ wenna: For the Longest Night
+  if: dice_wenna
+  renown: 4
+  Wenna takes the dice out of your hand and holds them up to the firelight, and turns them over, and over.
+  ? records_read :: "You read the register," she says, not looking at you. "Then you know. He went in for me. He's been paying for me, every night, for fifty years." She puts the dice back in your hand and closes your fingers over them. "You keep them. I'd throw them. I mustn't."
+  ? not records_read :: "Keep them," she says at last, and closes your fingers over them. "I'd throw them. I mustn't."
+  ? saint_blessing :: One of the dice has a tiny green shoot growing out of its one.
+  [i]The Wood's own dice. At the Wood's own table. I don't know if that's clever or the most dangerous thing anyone's ever done. Both, I expect.[/i]
+  do: gain saint_bone_d8; mark saint_dice; if records_read then mark foundlings_known; if one_lost then mark saint_dice_two; if saint_rests then mark saint_rests; chronicle "The Hollow Saint: you brought the Wood's own dice home for the longest night."; rumour first_forge "Old Brannoc was the Wood's own dicewright once, they say, before he came to the tavern."
+
++ priory: The Saint's Own
+  if: dice_priory
+  renown: 3
+  The dice go back into the silver reliquary, behind new crystal, with a new lock that Prior Anselm will never open. The roof still leaks. The pilgrims come anyway.
+  ? records_read :: Sister Agnes gives you the torn-out page, the one somebody took. She found it in her prayer book. She's been keeping it safe for sixty years, she says, in case one of them came back.
+  Wenna hears the story by the hearth, and is quiet, and then she laughs. "He'd have done that," she says. "He always gave things back."
+  [i]I did. Didn't I. I always did.[/i]
+  do: gain reliquary_d6; mark saint_priory; if records_read then mark foundlings_known; if saint_rests then mark saint_rests; chronicle "The Hollow Saint: the saint's dice went back into her reliquary."; rumour first_forge "Old Brannoc was the Wood's own dicewright once, they say, before he came to the tavern."
+
++ wood: A Gift to the Wood
+  if: dice_wood or let_go
+  renown: 3
+  Wenna is waiting when you come in. She looks at your empty hands, and nods slowly, as if you've done something she'd never have thought of.
+  "Given back," she says. "Not stolen. The Wood won't forget that." She smiles, a little crookedly. "Neither will he."
+  ? saint_rests :: You tell her about the little willow among the stones. She cries, which she never does, and tells you it was the saint who nursed her through the fever, sixty years ago. Or a sister who looked very like her.
+  [i]A gift. I sat at that table with nothing to give. Perhaps that was the mistake.[/i]
+  do: gain saint_bone_d8; standing wood 1; mark saint_wood; if records_read then mark foundlings_known; if saint_rests then mark saint_rests; chronicle "The Hollow Saint: you gave the saint's dice back to the Wood."; rumour fair_game "Under an old inn, at a full moon, the Fair Folk keep a dice table. They play for years."
+
++ sold: Sold
+  if: dice_sold
+  renown: 2
+  The priory gets a new roof, and the buyer gets three bone dice that nobody, afterwards, can account for. Wenna hears the story in silence.
+  "Well," she says at last. "Now nobody can throw them against him. Or for him." She pokes the fire. "Clever. He'd say clever." She doesn't say what she thinks.
+  [i]I'd say clever. I would. Ask me tomorrow.[/i]
+  do: gain reliquary_d6; mark saint_sold; if records_read then mark foundlings_known; if saint_rests then mark saint_rests; chronicle "The Hollow Saint: you sold the saint's dice and mended the priory roof."; rumour first_forge "Old Brannoc was the Wood's own dicewright once, they say, before he came to the tavern."

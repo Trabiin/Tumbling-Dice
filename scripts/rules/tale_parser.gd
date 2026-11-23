@@ -19,7 +19,7 @@ const SCENE_KEYS := ["act", "type", "goto", "on enter", "tile", "at", "token"]
 const OPTION_KEYS := ["if", "temper", "do", "goto", "reply", "challenge", "contest", "combat", "mod"]
 const OUTCOME_KEYS := ["do", "goto", "retry", "cost"]
 const ENDING_KEYS := ["if", "do", "renown"]
-const HEADER_KEYS := ["title", "id", "patron", "start", "arc", "order", "pitch", "offer", "expires", "missed", "teller"]
+const HEADER_KEYS := ["title", "id", "patron", "start", "arc", "order", "pitch", "offer", "expires", "missed", "teller", "pouch", "saddle"]
 const TIERS := ["fail", "mixed", "success", "triumph", "caught"]
 ## choice, encounter and challenge all play as a choice scene; the name is for the writer.
 const SCENE_TYPES := ["choice", "encounter", "challenge", "prepare", "waystone", "ending"]

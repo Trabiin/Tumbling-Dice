@@ -71,7 +71,14 @@ const LOADED_HIT := 0.755
 ## Every die base create() knows (the linter checks gain/ally effects against it).
 const ALL_IDS := ["oak_might", "oak_guile", "oak_lore", "oak_grace", "oak_ward", "dragon_d10", "brass_d8", "jade_d8", "bone_d6", "amethyst_d6", "loaded_d6", "bone_d4", "jade_d10", "dragon_d12", "brass_d4", "knuckle_d4", "brine_d6", "fisher_bone_d6", "hobb_oak_d6", "hook_d6", "kettle_knife_d8", "bellmetal_d20", "rosary_d12", "bellshard_d8", "wild_d4",
 	"register_d10", "saltreach_d6", "wren_bell_d4", "tide_d8", "pearl_d12", "banner_d8", "oath_d10", "brask_d6",
-	"deserter_d6", "outrider_d8", "seal_d10", "holloway_d12", "ashgrove_d10"]
+	"deserter_d6", "outrider_d8", "seal_d10", "holloway_d12", "ashgrove_d10",
+	"stranger_ember_d8", "stranger_glass_d6", "stranger_willow_d8",
+	"riverfolk_d6", "swan_d8", "crane_d6", "ledger_d10", "masque_d6", "isolde_d8", "kettle_own_d6", "aurum_d12",
+	"assayer_d8", "gilt_d20",
+	"witch_willow_d8", "huntsman_d10", "witch_bone_d6", "wisp_d4",
+	"saint_bone_d8", "reliquary_d6",
+	"penhallow_d6", "antler_d12", "hearth_d10",
+	"black_iron_d8", "cinder_d10", "moon_d8", "fae_d6"]
 
 ## A curse rule: when it acts (rest = every Waystone, set_out = when you leave the tavern), the
 ## number it bites at or under, and what it does. Read by the tale runner.
@@ -275,6 +282,92 @@ static func create(base: String) -> Dictionary:
 		"ashgrove_d10": return make(base, 10, "might", "brass", {"name": "Ashgrove's Oath d10",
 			"runes": {1: "mend", 9: "strike", 10: "strike"}, "rarity": "relic",
 			"desc": "The captain's own die. He swore on it once, and kept the oath."})
+		# ---- the prologue: the stranger's gift (choose one)
+		"stranger_ember_d8": return make(base, 8, "might", "dragon", {"name": "Stranger's Ember d8",
+			"runes": {8: "strike"}, "rarity": "fine",
+			"desc": "Warm as a coal from someone else's fire. The stranger said it would keep you brave."})
+		"stranger_glass_d6": return make(base, 6, "guile", "amethyst", {"name": "Stranger's Glass d6",
+			"runes": {5: "spark", 6: "spark"}, "rarity": "fine",
+			"desc": "Violet glass, a little smoky. You can never quite see what's inside it."})
+		"stranger_willow_d8": return make(base, 8, "grace", "bone", {"name": "Stranger's Willow d8",
+			"runes": {8: "echo"}, "rarity": "fine",
+			"desc": "Pale and light, carved from a willow root. It bends and doesn't break."})
+
+		# ---- Mother Kettle's arc
+		"riverfolk_d6": return make(base, 6, "ward", "oak", {"name": "Riverfolk Oar d6",
+			"runes": {5: "kin", 6: "guard"}, "rarity": "fine",
+			"desc": "Cut from the blade of an oar by the families who got their boats back. It stands with its own."})
+		"swan_d8": return make(base, 8, "grace", "bone", {"name": "Gilded Swan d8",
+			"runes": {7: "echo", 8: "spark"}, "rarity": "fine",
+			"desc": "From the gaming table of the Gilded Swan. It has seen a great deal of money change hands."})
+		"crane_d6": return make(base, 6, "guile", "bone", {"name": "Silas Crane's d6",
+			"faces": [1, 2, 3, 4, 6, 6], "runes": {6: "spark"},
+			"desc": "A turncoat's die: two sixes and no five. Honest people never notice."})
+		"ledger_d10": return make(base, 10, "lore", "driftwood", {"name": "Duke's Ledger d10",
+			"runes": {9: "keen", 10: "keen"}, "rarity": "masterwork",
+			"desc": "Cut from the black boards of the Duke's ledger. It remembers every price."})
+		"masque_d6": return make(base, 6, "guile", "amethyst", {"name": "Masque d6",
+			"runes": {1: "spark", 6: "spark"}, "rarity": "fine",
+			"desc": "A carnival die from the Duke's masque, with a painted face on every side."})
+		"isolde_d8": return make(base, 8, "grace", "jade", {"name": "Isolde's Ring d8",
+			"runes": {7: "spark", 8: "echo"}, "rarity": "fine",
+			"desc": "Lady Isolde's signet, ground down into a die. She said she wouldn't be needing it."})
+		"kettle_own_d6": return make(base, 6, "guile", "brass", {"name": "Mother Kettle's Own d6", "loaded_face": 6, "load": 0.3,
+			"runes": {6: "spark"}, "rarity": "relic",
+			"desc": "Forty years of card tables. It lands on six three times in four, and every sharp on the river knows it by sight."})
+		"aurum_d12": return make(base, 12, "might", "bellmetal", {"name": "Old Mint d12",
+			"runes": {11: "strike", 12: "spark"}, "rarity": "relic",
+			"desc": "Struck at the old Mint of Saltreach, three hundred years ago, from the last of the city's gold."})
+		"assayer_d8": return make(base, 8, "ward", "brass", {"name": "Assayer's Weight d8",
+			"faces": [3, 3, 4, 5, 6, 7, 8, 8], "runes": {8: "guard"}, "rarity": "masterwork",
+			"desc": "A counterweight from the Assayer's scales. It never comes up light."})
+		"gilt_d20": return make(base, 20, "might", "bellmetal", {"name": "Gilded d20",
+			"faces": [1, 2, 3, 4, 9, 10, 11, 12, 12, 13, 13, 14, 14, 15, 15, 16, 17, 18, 19, 20],
+			"runes": {1: "bane", 2: "bane", 20: "spark"}, "bane": "grit", "rarity": "cursed", "cursed": true,
+			"curse": "At every Waystone it wants feeding: throw it, and on 4 or lower lose 5 Coin. It cannot leave your Pouch.",
+			"curse_rule": {"when": "rest", "at_most": 4, "verb": "wants feeding", "text": "You lose 5 Coin.", "effects": [["coin", -5]]},
+			"desc": "The old Mint's last gold, struck into one greedy die. It is never full."})
+		# ---- the Hooded Pilgrim's arc
+		"witch_willow_d8": return make(base, 8, "ward", "oak", {"name": "Willow-Court d8",
+			"runes": {7: "kin", 8: "guard"}, "rarity": "masterwork",
+			"desc": "A twig of the Eldest Willow, carved by the Wood itself. Now and then it puts out a leaf."})
+		"huntsman_d10": return make(base, 10, "grace", "oak", {"name": "Huntsman's Ash d10",
+			"runes": {9: "strike", 10: "echo"}, "rarity": "masterwork",
+			"desc": "The butt of the Wood's Huntsman's spear. It wants to run."})
+		"witch_bone_d6": return make(base, 6, "lore", "bone", {"name": "Mag Sallow's Bone d6",
+			"runes": {5: "keen", 6: "keen"}, "rarity": "fine",
+			"desc": "From the witch's own pocket. Whose bone, she wouldn't say."})
+		"wisp_d4": return make(base, 4, "wild", "amethyst", {"name": "Wisp-Light d4",
+			"faces": [2, 2, 3, 4], "runes": {4: "spark"}, "rarity": "fine",
+			"desc": "A little cold light caught in glass. It counts for anything, and it never quite goes out."})
+		"saint_bone_d8": return make(base, 8, "wild", "bone", {"name": "Saint's Bone d8",
+			"runes": {1: "mend", 8: "spark"}, "rarity": "relic",
+			"desc": "One of the Wood's own dice, from Saint Hollow's reliquary. It counts for anything, and it is always warm."})
+		"reliquary_d6": return make(base, 6, "lore", "brass", {"name": "Reliquary Silver d6",
+			"runes": {5: "mend", 6: "mend"}, "rarity": "fine",
+			"desc": "A sliver of the old reliquary's silver, given in thanks. It smells faintly of candles."})
+		"penhallow_d6": return make(base, 6, "wild", "oak", {"name": "Penhallow's Black d6",
+			"runes": {1: "spark", 6: "echo"}, "rarity": "relic",
+			"desc": "The die Aldous Penhallow lost with, fifty years ago. It had no numbers then. It has them now."})
+		"antler_d12": return make(base, 12, "ward", "bone", {"name": "King's Antler d12",
+			"runes": {11: "guard", 12: "kin"}, "rarity": "relic",
+			"desc": "Cut from the King of Hollows' antler, the night the table broke. The Wood would like it back."})
+		"hearth_d10": return make(base, 10, "lore", "oak", {"name": "Hearthstool d10",
+			"runes": {9: "keen", 10: "spark"}, "rarity": "relic",
+			"desc": "Carved from a leg of the stool by the hearth. Whoever throws it hears a tale starting."})
+		# ---- secret tales
+		"black_iron_d8": return make(base, 8, "might", "brass", {"name": "Black Iron d8",
+			"faces": [2, 3, 4, 5, 6, 7, 8, 8], "runes": {7: "strike", 8: "strike"}, "rarity": "relic",
+			"desc": "Carved by Brannoc, singing, from the Black Forge's own iron the night it went cold."})
+		"cinder_d10": return make(base, 10, "might", "dragon", {"name": "Cinder-Glass d10",
+			"runes": {10: "strike", 9: "spark"}, "rarity": "masterwork",
+			"desc": "Black glass from the forge floor. Still warm, a little, if you hold it long enough."})
+		"moon_d8": return make(base, 8, "grace", "jade", {"name": "Moonstone d8",
+			"runes": {7: "echo", 8: "spark"}, "rarity": "relic",
+			"desc": "From the Queen of Hours' own table. It shows a different face every time you look away."})
+		"fae_d6": return make(base, 6, "wild", "amethyst", {"name": "Fair Folk's d6",
+			"faces": [1, 2, 3, 4, 5, 6], "runes": {6: "spark"}, "rarity": "fine",
+			"desc": "A little die from under the tavern. It counts for anything, and it hums at the full moon."})
 	push_error("Unknown die base: " + base)
 	return {}
 

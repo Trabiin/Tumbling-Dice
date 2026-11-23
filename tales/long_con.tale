@@ -1,0 +1,514 @@
+title: The Long Con
+id: long_con
+patron: Mother Kettle
+start: plea
+arc: kettle
+order: 1
+pitch: Mother Kettle wants a fresh face at a card table on the Gilded Swan, and she says the mark has it coming.
+offer: night>=3 or seen:smugglers_allied or seen:kettle_grudge
+teller: triumph :: Oh, that was beautiful. They'll tell that one in every card room on the river, and get it wrong.
+teller: triumph :: Even Mother Kettle would have been proud of that one. Especially Mother Kettle.
+teller: mixed :: Got away with it. Mostly. On the river, mostly is a living.
+teller: mixed :: Done, with a few loose ends. Cons always have loose ends.
+teller: fail :: Rumbled. Well, it happens to the best. It happens to Kettle twice a year.
+teller: loaded_caught :: The mark's eyes go to {die}, and stay there. Oh dear. Oh dear, dear.
+teller: rest :: A ship's galley, a pot of chowder, and a cook who doesn't ask questions.
+
+// Mother Kettle's arc, tale 1 of 3. A con on a pleasure barge against the Duke's tax-farmer.
+// Reads how The Drowned Bell went with Kettle (allied, grudge). Sets what Silas Crane did,
+// whether the river folk got their boats back, and whether you crossed Kettle: The Duke's
+// Ledger and The Gilded Ruin read those.
+
+## plea: Mother Kettle's Proposition
+act: 1
+tile: inn
+at: 0, 0
+token: kettle_trusts => flag "Kettle's word, given"
+
+? seen:smugglers_allied :: Mother Kettle sits down at your table as if she's been sitting there all her life, and puts a cup of something brown in front of you. "Partner," she says, and winks.
+? seen:kettle_grudge :: Mother Kettle sits down at your table. Her smile is all teeth. "You leaned on me once, at the cove," she says. "I don't hold grudges, dearie. I collect them. But business is business."
+? not seen:smugglers_allied and not seen:kettle_grudge :: A round grey woman with a pack of cards in her hands that never stops moving sits down across from you without asking. "They call me Mother Kettle," she says. "You'll have heard of me. If you haven't, you will."
+"There's a man called Grisewold," she says. "Assessor to the Duke of Saltreach. He goes up and down the river with a ledger and a squad of the Duke's Watch, and wherever a family's behind on its taxes, he takes their boat. Forty boats this year. Forty families on the bank with nothing."
+"He keeps the deeds in a strongbox on his pleasure barge, the Gilded Swan, and every Fifthday he plays cards on it, very badly, for very high stakes." She shuffles. "He's never seen your face. That's the whole of the plan, really. The rest is detail."
+"My man Silas Crane has the details. Silas has been with me eleven years." She says it fondly.
+[i]A con, then. I do love a con. Everybody's lying, and the dice are the only honest thing at the table.[/i]
+
+* in: "I'm in. What's my share?"
+  temper: honesty -1
+  do: flag asked_share
+  goto: prepare
+  reply: "A third," Kettle says. "After the boats are sold back to their owners at a fair price, which is to say, mine." [i]A third of what, she doesn't say. Card sharps never do.[/i]
+
+* families: "And the families get their boats back?"
+  temper: mercy +1
+  do: flag for_families; regard 1
+  goto: prepare
+  reply: Kettle looks at you over the cards for a long moment. "My brother had a boat," she says. "Before the lake." Then, briskly: "Yes. Mostly. For a small consideration."
+
+* trust: "Why should I trust you?"
+  temper: honesty +1
+  do: flag kettle_trusts
+  goto: prepare
+  reply: "You shouldn't," says Kettle, delighted. "Never trust anybody in this business. But I'll tell you this: I've never once left a partner on a sinking boat. Ask anybody." She spits in her palm and holds it out. You shake it.
+
+## prepare: Packing for the River
+act: 1
+type: prepare
+goto: tailor
+
+Hollis has your Pouch on the bar. "Kettle," he says, and shakes his head. "Count your fingers after you shake her hand. And count your dice."
+[i]Choose what you carry. A con wants quick hands and a quicker tongue, but the Watch carry clubs.[/i]
+
+## tailor: Silas Crane's Rooms
+act: 1
+tile: market
+at: 1.3, 0.6
+token: silas_doubted => knife "A doubt about Silas"
+
+Silas Crane keeps rooms over a tailor's shop in Saltreach: a thin, careful man with ink on his cuffs and a smile that arrives a moment after the rest of his face. The rooms are full of costumes.
+"You need to be somebody Grisewold wants to rob," he says. "That's the trick of it. A mark only plays with people he thinks are marks."
+He lays out three sets of clothes on the bed.
+? seen:kettle_grudge :: "Mother says you're not to be trusted," Silas adds pleasantly. "So I'll be watching you. Nothing personal."
+
+* lordling: The country lordling, with more money than sense.
+  do: flag guise lord
+  goto: gangway
+  reply: Velvet, lace, a hat with a feather that is frankly an accusation. Silas teaches you to say "capital" and look bored. [i]You're rich and stupid now. It suits you more than you'd think.[/i]
+
+* priest: The travelling priest, collecting for orphans.
+  temper: honesty -1
+  do: flag guise priest
+  goto: gangway
+  reply: A grey habit and a collecting box. "Grisewold gambles to feel wicked," Silas says. "Nothing makes him feel more wicked than taking money off a priest." [i]Lying to a man in a dead saint's name. I'm not saying anything.[/i]
+
+* merchant: The dice-merchant from the south, looking for a buyer.
+  do: flag guise merchant
+  goto: gangway
+  reply: A good dark coat and a case of fine dice. "He collects them," Silas says. "Dice and boats and people. Show him something he can't have."
+
+* watch: Ask Silas, casually, how long he's known Grisewold.
+  if: not silas_doubted
+  temper: honesty +1
+  do: flag silas_doubted
+  goto: gangway
+  reply: "Known him? I've never met the man," says Silas, a fraction too quickly, and hands you the merchant's coat. [i]Hm. Put the coat on. Keep that thought in the pocket.[/i]
+
+## gangway: The Gilded Swan
+act: 1
+on enter: random_flag weather [mist, lanterns, rain]; if season==winter then flag weather frost
+tile: jetty
+at: 2.5, -0.4
+
+The Gilded Swan is a pleasure barge the length of a church, white and gold, with a paddle wheel at the stern and coloured lanterns strung from bow to stern. Music and laughter come off it across the dark water. It is moored at the end of the Duke's quay, and two men of the River Watch stand at the gangway with a list.
+? weather==mist :: River mist, and the lanterns blooming in it like flowers.
+? weather==rain :: Rain on the water, and the Watch at the gangway miserable under their capes.
+? weather==lanterns :: A clear night. Every lantern on the Swan doubled in the black river.
+? weather==frost :: Ice in the shallows. The Swan's last trip before winter.
+The purser at the top of the gangway, a little man with a big book, checks every name against it twice.
+Silas taps your arm. "There's a door at the waterline for the wine. I can get you in that way, no questions."
+[i]Getting aboard is the first lie of the night. There'll be others.[/i]
+
+* purser: Walk up the gangway as if you own the barge.
+  contest: opponent=purser title="Purser Quill"
+  mod: guise==lord => resolve=-2
+  approach guile: You're on the list. Under another name. He must have spelled it wrong.
+  approach grace: Charm him: the wrong name, the right smile, and a compliment about his book.
+  approach lore: Know the names of everybody on the list, and drop three of them as friends.
+  > triumph: Quill not only lets you aboard, he walks you to the gaming table himself and introduces you to Grisewold as an old acquaintance. On the way he lets slip that Grisewold keeps the strongbox key round his neck.
+    do: flag aboard; flag key_known; flag grand_entrance
+    goto: table
+  > success: Quill finds your name, eventually, in a margin. You're aboard.
+    do: flag aboard
+    goto: table
+  > mixed: You're aboard. Quill isn't quite convinced.
+    do: flag aboard
+    goto: table
+    cost: A bribe for his trouble (lose 6 Coin) :: coin -6
+    cost: He mentions you to the Watch sergeant (they'll be watching) :: flag watch_wary
+  > fail: Quill shakes his head and calls the Watch, and you end up going aboard the hard way after all, through the wine door, wet to the knees, with Silas smiling at you in the dark.
+    do: flag aboard; flag used_silas
+    goto: table
+
+* wheel: Swim round and climb the paddle wheel.
+  temper: duty -1
+  challenge: kind=trial progress=15 danger=3 danger_text="The paddle wheel shudders and starts to turn." title="Up the paddle wheel"
+  mod: weather==frost => progress=2
+  approach grace: Up the wet paddles like a ladder, quick and light.
+  approach might: Haul yourself up the wheel's axle chain hand over hand.
+  approach ward [progress=13]: Wedge the wheel with a spar first, so it can't turn under you.
+  > triumph: You come over the rail by the stern, unseen, and find yourself outside Grisewold's own cabin. The door is locked. There's a strongbox inside: you can see it through the window. You slip into the party with a stolen dry coat.
+    do: flag aboard; flag cabin_seen
+    goto: table
+  > success: Over the rail, dripping, into a store cupboard full of dry tablecloths. One makes a decent cloak. You're aboard.
+    do: flag aboard
+    goto: table
+  > mixed: Aboard, but noticed. Or soaked. Or both.
+    do: flag aboard
+    goto: table
+    cost: The wheel turns under you (lose 4 Grit) :: grit -4
+    cost: A deckhand sees you come over the rail (the Watch hear of it) :: flag watch_wary
+  > fail: The wheel turns, and you go under it, and come up spluttering by the wine door, where Silas is waiting with a towel and a smile. "My way, then," he says.
+    do: flag aboard; flag used_silas; grit -3
+    goto: table
+
+* silas: Take Silas's door at the waterline.
+  temper: honesty +1
+  do: flag aboard; flag used_silas
+  goto: table
+  reply: The wine door opens before Silas knocks. Somebody on the other side was expecting him. [i]Interesting. Somebody was expecting him.[/i]
+
+## table: The Gaming Table
+act: 2
+type: challenge
+tile: keep
+at: 3.7, 0.5
+token: key_won => coins "Grisewold's key, won"
+
+The Swan's great cabin is all gilt and mirrors and smoke. At the head of the gaming table sits Assessor Grisewold: a soft pink man with a gold key on a ribbon round his neck, a pile of the Duke's money in front of him, and the face of a baby that has never once been told no.
+"New blood!" he cries, when he sees you. "Sit, sit. We're playing Riverman's Throw. The house wins ties. I'm the house."
+? guise==priest :: He sees your habit and his eyes light up. "Father! You'll pray for my luck, I hope. Not too hard."
+? guise==lord :: He looks at your feather and practically licks his lips.
+? guise==merchant :: He sees your dice case and leans forward. "And what have we here?"
+? watch_wary :: Behind him, the Watch sergeant watches you, arms folded.
+Across the cabin, Silas Crane is pouring wine, in a steward's coat. He doesn't look at you once.
+[i]Grisewold cheats. Badly, but he cheats. And he'll know a loaded die if he sees one. Win his key, one way or another.[/i]
+
+* straight: Play him, and beat him.
+  contest: opponent=grisewold title="Riverman's Throw"
+  mod: guise==merchant => resolve=-2
+  mod: watch_wary => resolve=2
+  approach guile: Let him think he's cheating you, and cheat him back.
+  approach lore: Count every throw, and know the odds better than he does.
+  approach grace: Keep him laughing, and drinking, and careless.
+  > triumph: By midnight Grisewold has bet the key round his neck on a single throw, and lost it, and laughed about it, because he's sure you'll lose it back. You won't. He also loses a purse.
+    do: flag key_won; coin 12
+    goto: galley
+  > success: You win the key, in the end, on a pair of sixes. Grisewold hands it over with bad grace and calls for more wine.
+    do: flag key_won
+    goto: galley
+  > mixed: You win the key. You don't win friends.
+    do: flag key_won
+    goto: galley
+    cost: You lose a stack to win it (lose 8 Coin) :: coin -8
+    cost: Grisewold sulks to his sergeant about you :: flag watch_wary
+  > fail: Grisewold cleans you out and goes off to bed humming. The key goes with him. The strongbox will have to be opened the hard way.
+    do: coin -5
+    goto: galley
+  > caught: Grisewold's soft pink hand closes on your loaded die. "Oh," he says, delighted. "Oh, you naughty thing." He waves to his sergeant, and smiles, and lets you go on playing. That's the worrying part.
+    do: flag watch_wary; flag caught_cheating
+    goto: galley
+
+* lose: Lose to him, gracefully, all night, until he's drunk on winning.
+  temper: honesty -1
+  challenge: kind=test difficulty=standard tries=2 title="Losing beautifully"
+  approach guile: Lose by just enough, every time, to keep him hungry.
+  approach grace: Be the best audience a winner ever had.
+  approach lore: Know exactly how much he can drink before he takes the key off to show it to you.
+  > triumph: At two in the morning Grisewold, weeping with happiness, takes the key off his neck to show you "the key to the river, my friend, the whole river," and falls asleep with it in his hand. You take it. You also take back everything you lost, and a bit more.
+    do: flag key_won; coin 8
+    goto: galley
+  > success: He falls asleep at the table with his head on his winnings. The key comes off its ribbon easily.
+    do: flag key_won; coin -4
+    goto: galley
+  > mixed: It works. It's expensive.
+    do: flag key_won
+    goto: galley
+    cost: Losing is costly (lose 10 Coin) :: coin -10
+    cost: You have to drink with him (tired for a while) :: fatigue 2
+  > fail: Grisewold wins all night and doesn't get drunk at all, and goes to bed rich and sober. You go to the galley poorer.
+    do: coin -8
+    goto: galley
+
+* key: Lift the key off his neck while he's laughing.
+  if: key_known or cabin_seen
+  temper: honesty -1
+  challenge: kind=test difficulty=standard tries=1 title="The key on the ribbon"
+  approach guile: A hand on his shoulder, a joke in his ear, and the ribbon cut.
+  approach grace: Spill the wine, help him dry off, and help yourself.
+  > triumph: The key comes away in your hand, and Grisewold thanks you for being so kind about the wine. You wander off to the galley with it before the next hand is dealt.
+    do: flag key_won; fate 1
+    goto: galley
+  > success: You have it. He doesn't notice. Yet.
+    do: flag key_won
+    goto: galley
+  > mixed: You have it, but not cleanly.
+    do: flag key_won
+    goto: galley
+    cost: He notices the cut ribbon (the Watch are told) :: flag watch_wary
+    cost: You knock his wine into your own lap (lose 3 Grit, cold and sticky) :: grit -3
+  > fail: Grisewold catches your wrist, laughs, and tells the whole table you tried to pick his pocket. Everybody laughs. The sergeant doesn't.
+    do: flag watch_wary
+    goto: galley
+
+## galley: The Galley
+act: 2
+type: waystone
+on enter: rest 13
+tile: shrine
+at: 4.6, -0.8
+token: silas_traitor => knife "Silas Crane's two faces"
+
+Below decks, the galley: hot and close, a pot of chowder on the stove, and a cook the size of a door who looks at you once and goes back to her onions. "Kettle's?" she says. You nod. She ladles you a bowl.
+Through the ceiling, the music and the dice. Through the bulkhead, voices. One of them is Silas Crane's.
+[i]A Waystone, even here. Rest, swap your dice, and listen. You're good at listening, when you bother.[/i]
+
+* listen: Put your ear to the bulkhead.
+  challenge: kind=test difficulty=standard tries=2 title="Voices through the bulkhead"
+  mod: silas_doubted => progress=-3
+  approach lore: Know every voice on this barge, and which ones shouldn't be talking.
+  approach guile: Tip the cook to bang her pots a little quieter.
+  approach grace: Out through the porthole and along the hull to the cabin window.
+  > triumph: Silas, and the Watch sergeant. "When they open the box," Silas says, "you take them, and you take Kettle's warehouse the same night. The Duke pays me what he promised, and I'm out of the river for good." You hear the sergeant counting coins. You know exactly what you're going to do about it.
+    do: flag silas_traitor; flag trap_known; fate 1
+    goto: strongbox
+  > success: Silas's voice, and the clink of coins, and the words "when they open the box." That's enough.
+    do: flag silas_traitor
+    goto: strongbox
+  > mixed: You hear it. Someone hears you.
+    do: flag silas_traitor
+    goto: strongbox
+    cost: The cook's price for her silence (lose 5 Coin) :: coin -5
+    cost: Silas glimpses you as you go (he'll spring it sooner) :: flag watch_wary
+  > fail: Pots and onions and laughter. You hear nothing useful. When you come out, Silas is in the passage, smiling. "There you are," he says. "Ready?"
+    goto: strongbox
+
+* eat: Eat your chowder. Trust Kettle's man.
+  temper: honesty +1
+  goto: strongbox
+  reply: It's good chowder. The cook watches you eat it with something like pity. [i]Well. Trust is a fine thing. I've heard.[/i]
+
+## strongbox: Grisewold's Cabin
+act: 3
+type: challenge
+tile: chest
+at: 5.4, 0.4
+token: deeds_taken => chest "Forty deeds"
+
+Grisewold's cabin smells of lavender water and money. The strongbox is under the bed: black iron, bound in brass, with three locks and a little painted swan on the lid.
+? key_won :: The gold key fits the first lock. The other two are a different matter.
+? silas_traitor :: Silas stands in the doorway, watching. He offers to keep a lookout. Of course he does.
+
+* open: Open the strongbox.
+  challenge: kind=trial progress=16 danger=3 danger_text="Footsteps on the stair." title="Three locks"
+  mod: key_won => progress=-6
+  mod: watch_wary => progress=2
+  approach guile: Picks and wire and a very steady breath.
+  approach lore: Grisewold is the kind of man who uses his mother's birthday. Find it in his papers.
+  approach might [progress=18]: Turn the bed over and take the whole box out of the window.
+  > triumph: The last lock clicks. Inside: forty deeds tied in red tape, and under them the Duke's tax money for the season, in gold. You take the lot. Grisewold's mother would be ashamed of him.
+    do: flag deeds_taken; flag tax_gold; coin 15
+    goto: trap
+  > success: The lid comes up. Forty deeds, tied in red tape. You stuff them inside your shirt.
+    do: flag deeds_taken
+    goto: trap
+  > mixed: The box opens. Not quietly.
+    do: flag deeds_taken
+    goto: trap
+    cost: The lid snaps down on your fingers (lose 4 Grit) :: grit -4
+    cost: Some of the deeds tear in the scramble (not every family gets theirs) :: flag deeds_torn
+  > fail: The third lock won't give. Footsteps on the stair. In the end you take the whole box out of the window with you and it goes straight to the bottom of the river, deeds and all.
+    do: flag box_sunk
+    goto: trap
+
+## trap: The Trap Springs
+act: 3
+type: encounter
+tile: jetty
+at: 6.4, -0.4
+token: silas_caught => knife "Silas, caught"
+
+Lanterns on deck. Lots of them. The music has stopped. The Duke's River Watch fill the stern, boathooks out, and Grisewold is at the front of them in his nightshirt, laughing. Behind him, at his elbow, Silas Crane.
+"Eleven years," Silas says, to nobody. "Eleven years of Mother's jokes."
+? trap_known :: But you knew. You've known since the galley. And you've had time to arrange a few things.
+? watch_wary :: Their sergeant has been waiting all night for this, and it shows.
+
+* turn: Spring your own trap: you told the cook, and the cook told Kettle.
+  if: trap_known
+  temper: duty +1
+  do: flag silas_caught; flag escaped; regard 1
+  goto: silas
+  reply: The cook comes up the galley stair with a cleaver, and behind her, out of the dark water, Kettle's boats, every lantern lit at once. The Watch are outnumbered, and they know it. Grisewold stops laughing. Silas tries to run, and the cook sits on him. [i]Oh, I do like a double-cross that's been double-crossed. It's like a pie inside a pie.[/i]
+
+* fight: Fight your way to the rail.
+  temper: duty +1
+  combat: foe=river_watch
+  mod: watch_wary => ambushed=1
+  > triumph: You go through the Watch like a gale through a washing line, and on the way past you collar Silas Crane and drag him over the rail with you into Kettle's waiting boat.
+    do: flag escaped; flag silas_caught
+    goto: silas
+  > success: You reach the rail, and the river, and Kettle's boat waiting in the dark.
+    do: flag escaped
+    goto: silas
+  > mixed: Over the rail, but not in one piece.
+    do: flag escaped
+    goto: silas
+    cost: A boathook in the side (lose 5 Grit) :: grit -5
+    cost: The deeds get soaked going over (some are ruined) :: flag deeds_torn
+  > fail: They take you down on the deck, and only Kettle's boats coming out of the dark, all at once, gets you off it. You leave a good deal of skin on the boards, and Grisewold keeps half his deeds.
+    do: grit -4; flag escaped; flag deeds_torn
+    goto: silas
+
+* bluff: Tell the Watch captain the Duke sent you to audit Grisewold.
+  contest: opponent=watch_captain title="Captain Maelis"
+  mod: tax_gold => resolve=-3
+  mod: guise==priest => resolve=-2
+  approach guile: Wave a page from Grisewold's own strongbox: his private accounts. The Duke's share is very small.
+  approach lore: Recite the Duke's law on assessors, chapter and verse, at speed.
+  approach grace: Speak to Maelis as one tired honest soul to another.
+  > triumph: Captain Maelis reads the page you hand her, and looks at Grisewold, and then puts him in irons on his own deck. "The Duke will want to see this," she says. Silas tries to slip away in the confusion. You trip him.
+    do: flag escaped; flag silas_caught; flag grisewold_ruined; standing crown 1
+    goto: silas
+  > success: Maelis isn't sure. Not sure is enough: she holds her men while she sends to the Duke, and you walk down the gangway with the deeds under your coat.
+    do: flag escaped
+    goto: silas
+  > mixed: You talk your way off. Something stays behind.
+    do: flag escaped
+    goto: silas
+    cost: Maelis keeps the gold for the Duke (and a fee for herself) :: coin -10
+    cost: She takes a good look at your face (the Watch will know you) :: flag watch_knows
+  > fail: Maelis laughs, and you have to go over the rail after all, and the river is very cold, and the deeds are very wet.
+    do: grit -3; flag escaped; flag deeds_torn
+    goto: silas
+
+* jump: Over the side, now, with whatever you've got.
+  temper: duty -1
+  challenge: kind=test difficulty=standard tries=2 title="Over the side"
+  approach grace: A clean dive, and swim for the dark.
+  approach ward: Wrap the deeds in oilcloth first, and take the fall like a sack.
+  approach might: Take the nearest Watchman with you, as a float.
+  > triumph: You go over the stern in a perfect dive and come up under the paddle wheel, invisible, while the Watch shout at the empty river. Kettle's boat picks you up at the bend, deeds dry in their oilcloth.
+    do: flag escaped
+    goto: silas
+  > success: The river is cold and black and the best thing you've ever felt. A boat finds you.
+    do: flag escaped
+    goto: silas
+  > mixed: Away, and wet through.
+    do: flag escaped
+    goto: silas
+    cost: The cold gets into your bones (lose 4 Grit) :: grit -4
+    cost: The river gets some of the deeds :: flag deeds_torn
+  > fail: You hit the water flat, and lose the deeds, and very nearly lose yourself. Kettle's boat finds you at dawn, clinging to a buoy.
+    do: grit -4; flag box_sunk
+    goto: silas
+
+## silas: Silas Crane
+act: 3
+tile: cove
+at: 7.4, 0.4
+
+Kettle's warehouse on the river, at dawn. Lamps and barrels and tired smugglers. Mother Kettle sits on a crate counting, and doesn't stop counting when you come in.
+? silas_caught :: Silas Crane sits tied to a chair in the middle of the floor. He has stopped smiling. Kettle hasn't looked at him once.
+? not silas_caught :: Silas Crane is gone. Nobody knows where. Kettle shuffles her cards very slowly, and you notice her hands are not quite steady.
+? deeds_taken and not box_sunk :: You put the deeds on the crate in front of her.
+? box_sunk :: You have nothing to put in front of her but river water.
+? silas_caught :: "Eleven years," Kettle says at last. "What do you think, partner? You were the one he sold."
+
+* spare: "Let him go. Out of the river, and never back."
+  if: silas_caught
+  temper: mercy +1
+  do: flag silas_spared
+  goto: split
+  reply: Kettle cuts the ropes herself. Silas goes out without a word, and doesn't look back, and Kettle watches him all the way to the door. "Soft," she says to you afterwards. "Soft as butter. I like that in a partner. It's terrible in a business."
+
+* watch: "Hand him to the Watch. Let the Duke hang his own spy."
+  if: silas_caught
+  temper: duty +1
+  do: flag silas_given
+  goto: split
+  reply: Kettle sends him up to the Watch house with a note pinned to his coat. "The Duke won't hang him," she says. "The Duke'll pay him and send him back. But it'll cost the Duke, to be seen to." [i]Clever. Kettle's always clever. That's what makes her dangerous.[/i]
+
+* kettle: "He's yours. Your crew, your business."
+  if: silas_caught
+  temper: mercy -1
+  do: flag silas_kettle
+  goto: split
+  reply: Kettle nods to two of her boys, and they take Silas out the back toward the river, and you don't ask, and she doesn't say. [i]Some doors in a tale I don't open. That's one of them.[/i]
+
+* on: "He'll turn up. Men like that always do. What now?"
+  if: not silas_caught
+  do: flag silas_loose
+  goto: split
+  reply: "He will," says Kettle. "And when he does." She doesn't finish. She doesn't need to.
+
+## split: Dividing the Take
+act: 3
+tile: cove
+at: 8.3, -0.2
+token: deeds_returned => boat "Forty boats, home"
+
+? deeds_taken and not box_sunk :: Forty deeds on a crate. Forty boats in the Duke's impound on the far bank, and forty families sleeping under them.
+? tax_gold :: And the Duke's tax money, a good deal of it, which nobody has yet said anything about.
+? box_sunk :: Nothing on the crate. Kettle shrugs. "Win some," she says.
+"Here's how I see it," Kettle says. "We sell the boats back to the families at a fair price, which is half what they're worth, which they'll be glad to pay. That's my business. Your third is your third." She looks at you. "Unless you see it different."
+
+* families: "Give the deeds back. For nothing."
+  if: deeds_taken and not box_sunk
+  temper: mercy +1
+  do: flag deeds_returned; standing marrowmere 1; standing guild -1; regard 1
+  goto: ending
+  reply: Kettle stares at you. Then she laughs, and laughs, until her crew are laughing too without knowing why. "My brother would have liked you," she says. "Fine. Fine! Give them away. I'll take it out of the Duke's gold." [i]And forty families go down to the impound at first light, and the Watch, who have seen Captain Maelis's face this morning, don't stop them.[/i]
+
+* fair: "Your way. A fair price, and my third."
+  if: deeds_taken and not box_sunk
+  temper: honesty +1
+  do: flag fair_split; coin 20; standing guild 1
+  goto: ending
+  reply: Kettle spits in her palm, and you shake on it again. "Partner," she says, and this time she means it. [i]Fair, by the river's measure. The families will pay, and be glad to. Everybody gets something. That's rarer than you'd think.[/i]
+
+* cross: Take the Duke's gold for yourself, and let Kettle keep the boats.
+  if: tax_gold
+  temper: honesty -1
+  do: flag kettle_crossed; coin 35; standing guild -2
+  goto: ending
+  reply: You're out of the warehouse door with the gold before Kettle has finished counting. She doesn't shout after you. She just watches you go, with the face of somebody writing something down. [i]Oh, dear. Oh, my dear. You've no idea who you've just stolen from.[/i]
+
+* nothing: "There's nothing to split. Next time."
+  if: box_sunk
+  do: flag empty_handed
+  goto: ending
+  reply: "There's always a next time," says Kettle. "That's the beauty of greed. It comes back every season like the swallows."
+
+## ending: How It Ended
+type: ending
+
++ caught: Rumbled
+  if: defeat or wounds>=3
+  [i]And the Watch fished you out of the river at dawn, and the Duke's magistrate gave you a month in the Saltreach gaol for it.[/i]
+  Kettle got you out in a week. She doesn't say how. She doesn't say anything about the deeds, either. Grisewold is still going up and down the river with his ledger.
+  [i]Kettle doesn't hold it against you. She has failed more cons than you've had dinners. Come back when you're mended.[/i]
+  do: mark con_rumbled; chronicle "The Long Con: rumbled on the Gilded Swan."
+
++ river: Forty Boats
+  if: deeds_returned
+  renown: 4
+  You walk down to the impound at first light to watch. Forty families, and forty boats, and nobody cheering, because they're river folk and don't, but an old woman presses an oar-blade die into your hand and won't take it back.
+  ? silas_caught :: Silas Crane was never seen on the river again. That's one way to put it.
+  ? grisewold_ruined :: Grisewold went up to the Duke in irons. The Duke, they say, was not pleased with what he read.
+  [i]Forty boats. I've told a lot of tales by this fire, and that's still a good number.[/i]
+  do: gain riverfolk_d6; mark deeds_returned; mark kettle_partner; chronicle "The Long Con: the river folk got their forty boats back, for nothing."; rumour dukes_ledger "The Duke of Saltreach keeps a ledger of every man he has ever bought."; if silas_caught then mark silas_exposed; if silas_loose then mark silas_fled; if grisewold_ruined then mark grisewold_ruined; if silas_kettle then mark silas_kettle
+
++ fair: A Fair Price
+  if: fair_split
+  renown: 3
+  The families buy their boats back from Kettle at half their worth, and are glad to, and Kettle buys a round for the whole river.
+  ? silas_caught :: Silas Crane was never seen on the river again.
+  ? grisewold_ruined :: Grisewold went up to the Duke in irons.
+  Kettle pays you your third in a tankard full of silver. "Partner," she says, and clinks it with hers. She also tosses you a die she took off the Swan's table, "for luck, since you've plainly got none."
+  [i]Everybody paid something, and everybody got something. That's the river all over.[/i]
+  do: gain swan_d8; mark kettle_partner; chronicle "The Long Con: the boats went home at a fair price, and Kettle took her cut."; rumour dukes_ledger "The Duke of Saltreach keeps a ledger of every man he has ever bought."; if silas_caught then mark silas_exposed; if silas_loose then mark silas_fled; if grisewold_ruined then mark grisewold_ruined; if silas_kettle then mark silas_kettle
+
++ crossed: The Duke's Gold
+  if: kettle_crossed
+  renown: 2
+  You're a long way down the river by noon, with the Duke's gold in a sack and your heart going like a drum. Somewhere behind you, Kettle is selling forty boats back to forty families, and smiling, and thinking about you.
+  You find a die in the bottom of the gold sack that you didn't put there. Two sixes and no five. Silas Crane's.
+  [i]You crossed Mother Kettle. People have done that before. I could tell you their names, but there's no one left to tell them to.[/i]
+  do: gain crane_d6; mark kettle_crossed; chronicle "The Long Con: you took the Duke's gold and left Mother Kettle with the boats."; rumour dukes_ledger "The Duke of Saltreach keeps a ledger of every man he has ever bought."; if silas_caught then mark silas_exposed; if silas_loose then mark silas_fled; if grisewold_ruined then mark grisewold_ruined
+
++ empty: Next Time
+  renown: 1
+  The deeds are at the bottom of the river, and Grisewold is buying new locks. Kettle buys you breakfast anyway.
+  ? silas_caught :: At least Silas Crane is off the river.
+  "You did all right," she says. "You found my rat for me. That's worth something." She means it, which surprises you both.
+  [i]Not every con comes off. The good ones are the ones you walk away from.[/i]
+  do: mark kettle_partner; chronicle "The Long Con: the deeds went to the bottom of the river."; rumour dukes_ledger "The Duke of Saltreach keeps a ledger of every man he has ever bought."; if silas_caught then mark silas_exposed; if silas_loose then mark silas_fled; if grisewold_ruined then mark grisewold_ruined

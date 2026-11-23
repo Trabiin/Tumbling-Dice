@@ -1,0 +1,284 @@
+title: The Card Sharps' Moon
+id: sharps_moon
+patron: Hollis
+start: cellar_door
+arc: hollis
+order: 1
+pitch: Hollis takes you aside at closing time. There's a door in his cellar he's kept locked for thirty years, and tonight the moon is full.
+offer: rumour:fair_game and night>=8
+teller: triumph :: Now that was a game. The Fair Folk will be talking about it for a hundred years, which for them is next week.
+teller: triumph :: Even the Queen of Hours laughed at that one, and she hasn't laughed since the Romans.
+teller: mixed :: Won, and paid for. You don't get up from that table without leaving something.
+teller: fail :: Lost. Everybody loses at that table eventually. The trick is what you lose.
+teller: loaded_caught :: The Queen of Hours smiles at {die}. "A mortal cheat," she says. "How sweet."
+teller: rest :: A cellar full of barrels, a tap that runs with something golden, and the music from the other room, very far away.
+
+// A secret tale. Offered once you've heard that the Fair Folk keep a dice table under an old inn
+// (the rumour fair_game, from the Pilgrim's arc), from night 8. The inn is this one. The stakes
+// are years. The Queen of Hours knew Aldous Penhallow, and knows the King of Hollows' tell:
+// winning it here helps at the Wood's table in The Teller's Tale.
+
+## cellar_door: The Door in the Cellar
+act: 1
+tile: inn
+at: 0, 0
+
+Closing time. Hollis bolts the front door, and pulls the shutters, and then, instead of going up to bed, picks up a lantern and jerks his head at you. "Cellar," he says.
+Down among the barrels, at the back, behind a rack of old wine, there's a door you've never seen: small, round-topped, painted green, with a brass knocker in the shape of a moon. Light comes under it, and music, and the sound of dice.
+"Thirty years I've kept that locked," Hollis says. "My father kept it locked before me. Once a year, at the full moon, they play down there. The Fair Folk. For years. Your years." He looks at you. "My father went through once. Came back with a bag of gold and grey hair at thirty. You've heard the rumour. I'd rather you went in with me holding the lantern than on your own."
+? seen:teller_named :: "And they knew him," Hollis adds, nodding upstairs toward the hearth. "Penhallow. He played them, they say, before he played the Wood."
+
+* knock: Knock.
+  temper: duty -1
+  do: flag knocked
+  goto: prepare
+  reply: The knocker is cold. The door opens before you touch it a second time. [i]Well, here we are. I always wondered what was down there.[/i]
+
+* hollis: "Why now, Hollis? Thirty years."
+  temper: honesty +1
+  do: flag asked_hollis; regard 1
+  goto: prepare
+  reply: Hollis is quiet a moment. "Because you'd have found it on your own," he says. "You find things. And because Dad always said the Folk owe this house a favour, and nobody's ever been brave enough to collect it." He hands you the lantern. "Collect it."
+
+* stakes: "What exactly do they play for?"
+  temper: honesty +1
+  do: flag asked_stakes
+  goto: prepare
+  reply: "Years," says Hollis. "Luck. Names. Memories. Whatever you've got that they haven't. They don't care about gold. They've got a cellar full of it." He scratches his beard. "And they always, always play fair. That's the frightening part."
+
+## prepare: What to Bring
+act: 1
+type: prepare
+goto: hall
+
+Hollis brings your Pouch down from behind the bar and puts it on a barrel-head. "Bring your best," he says. "They'll know if you don't."
+[i]Choose what you carry. The Fair Folk love a clever throw, a pretty one, and a brave one, in that order. They don't care much for strong.[/i]
+
+## hall: The Hall Under the Inn
+act: 1
+on enter: random_flag weather [revel, hush, storm]
+tile: place
+at: 1.4, 0.3
+
+Through the green door there's no cellar. There's a hall, vaulted with roots and lit with moons in jars, longer than the whole village, and full of the Fair Folk: tall and thin and beautiful and wrong, in clothes made of moth-wings and frost. Somewhere a fiddle plays a tune you almost know. At the far end, on a dais, a long table, and at its head, the Queen of Hours, with a crown of stopped clocks.
+? weather==revel :: A revel tonight: dancing, laughter like breaking glass, wine that sings in the cup.
+? weather==hush :: Everyone silent, watching the table. A game is already going, and somebody is losing.
+? weather==storm :: Thunder above, in the mortal world. Down here they've caught a little of the storm in a bottle, and it rattles.
+A footman with a fox's face bows. "Welcome, mortal. Will you dance first, or drink first, or play?"
+[i]Careful. Everything down here is a game, even the welcome.[/i]
+
+* dance: Dance.
+  temper: honesty +1
+  challenge: kind=test difficulty=standard tries=2 title="A dance in the hall"
+  approach grace: Dance well, and stop when the music stops, and not a moment after.
+  approach lore: Know the old rule: never dance a third dance with the same partner.
+  approach guile: Dance with the fox-footman, and get him talking.
+  > triumph: You dance the hall end to end and stop exactly on the last note, and the whole court applauds, and a lady with frost in her hair whispers to you: "The Queen always throws high first. Always. Let her."
+    do: flag danced; flag queen_tell; fate 1
+    goto: pantry
+  > success: You dance, and stop when the music stops, and the court nods, approving.
+    do: flag danced
+    goto: pantry
+  > mixed: You dance. They take a little something for the music.
+    do: flag danced
+    goto: pantry
+    cost: A year off your life (lose 3 Grit) :: grit -3
+    cost: They keep a memory, a small one (lose 1 Fate) :: fate -1
+  > fail: The music doesn't stop, and neither can you, for an hour, until Hollis reaches through the green door and hauls you out by your collar. You're shaking and old-feeling and very thirsty.
+    do: grit -4; fatigue 1
+    goto: pantry
+
+* drink: Drink.
+  temper: duty -1
+  challenge: kind=test difficulty=standard tries=2 title="The singing wine"
+  approach ward: Drink, and hold it, and stay yourself.
+  approach lore: Know which cup is safe: the one nobody else is drinking from.
+  approach might: Down it in one, and don't fall over.
+  > triumph: The wine sings in you, and for a moment you understand every word in the hall, including the Queen's, to her steward: "Penhallow's friend. Let them sit. I want to see if they throw like him."
+    do: flag drank; flag queen_curious; fate 1
+    goto: pantry
+  > success: The wine goes to your head and your feet, and stays there, warmly.
+    do: flag drank
+    goto: pantry
+  > mixed: It's strong. Stronger than you.
+    do: flag drank
+    goto: pantry
+    cost: Your head swims (tired for a while) :: fatigue 2
+    cost: You promise somebody something you can't remember :: flag promised_fae
+  > fail: The wine sings, and you sing with it, loudly, badly, on a table. The Fair Folk laugh until they weep. It's a kind of success.
+    do: fatigue 2
+    goto: pantry
+
+* play: Play. Straight to the table.
+  do: flag eager
+  goto: pantry
+  reply: The fox-footman smiles with all his teeth. "Eager," he says. "She likes eager. They lose faster." [i]Hm. Not the best start. Not the worst.[/i]
+
+## pantry: The Queen's Pantry
+act: 2
+type: waystone
+on enter: rest 12
+tile: shrine
+at: 2.8, -0.4
+
+The footman shows you to a little side room to wait your turn: barrels, a tap that runs gold, shelves of jars with things in them that move. It's quiet. Somewhere through the wall, the dice.
+On a shelf, in a jar labelled in a careful old hand, a lock of brown hair, and a slip of paper: [i]A. Penhallow, one year, lost at Hazard.[/i]
+[i]A Waystone. Rest. Swap your dice. Don't open the jars.[/i]
+
+* jar: Take the jar with Penhallow's hair.
+  temper: duty -1
+  do: flag took_jar
+  goto: table
+  reply: It goes into your coat. [i]Oh. Oh, I remember losing that. I was nineteen. I thought it was the most frightening night of my life.[/i]
+
+* wait: Leave the jars alone, and wait your turn.
+  temper: honesty +1
+  goto: table
+  reply: You sit on a barrel and wait. The tap drips gold. [i]Good. Good. They always count the jars.[/i]
+
+## table: The Queen of Hours
+act: 2
+type: challenge
+tile: keep
+at: 4.2, 0.3
+token: game_won => seal "The Queen's favour"
+
+You sit down at the long table, opposite the Queen of Hours. Up close she's both very old and very young, and the clocks in her crown are all stopped at different times. She smiles.
+"Penhallow's friend," she says. "He sat there, once. He was charming. He lost." She rolls three dice of moonstone across the cloth to herself. "What will you stake?"
+? took_jar :: Her eyes go to your coat. "And you've brought me something of mine. How thoughtful."
+? queen_curious :: "I want to see if you throw like him," she says, which you already knew.
+
+* play: Stake a year, and play her.
+  contest: opponent=fae_queen title="The Queen of Hours"
+  mod: queen_tell => resolve=-3
+  mod: danced => resolve=-2
+  mod: eager => resolve=2
+  mod: took_jar => resolve=2
+  approach guile: Play her at her own game: the bluff, the hesitation, the throw you didn't mean.
+  approach grace: Play prettily. She loves a pretty throw more than a winning one.
+  approach lore: The old games have old rules. Know them better than she remembers them.
+  > triumph: The Queen of Hours throws down her moonstone dice, and laughs, and the clocks in her crown all start ticking at once. "Oh, well played," she says. "Ask. Anything." And then, before you can ask, she leans close: "The King of Hollows has a tell. When it means to throw high, it touches its antler. Tell Penhallow. Tell him he should have watched the antler."
+    do: flag game_won; flag kings_tell; regard 1
+    goto: favour
+  > success: You win the last throw by a pip. The Queen inclines her head. "Fair," she says. "Your year is your own. And I owe you a little something."
+    do: flag game_won
+    goto: favour
+  > mixed: You win. Not without paying.
+    do: flag game_won
+    goto: favour
+    cost: A year, anyway, for the pleasure of it (lose 4 Grit) :: grit -4
+    cost: A memory you'll never miss (lose 1 Fate) :: fate -1
+  > fail: You lose. The Queen takes your year, gently, like a pickpocket taking a watch, and you feel it go: a little grey at your temple, a little ache in your knee. "Sweet," she says. "Come again next moon."
+    do: grit -3; flag year_lost
+    goto: favour
+  > caught: The Queen picks up your loaded die, and kisses it, and gives it back. "A mortal cheat," she says. "How sweet. It doesn't count, of course." And she takes a year anyway.
+    do: grit -3; flag year_lost; flag caught_cheating
+    goto: favour
+
+* favour: "The Folk owe this house a favour. I'm here to collect."
+  if: asked_hollis
+  temper: duty +1
+  do: flag collected
+  goto: favour
+  reply: The hall goes very quiet. The Queen of Hours looks at you, and then up, through the ceiling, toward Hollis's bar. "So we do," she says. "His grandfather pulled my nephew out of a millpond. We pay our debts." She leans back. "Name it."
+
+* jar_back: Put Penhallow's jar on the table, and ask for his year back.
+  if: took_jar
+  temper: mercy +1
+  contest: opponent=fae_queen title="A year for Aldous Penhallow"
+  approach grace: Ask nicely. Very nicely.
+  approach lore: A year won at Hazard is still owed to the loser's heirs, by the old law. Wenna is his heir.
+  approach ward: Put your own year on the table beside it.
+  > triumph: The Queen opens the jar, and the lock of hair goes up like smoke, and somewhere upstairs, by the hearth, something sighs, like an old man stretching. "Given back," says the Queen. "Fair. And here: something for the Wood's table." She tells you the King of Hollows' tell.
+    do: flag game_won; flag year_returned; flag kings_tell; regard 2
+    goto: favour
+  > success: "Fine," says the Queen, and opens the jar. The hair goes up like smoke.
+    do: flag game_won; flag year_returned
+    goto: favour
+  > mixed: She gives it back. She takes something for it.
+    do: flag game_won; flag year_returned
+    goto: favour
+    cost: One of your years, instead (lose 4 Grit) :: grit -4
+    cost: A die from your Pouch, for her shelves (lose your lowest) :: lose_lowest
+  > fail: The Queen takes the jar back, and puts it on her own shelf, behind her, where you'll never reach it. "Mine," she says. "Fairly lost."
+    do: flag year_lost
+    goto: favour
+  > caught: "Lead," says the Queen, "to win back a year lost at dice." She laughs and laughs. She keeps the jar.
+    do: flag year_lost; flag caught_cheating
+    goto: favour
+
+## favour: What the Queen Gives
+act: 3
+tile: keep
+at: 5.6, -0.4
+
+The Queen of Hours looks at you down the long table.
+? game_won or collected :: "Well," she says. "You've won something tonight. Choose."
+? year_lost :: "You've lost," she says. "But I like you. You may choose something anyway. Something small."
+
+* dice: "A die. One of yours."
+  temper: duty -1
+  do: flag chose_die
+  goto: ending
+  reply: She rolls one of her moonstone dice across the cloth to you. It's cold, and light, and it shows a different face every time you look away. "Throw it in the Wood," she says. "The King hates moonstone."
+
+* tell: "Tell me how to beat the King of Hollows."
+  if: not kings_tell
+  temper: honesty +1
+  do: flag kings_tell
+  goto: ending
+  reply: The Queen of Hours leans across the table and whispers it: the King touches its antler when it means to throw high. "He never noticed," she says. "Penhallow. He was looking at the dice. Everybody looks at the dice."
+
+* hollis: "Give Hollis's father his years back."
+  if: game_won or collected
+  temper: mercy +1
+  do: flag hollis_years
+  goto: ending
+  reply: The Queen looks surprised, and then pleased. "The old man upstairs, with grey hair at thirty," she says. "Done." When you come up through the green door, Hollis is staring at an old portrait over the cellar stairs, in which his father's hair has gone brown again. He doesn't say anything. He doesn't need to.
+
+* nothing: "Nothing. I'll go while I still can."
+  temper: duty +1
+  goto: ending
+  reply: "Wise," says the Queen of Hours. "Rare, in a gambler. Come again next moon." The green door shuts behind you, and the music stops as if it was never there.
+
+## ending: How It Ended
+type: ending
+
++ lost: Next Moon
+  if: defeat or wounds>=3
+  [i]And Hollis pulled you out through the green door at dawn, older by more than a night, and locked it behind you, and didn't say I told you so, which is the kindest thing he's ever done.[/i]
+  do: chronicle "The Card Sharps' Moon: the Fair Folk kept a year of yours."
+
++ moon: Moonstone
+  if: chose_die
+  renown: 3
+  You keep the moonstone die in your Pouch, and it shows a different face every time you look, and every full moon it hums a tune you almost know.
+  ? kings_tell :: And you know where the King of Hollows' eyes go, when it means to throw high.
+  ? year_returned :: Upstairs, by the hearth, the Teller's voice is younger, after that. Only a little. You're not sure anybody else notices.
+  [i]A die from the Fair Folk. Treat it kindly. It will remember how you treat it for longer than you'll live.[/i]
+  do: gain moon_d8; mark fae_game; if kings_tell then mark kings_tell; if year_returned then mark penhallow_year; chronicle "The Card Sharps' Moon: you played the Queen of Hours, and won a moonstone die."
+
++ tell: The King's Tell
+  if: kings_tell
+  renown: 3
+  You come up through the green door at dawn with the King of Hollows' tell in your head, and the Queen's laughter in your ears.
+  ? year_returned :: Upstairs, by the hearth, the Teller's voice is younger, after that. Only a little.
+  [i]The antler. It touched its antler. All that time, and I was looking at the dice.[/i]
+  do: gain fae_d6; mark fae_game; mark kings_tell; if year_returned then mark penhallow_year; chronicle "The Card Sharps' Moon: the Queen of Hours told you the King of Hollows' tell."
+
++ hollis: Hollis's Father
+  if: hollis_years
+  renown: 4
+  Hollis pours you a drink on the house, every night, for the rest of the year, and won't hear a word about it.
+  ? year_returned :: Upstairs, by the hearth, the Teller's voice is younger, after that.
+  He takes the brass moon-knocker off the green door, and gives it to Brannoc, who turns it into a die.
+  [i]A son's years given back to his father. The Folk talk about that sort of thing for centuries. So do I.[/i]
+  do: gain fae_d6; standing guild 1; mark fae_game; mark hollis_favour; if year_returned then mark penhallow_year; chronicle "The Card Sharps' Moon: you won Hollis's father's years back from the Fair Folk."
+
++ home: Up the Cellar Stairs
+  renown: 2
+  You come up through the green door, and Hollis locks it, and you both have a very large drink.
+  ? year_returned :: Upstairs, by the hearth, the Teller's voice is younger, after that. Only a little.
+  ? year_lost :: There's a grey hair at your temple that wasn't there yesterday.
+  [i]The Fair Folk's table. You sat at it and got up again. Most people would call that winning.[/i]
+  do: gain fae_d6; mark fae_game; if year_returned then mark penhallow_year; chronicle "The Card Sharps' Moon: you played at the Fair Folk's table under the tavern."

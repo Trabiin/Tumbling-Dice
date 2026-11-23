@@ -1,0 +1,470 @@
+title: The Duke's Ledger
+id: dukes_ledger
+patron: Mother Kettle
+start: plea
+arc: kettle
+order: 2
+pitch: The Duke of Saltreach keeps a ledger of every man he has ever bought, and Mother Kettle wants it before the masque is over.
+offer: ended:long_con
+expires: winter
+missed: At midwinter the Duke burned his ledger in his own hearth, and every name in it slept easier. Kettle doesn't mention it. She doesn't have to.
+teller: triumph :: Now that was a masque. They'll be talking about it in Seawatch House for a generation, behind their fans.
+teller: triumph :: Even the Duke's portraits looked impressed.
+teller: mixed :: Through, with your mask slipping. It happens in the best houses.
+teller: fail :: Seen. Well, a ballroom is a hard place to hide. Everybody is looking at everybody.
+teller: loaded_caught :: The Duke's eyes go to {die}, and he smiles. He has bought better cheats than you.
+teller: rest :: A little chapel in a big house, and a saint who has seen a great many guilty people kneel here.
+
+// Mother Kettle's arc, tale 2 of 3. A heist at the Duke's masque. Reads The Long Con (whether
+// you crossed Kettle, the boats, Silas, Grisewold) and the other arcs: Magistrate Coyle and
+// Harrow from Captain Ashgrove's, Ormond Vane from Wren's. What becomes of the ledger is read
+// by The Gilded Ruin.
+
+## plea: Kettle Again
+act: 1
+tile: inn
+at: 0, 0
+token: kettle_trusts => flag "Kettle's word, given again"
+
+? seen:kettle_crossed :: Mother Kettle sits down at your table. She doesn't bring you a drink. "You took the Duke's gold and left me holding forty wet boats," she says pleasantly. "I've decided to forgive you. Because I need you. When I stop needing you, we'll talk again."
+? seen:deeds_returned :: Mother Kettle sits down at your table with two cups. "Forty boats," she says. "Every family on the river knows your face. You're a saint now. It's terrible for business." She grins. "I've got another job."
+? seen:kettle_partner and not seen:deeds_returned :: Mother Kettle sits down at your table with two cups and a pack of cards. "Partner," she says.
+? seen:silas_fled :: "Silas Crane is in Seawatch House," she adds, "on the Duke's payroll, eating off silver."
+"The Duke of Saltreach," she says, "Orrin Mallory, keeps a ledger. Every man he's ever bought, and what he paid, and what for. Guild masters. Magistrates. Abbots. Me, once or twice." She shuffles. "Whoever holds that book holds the river."
+"Midsummer, he throws a masque at Seawatch House. Five hundred guests in masks, and the ledger in the map room on the second floor." She lays down a card: the King of Coins. "I want it."
+? told:pretender_road :: "Magistrate Coyle's in it," she adds. "Your friend from the Pretender's road. And a lord marshal, I hear, who'd like to be a king."
+? seen:ormond_escaped :: "And a collector of drowned men, called Vane," she says, "who's bought the Duke's protection."
+
+* promise: "You'll have it."
+  temper: duty +1
+  do: flag promised_kettle
+  goto: prepare
+  reply: Kettle nods. "Good. And when you have it, partner, you'll give it to me without reading it." She looks at you. "You'll read it. Everybody reads it."
+
+* why: "And what do you do with the river, when you hold it?"
+  temper: honesty +1
+  do: flag asked_why; regard 1
+  goto: prepare
+  reply: Kettle is quiet a long time. "I make sure nobody takes another family's boat," she says at last. "And I make a great deal of money. Both. You can't have the one without the other, on this river." [i]Honest, for once. It frightened her a little, I think.[/i]
+
+* trust: "Last time your man sold us. Who's selling us this time?"
+  temper: honesty +1
+  do: flag kettle_trusts
+  goto: prepare
+  reply: "Nobody," says Kettle. "Because this time there's only you and me who know the plan." She considers. "And now Hollis, because he's listening. Hollis!" Behind the bar, Hollis polishes a tankard and whistles.
+
+## prepare: Packing for the Masque
+act: 1
+type: prepare
+goto: gate
+
+Hollis has your Pouch on the bar, and a mask: a gilded fox. "Kettle left it," he says. "She said you'd know why." You don't.
+[i]Choose what you carry. A masque wants charm and quick feet. A map room wants a good memory. The Duke's guard want something heavier.[/i]
+
+## gate: Seawatch House
+act: 1
+on enter: random_flag weather [warm, storm, fireworks]; if season==winter then flag weather snow
+tile: keep
+at: 1.4, 0.2
+
+Seawatch House stands on its own headland above Saltreach, all white towers and lit windows, with the sea booming at the foot of its walls. Carriages queue down the hill for half a mile. Everybody is masked: foxes and owls and suns and moons and one man dressed as a very large pie.
+? weather==warm :: A warm night, and the windows all open, and music spilling down the cliff.
+? weather==storm :: A summer storm off the sea. The masque goes on regardless. Thunder makes a fine drum.
+? weather==fireworks :: Fireworks over the bay, green and gold. Every face turned up.
+? weather==snow :: A winter masque, the Duke's own folly: snow on the steps, ice sculptures in the hall.
+At the doors, the Steward of Seawatch House checks every invitation with a gold glass.
+[i]Three ways in. Pick the one that's most like you, and then let's see if the dice agree.[/i]
+
+* invite: Present an invitation. Somebody's.
+  challenge: kind=test difficulty=standard tries=2 title="A forged invitation"
+  mod: seen:grisewold_ruined => progress=-2
+  approach guile: Grisewold's invitation, stolen from his cabin on the Swan. He won't be using it.
+  approach lore: Forge one: you've seen enough of the Duke's seals.
+  approach grace: Arrive on a lord's arm, and let him do the explaining.
+  > triumph: The Steward bows you in as Lord Somebody of Somewhere and has a footman bring you a glass of the good wine. On the way in you lift a guest list off a salver, with the map room's guard rota pinned to it.
+    do: flag inside; flag rota
+    goto: ballroom
+  > success: The Steward looks at the invitation for a long, long moment. Then he bows you in.
+    do: flag inside
+    goto: ballroom
+  > mixed: You're in. Not cleanly.
+    do: flag inside
+    goto: ballroom
+    cost: The Steward keeps an eye on you (the guard are told) :: flag guard_wary
+    cost: A fee for the lord whose arm you borrowed (lose 8 Coin) :: coin -8
+  > fail: The Steward smiles thinly and hands you to two footmen, who throw you out of the servants' door. Which is, as it happens, also a way in.
+    do: flag inside; flag guard_wary
+    goto: ballroom
+
+* steward: Talk your way past the Steward as hired entertainment.
+  contest: opponent=steward title="The Steward of Seawatch House"
+  approach grace: A dancer, booked weeks ago. Show him.
+  approach guile: The Duke's own fortune-teller, and you know something about the Steward he'd rather you didn't.
+  approach lore: A musician from the guild of Saltreach, and you can name the Duke's favourite air.
+  > triumph: Not only does the Steward let you in, he gives you the run of the house as entertainment. Nobody stops a performer anywhere. You see the map room's door from the musicians' gallery.
+    do: flag inside; flag rota; flag performer
+    goto: ballroom
+  > success: The Steward sighs and waves you through the side door, with the jugglers.
+    do: flag inside; flag performer
+    goto: ballroom
+  > mixed: You're in. With a catch.
+    do: flag inside; flag performer
+    goto: ballroom
+    cost: You actually have to perform, all evening (tired for a while) :: fatigue 2
+    cost: He wants a cut of your fee (lose 6 Coin) :: coin -6
+  > fail: The Steward isn't fooled, and you end up climbing in through the kitchens after all, smelling of fish.
+    do: flag inside; flag guard_wary
+    goto: ballroom
+
+* wall: Climb the sea wall, where nobody's looking.
+  temper: duty -1
+  challenge: kind=trial progress=16 danger=3 danger_text="A wave bursts over the rocks below." title="The sea wall"
+  mod: weather==storm => progress=3
+  approach might: Straight up the stones, hand over hand, with the sea grabbing at your boots.
+  approach grace: Wait for each wave to fall back, then climb like a cat.
+  approach ward [progress=14]: A rope and a grapnel, and patience.
+  > triumph: You come over the parapet on the second floor, right outside the map room window. It's barred. But now you know exactly where it is, and you've seen the guard change.
+    do: flag inside; flag rota; flag window_seen
+    goto: ballroom
+  > success: Over the top, soaked, into a garden full of statues. You steal a cloak and a mask off a sleeping guest.
+    do: flag inside
+    goto: ballroom
+  > mixed: Over. The sea took its due.
+    do: flag inside
+    goto: ballroom
+    cost: Dashed on the rocks (lose 4 Grit) :: grit -4
+    cost: A guard sees a wet figure in the garden :: flag guard_wary
+  > fail: The sea takes you off the wall, twice. The third time you make it, half drowned, and walk into the ballroom dripping. "Fancy dress," you tell everybody. "Shipwreck."
+    do: flag inside; grit -4; flag guard_wary
+    goto: ballroom
+
+## ballroom: The Masque
+act: 2
+tile: place
+at: 2.8, -0.4
+token: isolde_ally => dove "Lady Isolde's bargain"
+
+The ballroom is a forest of masks and candles, five hundred people dancing as if the floor might give way. At the top of the room, unmasked because he can be, Duke Orrin Mallory: grey and handsome and still, watching his guests like a man watching his money.
+? seen:silas_fled :: At the Duke's elbow, in a fine new coat, Silas Crane. He hasn't seen you. Yet.
+? seen:grisewold_ruined :: Grisewold isn't here. A guest says he's in the Duke's cellars, and not for the wine.
+? not seen:grisewold_ruined :: Grisewold is here, dressed as a swan, which is unfortunate in every way.
+A young woman in a silver owl mask takes your arm before you can stop her and steers you into the dance. "You're not a guest," she says. "Guests don't look at doors the way you do. I'm Isolde. He's my father. I want to get out of this house, and I think you can help me."
+[i]A ballroom is a dangerous place for a liar. Everybody else is lying too, and they're better at it.[/i]
+
+* isolde: "Help me get the ledger, and I'll get you out."
+  temper: mercy +1
+  contest: opponent=isolde title="Lady Isolde's bargain"
+  approach grace: Dance with her, and talk, and be honest under the mask.
+  approach guile: Promise her more than you can give, and make it sound true.
+  approach lore: Tell her what's in her father's ledger. She already half knows.
+  > triumph: Isolde stops dancing. "The map room key is on my father's watch-chain," she says. "And there's a stair behind the chapel that goes down to the sea. I'll meet you there." She slips you her signet ring, for the guards. "Don't be late."
+    do: flag isolde_ally; flag key_known; flag sea_stair
+    goto: chapel
+  > success: "The chapel," Isolde says. "There's a stair behind it, down to the sea. When you have it, I'll be there." She's gone into the crowd.
+    do: flag isolde_ally; flag sea_stair
+    goto: chapel
+  > mixed: She'll help. She wants something for it.
+    do: flag isolde_ally
+    goto: chapel
+    cost: She wants passage on Kettle's boats (Kettle will charge you) :: coin -10
+    cost: She wants her father to see her go (it will be loud) :: flag guard_wary
+  > fail: Isolde laughs, and drops your arm, and tells the next guard that the fox is a thief. You lose yourself in the crowd, just.
+    do: flag guard_wary
+    goto: chapel
+
+* dance: Dance with the Duke's guests, and listen.
+  challenge: kind=test difficulty=standard tries=2 title="Gossip in the dance"
+  approach grace: Dance with everybody, especially the bad dancers. They talk.
+  approach guile: Pretend to be a guest who knows a terrible secret, and let them guess.
+  approach lore: Recognise everybody behind their masks by their rings, and say so.
+  > triumph: By the third dance you know where the map room is, that the key is on the Duke's watch-chain, that Silas Crane has the room next to it, and that the Abbot of Marrowmere, dressed as a sheep, is in the ledger for a very large sum.
+    do: flag key_known; flag rota; fate 1
+    goto: chapel
+  > success: The map room is on the second floor, past the chapel. The Duke keeps the key on his watch-chain.
+    do: flag key_known
+    goto: chapel
+  > mixed: You find out. Someone finds you out.
+    do: flag key_known
+    goto: chapel
+    cost: A jealous husband (lose 3 Grit, and a tooth) :: grit -3
+    cost: Someone mentions the fox who asks questions :: flag guard_wary
+  > fail: You dance until your feet bleed and learn only that the pie is a baron. You'll find the map room the hard way.
+    do: fatigue 1
+    goto: chapel
+
+* duke: Go and speak to the Duke himself.
+  temper: duty -1
+  do: flag met_duke
+  goto: chapel
+  reply: The Duke looks at you for a long moment through your mask. "You have the walk of one of Kettle's people," he says, quite pleasantly. "Enjoy the masque. Do try the oysters. And stay out of my map room." [i]He knows. Of course he knows. Men like that always know. The question is what he means to do about it.[/i]
+
+## chapel: The Chapel of Saint Brine
+act: 2
+type: waystone
+on enter: rest 12
+tile: shrine
+at: 4.2, 0.2
+
+A little chapel off the long gallery, cold and quiet after the ballroom. Candles in front of Saint Brine, patron of sailors, who has seen a great many guilty people kneel here. Through the wall the music goes on.
+? sea_stair :: Behind the altar, a narrow door. Damp air comes under it, and the sound of the sea.
+? met_duke :: Two of the Duke's guard stroll past the chapel door, and glance in, and stroll on.
+? seen:silas_fled :: Silas Crane's voice, somewhere in the gallery, asking a footman if he's seen a fox.
+[i]A Waystone. Breathe. Swap your dice. The map room is up one more stair.[/i]
+
+* go: Up the stair to the map room.
+  goto: maproom
+  reply: You straighten your mask and go.
+
+* candle: Light a candle for the families on the river, first.
+  temper: mercy +1
+  do: regard 1
+  goto: maproom
+  reply: It's a small flame in a big house. [i]Saint Brine doesn't mind thieves, the sailors say. Only liars.[/i]
+
+## maproom: The Map Room
+act: 2
+type: challenge
+tile: chest
+at: 5.6, -0.4
+token: ledger_taken => seal "The Duke's ledger"
+
+The map room is round, at the top of a tower, with charts of the whole river painted on the walls and a great brass orrery in the middle that turns by clockwork. The ledger is in a glass case under the orrery: black boards, a brass clasp, thick as a Bible.
+? key_known :: The case is locked. The key is on the Duke's watch-chain, two floors down.
+? isolde_ally :: Isolde's signet sends the guard at the door off to fetch you a glass of wine. He doesn't come back.
+? rota :: You know the guard changes at the next bell. You have until then.
+
+* case: Open the case.
+  challenge: kind=trial progress=17 danger=3 danger_text="Boots on the stair." title="The orrery lock"
+  mod: rota => progress=-3
+  mod: guard_wary => progress=3
+  mod: isolde_ally => progress=-2
+  approach lore: The lock turns with the orrery. Set the planets to the night the Duke was born.
+  approach guile: Wire and a hairpin, and the clockwork's own noise to cover yours.
+  approach might [progress=19]: Break the glass and be quick.
+  > triumph: The orrery turns, the case opens with a chime, and the ledger is in your hands. You flip it open. Every name you expected, and one you didn't. In the back, under K, in the Duke's neat hand: Mother Kettle, informer, eleven years, forty crowns a season.
+    do: flag ledger_taken; flag ledger_read; flag kettle_in_ledger
+    goto: duke
+  > success: The case opens. The ledger is heavy and cold. You don't open it. Not yet.
+    do: flag ledger_taken
+    goto: duke
+  > mixed: You have it. Not quietly.
+    do: flag ledger_taken
+    goto: duke
+    cost: Glass in your hands (lose 4 Grit) :: grit -4
+    cost: The orrery chimes the alarm through the whole tower :: flag guard_wary
+  > fail: The orrery jams, and bells ring all over the house. You grab the ledger through the broken glass and run, and the whole house runs after you.
+    do: flag ledger_taken; flag guard_wary; grit -3
+    goto: duke
+
+* read: Read the ledger where it lies, and leave it.
+  temper: honesty +1
+  challenge: kind=test difficulty=standard tries=2 title="Reading upside down through glass"
+  approach lore: Read fast, and remember everything.
+  approach grace: Angle a candle and a mirror, and turn the pages with a long hatpin through the crack.
+  > triumph: You read every page, and remember them, and leave the ledger exactly where it was. Nobody will ever know. Including the page under K: Mother Kettle, informer, eleven years.
+    do: flag ledger_read; flag ledger_memorised; flag kettle_in_ledger
+    goto: duke
+  > success: You read enough: the Guild masters, the Abbot, Magistrate Coyle, a lord marshal in the north. You leave it in the case.
+    do: flag ledger_read; flag ledger_memorised
+    goto: duke
+  > mixed: You read some of it. You'll remember some of that.
+    do: flag ledger_read; flag ledger_memorised
+    goto: duke
+    cost: Your eyes ache for days (tired for a while) :: fatigue 2
+    cost: You leave a smudge on the glass (the Duke will know) :: flag guard_wary
+  > fail: The candle catches a page through the crack, and smoke curls up out of the case. You run. Behind you, the ledger is burning, one page at a time.
+    do: flag ledger_burning; flag guard_wary
+    goto: duke
+
+## duke: The Duke
+act: 3
+type: encounter
+tile: keep
+at: 7.0, 0.2
+
+At the bottom of the tower stair the Duke is waiting, alone, with a glass of wine. Behind him, the Seawatch Guard in their silver masks.
+? seen:silas_fled :: And Silas Crane, looking pleased with himself.
+? ledger_burning :: Smoke is coming down the stair behind you. The Duke sniffs, and his face goes very still.
+"Kettle's fox," he says. "Put it down, and walk out of my house, and I'll forget you were here. Or don't, and I'll have you thrown off the cliff. Either way the oysters will be served at midnight."
+? isolde_ally :: Behind the guard, in her owl mask, Isolde catches your eye and tilts her head at the chapel.
+
+* parley: "Let's talk about what's in your book, my lord."
+  contest: opponent=duke_parley title="Duke Orrin Mallory"
+  mod: ledger_read => resolve=-3
+  mod: seen:harrow_exposed => resolve=-2
+  approach guile: You've read it. You know who's in it. And so will everybody, unless.
+  approach lore: Name his debts, one by one, very quietly.
+  approach grace: Speak to him as one gambler to another. Everybody folds sometime.
+  > triumph: The Duke is silent for a long time. Then he laughs, genuinely. "Take it," he says. "Get out. I'll write a new one." He hands you his own purse, too, for your silence about the Abbot. Silas Crane looks as if he's going to be sick.
+    do: flag got_away; coin 15
+    goto: choice
+  > success: "Go," the Duke says at last, very softly. "Before I change my mind." The guard step aside.
+    do: flag got_away
+    goto: choice
+  > mixed: He lets you go. He'll remember your walk.
+    do: flag got_away
+    goto: choice
+    cost: The Duke keeps a few pages (the Crown's) :: flag pages_kept
+    cost: He'll remember your face (the Crown will hear your name) :: standing crown -1
+  > fail: "Throw it off the cliff," says the Duke, "and the fox with it." You get out of a window instead, two floors up, and the ledger goes with you, and so does a good deal of skin.
+    do: grit -5; flag got_away
+    goto: choice
+  > caught: The Duke sees your loaded die and smiles. "I own better cheats than you," he says. "Silas!" You run, and the house runs after you.
+    do: grit -3; flag got_away; flag caught_cheating
+    goto: choice
+
+* fight: Through the guard, and out.
+  temper: duty +1
+  combat: foe=seawatch_guard
+  mod: guard_wary => ambushed=1
+  > triumph: You go through the Seawatch Guard and out of the great doors into the fireworks, and five hundred masked guests applaud, thinking it part of the show.
+    do: flag got_away
+    goto: choice
+  > success: You fight your way out of a side door and down the hill.
+    do: flag got_away
+    goto: choice
+  > mixed: Out, and bleeding.
+    do: flag got_away
+    goto: choice
+    cost: A rapier through the arm (lose 5 Grit) :: grit -5
+    cost: A page or two tears loose in the fight :: flag pages_kept
+  > fail: They take you on the stair. Isolde, of all people, breaks a vase over the sergeant's head, and you run.
+    do: grit -4; flag got_away
+    goto: choice
+
+* stair: The sea stair behind the chapel, with Isolde.
+  if: sea_stair
+  temper: mercy +1
+  challenge: kind=test difficulty=standard tries=2 title="Down the sea stair"
+  approach grace: Run, with Isolde's hand in yours, down a thousand wet steps.
+  approach ward: Hold the door at the top while she goes first.
+  approach might: Bar the door behind you with the chapel's own pew.
+  > triumph: Down the stair and into Kettle's boat at the bottom, Isolde laughing like a child, the Duke's bells ringing behind you. She gives you her signet ring. "I won't be needing it," she says.
+    do: flag got_away; flag isolde_free; regard 1
+    goto: choice
+  > success: Down the stair to the sea. Kettle's boat is waiting. Isolde climbs in after you without looking back.
+    do: flag got_away; flag isolde_free
+    goto: choice
+  > mixed: Down the stair. Not unhurt.
+    do: flag got_away; flag isolde_free
+    goto: choice
+    cost: A fall on the wet steps (lose 4 Grit) :: grit -4
+    cost: The Duke sees his daughter go (and knows whose boat) :: standing crown -1
+  > fail: The stair is slick and the guard are fast. You make the boat, but Isolde doesn't: you see her owl mask at the top of the stair, held fast between two guards.
+    do: grit -3; flag got_away
+    goto: choice
+
+## choice: Whose River
+act: 3
+tile: cove
+at: 8.4, -0.3
+token: ledger_burned => fire "The ledger, burned"
+token: ledger_kettle => seal "The ledger, in Kettle's hands"
+
+Dawn on the water. Kettle's boat rocks at its mooring under the cliffs. Kettle herself sits in the stern with her hands held out for the book.
+? ledger_taken :: The ledger lies in your lap, heavy as a stone.
+? ledger_memorised and not ledger_taken :: You don't have the book. You have it in your head, every page.
+? ledger_burning and not ledger_taken :: You have nothing. The ledger burned in its case. Kettle takes the news calmly.
+? kettle_in_ledger :: And you know her page. Eleven years, forty crowns a season.
+? isolde_free :: Isolde sits in the bow with her mask in her lap, watching the house she grew up in get smaller.
+
+* kettle: Give Kettle the ledger.
+  if: ledger_taken
+  temper: duty +1
+  do: flag ledger_kettle; standing guild 2
+  goto: ending
+  reply: Kettle takes it in both hands. Then she opens it at K, and tears out one page, and lets it go into the sea. She sees you watching. "Everybody has a page," she says. "Don't tell me you'd have kept mine."
+
+* crown: Send it to the Crown's justices, sealed.
+  if: ledger_taken
+  temper: honesty +1
+  do: flag ledger_crown; standing crown 2; standing guild -2
+  goto: ending
+  reply: Kettle stares at you. Then she shrugs, as if a little part of her expected it. "My page'll be in there," she says. "You know that. I'll hang with the rest of them." [i]Will she? Justice in this country is slow, and Kettle is quick. But it's a long way from the river to the Crown, and the book is heavy.[/i]
+
+* burn: Burn it. Nobody should hold the river.
+  if: ledger_taken
+  temper: mercy +1
+  do: flag ledger_burned; standing guild -1
+  goto: ending
+  reply: The pages curl and go black one by one, every name and every price. Kettle watches it burn with something like relief. "Well," she says. "That's that, then." [i]A great many men in Saltreach will sleep better tonight, and never know why.[/i]
+
+* keep: Keep it. Nobody else should hold the river, either.
+  if: ledger_taken
+  temper: honesty -1
+  do: flag ledger_kept; coin 10
+  goto: ending
+  reply: You put it inside your coat. Kettle looks at you for a very long time. "Oh, partner," she says softly. "Now you're in it." [i]Whoever holds that book holds the river. And everybody wants to hold the river.[/i]
+
+* tell: Tell Kettle what you read, and keep the names to yourself.
+  if: ledger_memorised and not ledger_taken
+  temper: honesty +1
+  do: flag ledger_memory
+  goto: ending
+  reply: You tell her the Guild masters, and the Abbot, and Coyle. You don't tell her about K. She knows you're not telling her something. She doesn't ask.
+
+* none: "It burned. All of it."
+  if: not ledger_taken and not ledger_memorised
+  do: flag ledger_lost
+  goto: ending
+  reply: "Good," says Kettle, surprisingly. "Then nobody has it. Including the Duke."
+
+## ending: How It Ended
+type: ending
+
++ thrown: Off the Cliff
+  if: defeat or wounds>=3
+  [i]And the Seawatch Guard did throw you off the cliff, as the Duke promised, and the sea, which is more merciful than dukes, threw you back on the beach.[/i]
+  Kettle's boat found you there at dawn. The ledger is still in the Duke's map room, under new glass.
+  do: mark ledger_lost; chronicle "The Duke's Ledger: thrown off the cliff at Seawatch House."
+
++ kettle: The River in Kettle's Hands
+  if: ledger_kettle
+  renown: 3
+  By autumn there isn't a Guild master on the river who doesn't come when Kettle whistles, and there isn't a family on the river who's lost a boat since midsummer.
+  ? isolde_free :: Isolde Mallory sends you a letter from the south, in a hand that's learning to be happy.
+  Kettle sends you a die cut from the ledger's own boards. "A souvenir," the note says. "Since you didn't read it." She knows you did.
+  [i]The river has a queen now. She cheats at cards, and she doesn't take boats. There are worse queens.[/i]
+  do: gain ledger_d10; mark ledger_kettle; chronicle "The Duke's Ledger: Mother Kettle holds the river now."; if kettle_in_ledger then mark kettle_informer; if isolde_free then mark isolde_free
+
++ crown: The King's Justice
+  if: ledger_crown
+  renown: 4
+  The ledger goes north in a sealed box, and by the first frosts the Crown's justices are in Saltreach with a great many warrants. The Abbot resigns. Magistrate Coyle is arrested in his nightshirt. The Duke goes abroad for his health.
+  ? isolde_free :: Isolde writes from the south: her father has fled to the old Mint, they say, with what's left of his gold.
+  Kettle's name is on a warrant too. Kettle is not in Saltreach any more. Nobody knows where Kettle is.
+  [i]Justice. It's a slow sort of tale, justice. But it does get told, in the end, if somebody is brave enough to send the book north.[/i]
+  do: gain masque_d6; mark ledger_crown; mark duke_fled; chronicle "The Duke's Ledger: the book went to the Crown, and the Duke fled."; if kettle_in_ledger then mark kettle_informer; if isolde_free then mark isolde_free
+
++ burned: Ashes on the Water
+  if: ledger_burned
+  renown: 3
+  The ledger is ash on the tide, and in Saltreach, a great many people who'll never know you sleep a little easier.
+  ? isolde_free :: Isolde stays on with Kettle's crew for the winter, and turns out to be terrifyingly good at cards. She gives you her signet ring, ground down into a die.
+  Kettle buys you a drink, and doesn't say anything, and that is the best thing she has ever said to you.
+  [i]Some tales end with a fire. It's honest, a fire. Everybody gets the same amount of nothing.[/i]
+  do: if isolde_free then gain isolde_d8; if not isolde_free then gain masque_d6; mark ledger_burned; chronicle "The Duke's Ledger: you burned it on the water."; if kettle_in_ledger then mark kettle_informer; if isolde_free then mark isolde_free
+
++ kept: The Book in Your Coat
+  if: ledger_kept
+  renown: 2
+  You hold the river. You find out what that means within the week: three men follow you home from the market, and a Guild master offers you a fortune, and someone tries to set fire to your room at the tavern.
+  Kettle doesn't speak to you. But she sits at her table every night, watching the door.
+  ? isolde_free :: Isolde sends you her signet, ground down into a die, with a note: "I know what it is to be watched. Be careful."
+  [i]Whoever holds the book holds the river. Nobody ever said holding the river would be restful.[/i]
+  do: gain ledger_d10; if isolde_free then gain isolde_d8; mark ledger_kept; chronicle "The Duke's Ledger: you kept it."; if kettle_in_ledger then mark kettle_informer; if isolde_free then mark isolde_free
+
++ memory: What You Remember
+  if: ledger_memory
+  renown: 3
+  The Duke never knew the book was read. The book never left the case. But you know every name in it, and so, now, does Kettle, more or less.
+  ? isolde_free :: Isolde gives you her signet ring, ground into a die, and goes south.
+  [i]The best theft leaves nothing missing. I've always thought so.[/i]
+  do: if isolde_free then gain isolde_d8; if not isolde_free then gain masque_d6; mark ledger_memory; chronicle "The Duke's Ledger: read, and left where it lay."; if kettle_in_ledger then mark kettle_informer; if isolde_free then mark isolde_free
+
++ lost: Nothing in Hand
+  renown: 1
+  The ledger burned in its case, or is still in it. Either way, nobody holds the river this winter.
+  ? isolde_free :: Isolde, at least, got out. She sends you a letter from the south, and her signet ground into a die.
+  [i]Not every heist comes home with the jewels. Some come home with a good story. You'll do.[/i]
+  do: if isolde_free then gain isolde_d8; mark ledger_lost; chronicle "The Duke's Ledger: the book was lost."; if isolde_free then mark isolde_free

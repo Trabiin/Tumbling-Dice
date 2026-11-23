@@ -28,6 +28,12 @@ const Practice := preload("res://scripts/tale/practice.gd")
 const Board := preload("res://scripts/rules/board.gd")
 const Forge := preload("res://scripts/rules/forge.gd")
 const Patrons := preload("res://scripts/rules/patrons.gd")
+const Mood := preload("res://scripts/rules/mood.gd")
+const TaleState := preload("res://scripts/rules/tale_state.gd")
+const Settings := preload("res://scripts/game/settings.gd")
+const Controls := preload("res://scripts/game/controls.gd")
+const I18n := preload("res://scripts/game/i18n.gd")
+const Extract := preload("res://tools/extract_strings.gd")
 
 var failures := 0
 var checks := 0
@@ -43,7 +49,7 @@ func _init() -> void:
 		elif a.begins_with("--report="): report_path = a.substr(9)
 		elif a.begins_with("--only="): only = a.substr(7)
 	var t0 := Time.get_ticks_msec()
-	var suites := ["pouch", "scoring", "odds", "combat", "contest", "challenges", "lint", "format", "preview", "save", "board", "forge", "campaign", "practice", "bots", "year"]
+	var suites := ["pouch", "scoring", "odds", "combat", "contest", "challenges", "lint", "format", "preview", "save", "board", "forge", "campaign", "m6", "access", "practice", "bots", "year", "builds"]
 	for s in suites:
 		if only == "" or only == s:
 			print("== ", s)
@@ -850,19 +856,19 @@ func test_campaign() -> void:
 	# Patrons' offers follow the arcs.
 	c = Campaign.new()
 	c.new_campaign()
-	var ids: Array = Patrons.offers(c).map(func(h): return h.id)
+	var ids: Array = Patrons.offers(c).filter(func(h): return h.arc in ["wren", "ashgrove"]).map(func(h): return h.id)
 	eq(ids, ["drowned_bell", "last_watch"], "the first night, Wren and the captain each offer their first tale")
 	c.record_tale("drowned_bell", "rest", true)
 	c.record_tale("last_watch", "banner", true)
-	ids = Patrons.offers(c).map(func(h): return h.id)
+	ids = Patrons.offers(c).filter(func(h): return h.arc in ["wren", "ashgrove"]).map(func(h): return h.id)
 	eq(ids, ["bell_market", "pretender_road"], "then the second tale of each arc")
 	c.record_tale("bell_market", "rest", true)
 	c.record_tale("pretender_road", "joined", true)
 	c.mark("sided_harrow")
-	ids = Patrons.offers(c).map(func(h): return h.id)
+	ids = Patrons.offers(c).filter(func(h): return h.arc in ["wren", "ashgrove"]).map(func(h): return h.id)
 	eq(ids, [], "the Tide Court waits for autumn, and the siege won't come to a turncoat")
 	c.night = 13
-	ids = Patrons.offers(c).map(func(h): return h.id)
+	ids = Patrons.offers(c).filter(func(h): return h.arc in ["wren", "ashgrove"]).map(func(h): return h.id)
 	eq(ids, ["tide_court"], "in autumn the Tide Court sits")
 	check(Patrons.offer_note(c, _header("bell_market")) == "", "a done tale has nothing running out")
 	c.tales.erase("bell_market")
@@ -947,6 +953,194 @@ func test_campaign() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
+## M6: the prologue's lent Pouch, the new arcs' offers.
+## Accessibility, controls and translation: text speed, remapping, the stick throw, the .po reader,
+## the translation template, and translated tales.
+func test_access() -> void:
+	# Text speed
+	var was_speed := Settings.text_speed
+	Settings.text_speed = "instant"
+	eq(Settings.type_seconds(200), 0.0, "text at once takes no time")
+	Settings.text_speed = "slow"
+	var slow := Settings.type_seconds(200)
+	Settings.text_speed = "fast"
+	check(Settings.type_seconds(200) < slow, "fast text is quicker than slow")
+	Settings.text_speed = was_speed
+	eq(Settings.cycle(Settings.TEXT_SPEEDS, "instant"), "slow", "text speed cycles round")
+	# Controls: every action is bound and survives a save as text
+	var was_bind := Settings.bindings.duplicate(true)
+	Settings.bindings = {}
+	Controls.apply()
+	for a in Controls.ACTIONS:
+		check(InputMap.has_action(a[0]) and not InputMap.action_get_events(a[0]).is_empty(), "action %s is bound" % a[0])
+		for code in a[2]:
+			eq(Controls.code_of(Controls.parse(code)), code, "binding %s reads back" % code)
+	check(Controls.describe_action("throw").contains("Space"), "the throw action names its key")
+	Settings.bindings = {"throw": ["key:%d" % KEY_T, "pad:%d" % JOY_BUTTON_Y]}
+	Controls.apply()
+	var ev := InputEventKey.new()
+	ev.physical_keycode = KEY_T
+	ev.keycode = KEY_T
+	ev.pressed = true
+	check(InputMap.event_is_action(ev, "throw"), "a remapped key throws")
+	ev.physical_keycode = KEY_SPACE
+	ev.keycode = KEY_SPACE
+	check(not InputMap.event_is_action(ev, "throw"), "the old key no longer throws")
+	Settings.bindings = was_bind
+	Controls.apply()
+	# The right stick: pushed up is away from you, harder is faster, never past the tray's limit
+	var up := Controls.stick_velocity(Vector2(0, -1), Basis.IDENTITY, 22.0)
+	check(up.z < 0.0 and absf(up.x) < 0.01, "a stick pushed up throws away from you")
+	check(Controls.stick_velocity(Vector2(0.4, 0), Basis.IDENTITY, 22.0).length() < up.length(), "a gentle push throws softer")
+	check(up.length() <= 22.0, "no stick throw is harder than the tray allows")
+	# The .po reader
+	var po := 'msgid ""\nmsgstr ""\n"Language: de\\n"\n\n#: x\nmsgid "Throw"\nmsgstr "Werfen"\n\nmsgid ""\n"Round %d "\n"of %d"\nmsgstr "Runde %d von %d"\n\nmsgid "Say \\"hi\\""\nmsgstr ""\n'
+	var m := I18n.parse_po(po)
+	eq(m.get("Throw", ""), "Werfen", "a .po entry is read")
+	eq(m.get("Round %d of %d", ""), "Runde %d von %d", "a .po entry split over lines is joined")
+	eq(m.get("Say \"hi\"", "?"), "", "quotes are unescaped, and an untranslated entry stays empty")
+	# The translation template is up to date with the scripts
+	var found: Dictionary = Extract.collect()
+	check(found.size() > 300, "the extractor finds the interface text (%d strings)" % found.size())
+	check(found.has("Options") or found.has("Back"), "the extractor finds button text")
+	check(not found.has("res://tales/strangers_throw.tale"), "paths are left out of the template")
+	eq(Extract._body(FileAccess.get_file_as_string(Extract.OUT)), Extract._body(Extract.pot(found)),
+		"locale/tumbling_dice.pot is up to date (run tools/extract_strings.gd)")
+	# Translated tales: picked up by language, and must keep the original's shape
+	var root := "user://test_tale_locale"
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(root + "/xx"))
+	var text := FileAccess.get_file_as_string(Tales.DROWNED_BELL)
+	var f := FileAccess.open(root + "/xx/drowned_bell.tale", FileAccess.WRITE)
+	f.store_string(text.replace("The Drowned Bell", "La Cloche Noyée"))
+	f.close()
+	eq(Tales.localized_path(Tales.DROWNED_BELL, "xx", root), root + "/xx/drowned_bell.tale", "a translated tale is used in its language")
+	eq(Tales.localized_path(Tales.DROWNED_BELL, "yy", root), Tales.DROWNED_BELL, "other languages keep the original")
+	eq(Tales.localized_path(Tales.DROWNED_BELL, "en", root), Tales.DROWNED_BELL, "English is the original")
+	var o := Parser.parse(text)
+	var t := Parser.parse_file(root + "/xx/drowned_bell.tale")
+	eq(Lint.same_shape(o.tale, o.lines, t.tale, t.lines).size(), 0, "a faithful translation has the same shape")
+	var first: String = o.tale.scenes.keys()[1]
+	var bad := Parser.parse(text.replace("## %s:" % first, "## %s_renamed:" % first))
+	check(Lint.same_shape(o.tale, o.lines, bad.tale, bad.lines).size() >= 2, "a renamed scene in a translation is caught")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(root + "/xx/drowned_bell.tale"))
+	for pair in Tales.translations():
+		var po2: Dictionary = Tales.parsed(pair[0])
+		var tr2: Dictionary = Tales.parsed(pair[1])
+		var probs := Lint.same_shape(po2.tale, po2.lines, tr2.tale, tr2.lines)
+		eq(probs.size(), 0, "%s keeps the original's ids %s" % [pair[1], str(probs.slice(0, 3))])
+		eq(Lint.run(tr2.tale, tr2.lines).size(), 0, "%s passes the linter" % pair[1])
+
+
+func test_m6() -> void:
+	# Every foe, opponent and die named in the data is complete.
+	for id in Foes.FOE_IDS:
+		var f: Dictionary = Foes.foe(id)
+		check(not f.is_empty() and not f.get("phases", []).is_empty(), "foe %s exists" % id)
+		for ph in f.get("phases", []):
+			var packs: bool = (ph.dice + ph.get("wardens", [])).any(func(d): return d.kind == "pack")
+			check(not packs or ph.has("summon"), "foe %s: a pack die needs a summon" % id)
+	for id in Foes.OPPONENT_IDS:
+		check(Foes.opponent(id).has("resolve"), "opponent %s exists" % id)
+	for b in Dice.ALL_IDS:
+		check(not Dice.create(b).is_empty(), "die %s exists" % b)
+	# The prologue lends a fixed Pouch and hands your own back at the end, plus the die you chose.
+	for k in 6:
+		var c := Campaign.new()
+		c.new_campaign()
+		var bt := Bot.new()
+		bt.rng.seed = 900 + k
+		bt.pack(c, "sage")
+		var before: Array = c.pouch.pouch.map(func(d): return d.id)
+		var n_before: int = c.pouch.collection.size()
+		var r := Runner.new()
+		var lent := []
+		r.changed.connect(func():
+			if r.phase == "approach" and lent.is_empty():
+				lent.append(r.pouch.pouch.map(func(d): return d.base)))
+		r.start(Tales.load_tale("res://tales/strangers_throw.tale"), c, 77 + k)
+		bt.play(r)
+		check(r.phase == "ending", "prologue run %d reaches an ending" % k)
+		check(not lent.is_empty() and lent[0].has("oak_might") and lent[0].has("dragon_d10") and not lent[0].has("jade_d8"), "the prologue is played with the stranger's Pouch")
+		var after: Array = c.pouch.pouch.map(func(d): return d.id)
+		for id in before:
+			check(after.has(id), "your own Pouch comes back after the prologue (%s)" % id)
+		check(not c.pouch.collection.any(func(d): return d.get("ally", false)), "the lent dice go back to the stranger")
+		if r.state.ending == "found":
+			eq(c.pouch.collection.size(), n_before + 1, "and you keep one gift die")
+			check(c.pouch.collection.any(func(d): return String(d.base).begins_with("stranger_")), "a stranger's die")
+	# The Teller's Mood and Story mode.
+	var cm := Campaign.new()
+	cm.new_campaign()
+	var st := TaleState.new()
+	Mood.start_tale(cm, st)
+	eq([st.grit_max, st.fate], [20, 3], "at Fair, a tale starts with 20 Grit and 3 Fate")
+	cm.mood = 4
+	st = TaleState.new()
+	Mood.start_tale(cm, st)
+	eq([st.grit_max, st.fate], [16, 1], "at Bitter, 16 Grit and 1 Fate")
+	eq(Mood.swaps(cm), 1, "and Waystones swap one die")
+	check(Mood.foe(cm, Foes.foe("mire_wolf")).phases[0].dice.size() == 3, "foes throw an extra die")
+	check(Foes.foe("mire_wolf").phases[0].dice.size() == 2, "without changing the foe itself")
+	eq(Mood.opponent(cm, Foes.opponent("odile")).dice.size(), 3, "opponents too")
+	cm.mood = 5
+	eq(int(Mood.challenge_def(cm, {"kind": "test", "difficulty": "standard"}).target), Challenge.target_for("standard") + 2, "at Black, targets are 2 higher")
+	eq(int(Mood.opponent(cm, Foes.opponent("odile")).resolve), 17, "and Resolve")
+	cm.mood = 0
+	cm.story_mode = true
+	st = TaleState.new()
+	Mood.start_tale(cm, st)
+	eq(st.grit_max, 40, "Story mode doubles Grit")
+	st.fate = 0
+	st.defy_used = true
+	check(Mood.can_defy(cm, st) and Mood.defy_cost(cm) == 0, "and Defy is always there, for free")
+	eq(Mood.record_win(cm), "", "Story mode earns no felts")
+	cm.story_mode = false
+	cm.mood = 1
+	check(Mood.record_win(cm) != "" and cm.mood_best == 1, "a win at a new Mood unlocks its felt")
+	eq(Mood.max_choosable(cm), 2, "and the next level")
+	var path := "user://test_mood.json"
+	cm.felt = 1
+	cm.save(path)
+	var cm2 := Campaign.new()
+	cm2.load_save(path)
+	eq([cm2.mood, cm2.mood_best, cm2.felt, cm2.story_mode], [1, 1, 1, false], "the Mood survives a save")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	# Harder Moods are harder: The Drowned Bell's non-defeat rate falls as the Mood rises.
+	var rates := []
+	for lvl in [0, 3, 5]:
+		var wins := 0
+		var n := 40
+		for k in n:
+			var c3 := Campaign.new()
+			c3.new_campaign()
+			c3.mood = lvl
+			var r3 := Runner.new()
+			var b3 := Bot.new()
+			b3.rng.seed = 5000 + k
+			r3.start(Tales.drowned_bell(), c3, 600 + k)
+			b3.play(r3)
+			if r3.state.ending != "drowned":
+				wins += 1
+		rates.append(wins * 100 / n)
+	print("  Drowned Bell non-defeat at Mood 0/3/5: %s" % str(rates))
+	report.append("The Teller's Mood, The Drowned Bell non-defeat at Mood 0 / 3 / 5: %d%% / %d%% / %d%%\n" % rates)
+	check(rates[2] < rates[0], "Black is harder than Fair (%s)" % str(rates))
+	# Offers: the prologue is offered first; Kettle turns up on night 3 or after The Drowned Bell's cove.
+	var c2 := Campaign.new()
+	c2.new_campaign()
+	var ids: Array = Patrons.offers(c2).map(func(h): return h.id)
+	check(ids.has("strangers_throw"), "a new campaign offers the prologue")
+	check(not ids.has("long_con"), "Mother Kettle isn't in on the first night")
+	Patrons.pass_nights(c2, 2)
+	check(Patrons.offers(c2).map(func(h): return h.id).has("long_con"), "she is by night 3")
+	c2.record_tale("long_con", "river", true)
+	check(Patrons.offers(c2).map(func(h): return h.id).has("dukes_ledger"), "The Duke's Ledger follows The Long Con")
+	c2.record_tale("dukes_ledger", "burned", true)
+	check(not Patrons.offers(c2).map(func(h): return h.id).has("gilded_ruin"), "The Gilded Ruin waits for autumn")
+	Patrons.pass_nights(c2, 12)
+	check(Patrons.offers(c2).map(func(h): return h.id).has("gilded_ruin"), "and comes in autumn")
+
+
 func _header(id: String) -> Dictionary:
 	for h in Patrons.catalog():
 		if h.id == id:
@@ -1001,7 +1195,8 @@ func test_year() -> void:
 			var ek: String = "%s:%s" % [h.id, r.state.ending]
 			endings[ek] = endings.get(ek, 0) + 1
 			# Which earlier ending was this telling built on?
-			var prev := {"bell_market": "drowned_bell", "tide_court": "drowned_bell", "pretender_road": "last_watch", "siege_holloway": "last_watch"}
+			var prev := {"bell_market": "drowned_bell", "tide_court": "drowned_bell", "pretender_road": "last_watch", "siege_holloway": "last_watch",
+				"dukes_ledger": "long_con", "gilded_ruin": "long_con"}
 			if prev.has(h.id):
 				var key: String = "%s <- %s:%s" % [h.id, prev[h.id], c.ending_of(prev[h.id])]
 				if not openings.has(h.id):
@@ -1016,7 +1211,7 @@ func test_year() -> void:
 	for h in cat:
 		check(told.has(h.id), "%s is told in some year" % h.id)
 	# The gate: the opening of a later tale reads differently depending on how an earlier one ended.
-	for later in ["bell_market", "tide_court", "siege_holloway"]:
+	for later in ["bell_market", "tide_court", "siege_holloway", "dukes_ledger", "gilded_ruin"]:
 		var by_ending: Dictionary = openings.get(later, {})
 		var texts := {}
 		for k in by_ending:
@@ -1035,6 +1230,66 @@ func test_year() -> void:
 		report.append("| %s | %d | %s |" % [h.title, told.get(h.id, 0), ", ".join(es)])
 		print("  %-16s told %3d  %s" % [h.id, told.get(h.id, 0), ", ".join(es)])
 	report.append("")
+
+
+## Every build archetype plays whole campaign years: the share of tales it brings home, and how
+## often it finishes the campaign (The Teller's Tale, any ending but defeat). The M6 gate: every
+## build within 10 points of the others. `--runs=` scales the years (60 runs: 5 years a build).
+func test_builds() -> void:
+	var years := maxi(5, runs / 12)
+	var cat := Patrons.catalog()
+	var rows := {}
+	for arch in Bot.ARCHETYPES:
+		var told := 0
+		var won := 0
+		var done := 0
+		for y in years:
+			var c := Campaign.new()
+			c.new_campaign()
+			var rng := RandomNumberGenerator.new()
+			rng.seed = 7717 + y * 131
+			var guard := 0
+			while not c.year_over() and guard < 60:
+				guard += 1
+				if not c.wounds.is_empty() and c.coin >= Patrons.heal_cost(c):
+					Patrons.heal(c, true, 0, cat)
+					continue
+				var offers := Patrons.offers(c, cat)
+				if offers.is_empty():
+					Patrons.pass_nights(c, 1, cat)
+					continue
+				# Take whatever runs out soonest, otherwise any offer.
+				offers.sort_custom(func(a, b): return Patrons.offer_note(c, a).length() > Patrons.offer_note(c, b).length())
+				var h: Dictionary = offers[0] if rng.randf() < 0.6 else offers[rng.randi_range(0, offers.size() - 1)]
+				var r := Runner.new()
+				var bt := Bot.new()
+				bt.rng.seed = y * 9173 + guard * 7 + arch.length()
+				bt.archetype = arch
+				if h.id == "strangers_throw":
+					bt.pack(c, arch)
+				r.start(Tales.load_tale(h.path), c, y * 37 + guard)
+				bt.play(r)
+				check(r.phase == "ending", "%s year %d: %s reaches an ending" % [arch, y, h.id])
+				told += 1
+				if c.done(h.id) and c.ending_of(h.id) == r.state.ending:
+					won += 1
+				Patrons.pass_nights(c, 1, cat)
+			if c.has_mark("campaign_done"):
+				done += 1
+		rows[arch] = [told, won, done]
+	report.append("## Builds over whole campaign years (%d years each)\n" % years)
+	report.append("| Build | Tales told | Brought home | Campaign finished |")
+	report.append("|---|---|---|---|")
+	var rates: Array = []
+	for arch in rows:
+		var v: Array = rows[arch]
+		var rate: float = v[1] * 100.0 / maxf(1, v[0])
+		rates.append(rate)
+		report.append("| %s | %d | %d%% | %d of %d |" % [arch, v[0], roundi(rate), v[2], years])
+		print("  %-9s told %3d, brought home %d%%, campaign finished %d of %d" % [arch, v[0], roundi(rate), v[2], years])
+	report.append("")
+	var spread: float = rates.max() - rates.min()
+	check(spread <= 10.0, "every build brings home tales within 10 points of the others (spread %d)" % roundi(spread))
 
 
 # ===================================================================== bots

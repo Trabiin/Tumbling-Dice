@@ -68,13 +68,21 @@ Option properties go before the option's first `>`. After a `>`, `do:` and `goto
 A tale that belongs to a patron's arc also says who offers it, and when (M5 campaign):
 
 ```
-arc: wren                 the patron's arc (wren, ashgrove); the tale appears at their table
+arc: wren                 the patron's arc (wren, ashgrove, kettle, pilgrim); the tale appears at their table
 order: 2                  its place in the arc: a patron offers the earliest tale that is on offer
 pitch: The bell of Marrowmere is for sale in the river market.
 offer: ended:drowned_bell and not season==winter
 expires: winter           the tale goes by without you when this season begins
 missed: Holloway fell in the first snow, without you.
 teller: triumph :: They'll talk about that on the river until the ice comes.
+```
+
+A tale can also hand the player a fixed Pouch for the tale (the prologue does this). The dice are lent, the
+player's own packing is put aside, and it comes back at the ending, with any dice gained in the tale:
+
+```
+pouch: oak_might, oak_guile, oak_lore, oak_grace, brass_d8, dragon_d10
+saddle: oak_ward
 ```
 
 - `pitch:` is required in an arc. It is what the patron says at their table.

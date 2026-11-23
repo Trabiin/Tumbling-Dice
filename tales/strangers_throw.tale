@@ -1,0 +1,318 @@
+title: The Stranger's Throw
+id: strangers_throw
+patron: The Hooded Pilgrim
+start: hearth
+arc: pilgrim
+order: 0
+pitch: A hooded stranger sits by the hearth, throwing dice alone, with an empty stool beside them.
+pouch: oak_might, oak_guile, oak_lore, oak_grace, brass_d8, dragon_d10
+saddle: oak_ward
+teller: triumph :: There. You see? The dice like you. They don't like everybody.
+teller: triumph :: That's the way of it. Remember how that felt.
+teller: mixed :: Through, and it cost you something. Most good things do.
+teller: fail :: Wrong, and that's all right. A tale is not lost on one bad throw. Watch what happens next.
+teller: rest :: A shepherd's hut, a peat fire, and the storm going over.
+
+// The prologue. A new campaign starts here: it teaches the throw, the four outcomes, a Trial,
+// a Contest, a fight and a Waystone, with a fixed Pouch the stranger lends you (pouch: and
+// saddle: in the header). At the end the stranger gives you one of three dice to keep.
+// The stranger is the Hooded Pilgrim, whose arc ends with The Teller's Tale.
+
+## hearth: A Stranger by the Fire
+act: 1
+tile: inn
+at: 0, 0
+token: met_stranger => candle "The stranger's candle"
+
+[i]Pull your stool in. No, not that one. That one's taken. There.[/i]
+[i]Every tale I tell begins at this hearth. This one begins with you, coming in out of a storm with nothing but the coat on your back.[/i]
+Rain like thrown gravel. The door bangs shut behind you, and the whole tavern looks up, and then down again. You have a little money, no name anybody here knows, and nowhere else to be.
+By the hearth, alone, sits somebody in a travel-stained hood, throwing dice into a wooden bowl. Six dice, over and over. They don't look up. "Sit," they say. "You're letting the cold in."
+The stranger pushes a leather Pouch across the hearthstone to you. "Throw with me. Just for tonight. They're good dice. They've been lucky for other people."
+[i]Your Pouch is your character. No strength, no cleverness on paper: only the dice you carry, and what they've been through. These are lent. Tomorrow you'll have your own.[/i]
+
+* sit: Take the stool, and the dice.
+  temper: duty -1
+  do: flag met_stranger; regard 1
+  goto: knock
+  reply: The stranger nods, as if that settles something. [i]Look at the dice while you can. Each one is strong in one thing: Might, Guile, Lore, Grace or Ward. Off its own aspect, a die counts for half.[/i]
+
+* ask: "Who are you waiting for?"
+  temper: honesty +1
+  do: flag met_stranger; flag asked_stranger
+  goto: knock
+  reply: "An old friend," says the stranger. "He's late. He always was." They glance, for a moment, at the shadows by the chimney breast, where nobody is sitting. [i]Well. Never mind that.[/i]
+
+* refuse: "I don't throw with people whose faces I can't see."
+  temper: duty +1
+  do: flag met_stranger; flag wary_stranger
+  goto: knock
+  reply: The stranger laughs, a dry sound like leaves. "Sensible. Keep the Pouch anyway. You'll want it in a minute."
+
+## knock: The Miller's Boy
+act: 1
+
+The door crashes open again. A boy of ten in a sack for a coat, soaked to the skin, white as milk. "Pip," he says, to the whole room. "My sister. She went after the goat. She's not come back, and the ford's rising, and there are dogs on the moor."
+Nobody moves. It's that kind of night.
+? asked_stranger :: The stranger tips their hood toward the boy, and then toward you. "Well," they say. "There's your tale."
+? wary_stranger :: The stranger says nothing. They just slide one more die across the hearth to you, and wait.
+[i]Here is how it works. I tell you what is in front of you. You decide who you are about it. The dice decide what it costs.[/i]
+
+* go: "Show me the way."
+  temper: duty +1
+  do: flag went_at_once
+  goto: lane
+  reply: The boy grabs your sleeve and pulls. The stranger, behind you, picks up their bowl and follows, unhurried.
+
+* ask_boy: "Slow down. Where did she go, exactly?"
+  temper: honesty +1
+  do: flag boy_asked
+  goto: lane
+  reply: "The old drove road," the boy gasps. "Past the ford, up to the standing stone. The goat always goes to the stone." [i]Good. Questions are cheap, and they're often worth a throw.[/i]
+
+* coin: Tell the room there's a drink in it for anyone who comes.
+  temper: mercy +1
+  do: coin -2; flag rallied
+  goto: lane
+  reply: A carter and a shepherd get up, grumbling, and fetch their coats. They won't go further than the ford, they say. It's something.
+
+## lane: The Drove Road
+act: 1
+on enter: random_flag weather [rain, gale]
+tile: road
+at: 1.4, 0.3
+
+The drove road climbs out of the village between stone walls, and then the walls stop and there is only the moor, and the dark, and the wind.
+? weather==rain :: The rain comes sideways. Your lantern hisses.
+? weather==gale :: The wind has teeth tonight. It tries to take the lantern out of your hand.
+Somewhere ahead a goat bleats, and stops.
+[i]Now, your first throw. Your Hand is five dice drawn from the Pouch. You'll choose up to three to throw, and you'll see your odds before you do. Every way of going about it uses different dice.[/i]
+
+* trail: Find the girl's trail in the dark.
+  challenge: kind=test difficulty=easy tries=2 title="Finding the trail"
+  mod: boy_asked => progress=-3
+  approach lore: Read the ground: small boots, and a goat's hoofprints over them.
+  approach grace: Run ahead along the wall with the lantern held high.
+  approach guile: Think like a girl chasing a goat. Where would you go?
+  > triumph: There: a scrap of red wool on a thorn, small boots in the mud, and the goat's prints over them, all heading for the ford. You're on her heels.
+    do: flag trail_found; fate 1
+    goto: ford
+  > success: Small boots in the mud, heading for the ford. You follow them.
+    do: flag trail_found
+    goto: ford
+  > mixed: You find the trail. The moor makes you pay for it.
+    do: flag trail_found
+    goto: ford
+    cost: Into a bog to the knee (lose 2 Grit) :: grit -2
+    cost: Your lantern gutters out (the dark slows you later) :: flag lantern_out
+  > fail: The trail is gone under the rain. You blunder about in the heather until the sound of rushing water tells you where the road must be.
+    goto: ford
+// A Fail never stops the tale. The next scene says what it cost.
+
+## ford: Hangman's Ford
+act: 2
+tile: bridge
+at: 2.8, -0.4
+token: absalom_won => lamp "Absalom's lamp, lit for you"
+
+The ford is a river tonight: brown water over the stepping stones, loud as a crowd. On the far side, the drove road goes on up toward the standing stone.
+Upstream, a quarter-mile off, there's a little toll bridge with a lamp in the keeper's window. Old Absalom keeps it, and he does not open it after dark, for anybody.
+? rallied :: The carter and the shepherd stop here, as they said they would. The shepherd presses a flask on you. "Pip's a good girl," he says. "Bring her back."
+? not trail_found :: You find the girl's red scarf on the near bank, soaked. She crossed here. Or tried to.
+[i]Two ways over, and two kinds of throw. Crossing the water is a Trial: you build up progress over several throws, while the Danger clock ticks. Talking your way over the bridge is a Contest: Absalom throws first, then you split your dice between pressing him and holding your nerve.[/i]
+
+* wade: Cross the ford, now, before it rises any further.
+  challenge: kind=trial progress=13 danger=3 danger_text="The water rises over the next stone." title="Crossing the ford"
+  mod: lantern_out => progress=2
+  mod: weather==gale => progress=1
+  approach might: Wade straight in, brace against the current, and push.
+  approach grace: Leap from stone to stone while they're still above the water.
+  approach ward [progress=11]: Lash yourself to the old hangman's post with your belt and edge across.
+  > triumph: You come up out of the water on the far bank laughing like a fool, with the girl's scarf in your hand. It was caught on the last stone.
+    do: flag crossed; flag scarf
+    goto: hut
+  > success: Over, soaked to the chest and shaking, but over.
+    do: flag crossed
+    goto: hut
+  > mixed: Over, but the river gets its share.
+    do: flag crossed
+    goto: hut
+    cost: Dragged against the stones (lose 3 Grit) :: grit -3
+    cost: The cold gets into you (tired for a while) :: fatigue 1
+  > fail: The river knocks you flat and rolls you twenty yards downstream. You crawl out on the far bank, which is something, half drowned, which is less.
+    do: grit -4
+    goto: hut
+
+* bridge: Go to the bridge, and talk Absalom into opening it.
+  contest: opponent=absalom title="Old Absalom"
+  mod: rallied => resolve=-2
+  approach grace: Be kind. He's old, and frightened of the moor at night. So are you.
+  approach lore: Remind him of the parish law: no bridge stays shut on a soul in peril.
+  approach guile: Tell him the miller has promised him a sack of flour. The miller will, once you've told him.
+  > triumph: Absalom opens the bridge, lights his lamp for you, and comes out himself with a crook and a dog. "The stone," he says. "The hounds den up there. Go on. I'll keep the lamp lit till you're back."
+    do: flag crossed; flag absalom_won; regard 1
+    goto: hut
+  > success: Grumbling, Absalom draws the bolts. "Mind my planks," he says. "And bring that girl back, or don't come this way again."
+    do: flag crossed; flag absalom_won
+    goto: hut
+  > mixed: He opens it. He'll remember this.
+    do: flag crossed
+    goto: hut
+    cost: A toll, at night rates (lose 3 Coin) :: coin -3
+    cost: He sets his dog on you for the cheek of it (lose 2 Grit) :: grit -2
+  > fail: Absalom slams the shutter. You go back to the ford in the end, and cross it the hard way, and the river does what rivers do.
+    do: grit -4
+    goto: hut
+
+## hut: The Shepherd's Hut
+act: 2
+type: waystone
+on enter: rest 18
+tile: shrine
+at: 4.2, 0.2
+token: left_coin => coins "A coin for the shepherd"
+
+A stone hut on the slope, door off its hinges, a peat fire still warm on the hearth. The shepherd who uses it is down in the village tonight, and has left his kettle and a heel of bread.
+? scarf :: You hang Pip's scarf by the fire to dry. She'll want it.
+The stranger is already there, warming their hands. You didn't see them pass you.
+[i]This is a Waystone. You can rest a little here: your Grit comes back up, your tired dice are fresh again, and you can swap dice between your Pouch and your Saddlebag. There's a Ward die in the Saddlebag. Hounds are coming. You might want it.[/i]
+
+* press: Eat the bread standing up, and go on.
+  temper: duty +1
+  goto: stone
+  reply: You're out of the door before the stranger can speak. [i]Duty. I like that in a traveller. It doesn't always like you back.[/i]
+
+* coin: Leave a coin by the kettle for the shepherd, and go on.
+  temper: mercy +1
+  do: coin -1; flag left_coin
+  goto: stone
+  reply: The stranger watches you do it, and says nothing, and you have the feeling they've written it down somewhere.
+
+* ask: Ask the stranger why they're following you.
+  if: met_stranger
+  temper: honesty +1
+  do: flag stranger_answered
+  goto: stone
+  reply: "I'm not following you," they say. "I'm following the tale. You happen to be in it." They poke the fire. "There's an old man who'd want to hear how this one ends. I mean to tell him."
+
+## stone: The Standing Stone
+act: 3
+type: encounter
+tile: forest
+at: 5.6, -0.2
+token: hounds_fed => footprints "The hounds, gone off fed"
+token: pip_found => lamp "Pip, found"
+
+The standing stone leans out of the heather like a broken tooth. On top of it, ten feet up, a small girl in a red cardigan with her arms round a goat that is far too big for her. Circling the stone, two lean grey hounds, gone wild on the moor, ribs showing.
+"I'm not crying," Pip calls down to you. "The goat's crying."
+[i]A fight, then, or not. In a fight the foe throws first, and its dice stay in the tray where you can see them. Then you throw, and choose how to stand: strike, guard, evade, trick or read them. And you don't have to fight at all.[/i]
+
+* fight: Drive the hounds off with the lantern and a stick.
+  temper: duty +1
+  combat: foe=moor_hounds
+  mod: absalom_won => resolve=-2
+  > triumph: The hounds yelp and bolt into the dark and don't come back. Pip slides down the stone into your arms, goat and all.
+    do: flag pip_found; regard 1
+    goto: gift
+  > success: The hounds run off at last, licking their wounds. Pip climbs down, shaking.
+    do: flag pip_found
+    goto: gift
+  > mixed: They go. They leave their mark.
+    do: flag pip_found
+    goto: gift
+    cost: A bite to the arm (lose 3 Grit) :: grit -3
+    cost: The goat bolts after them (the miller won't thank you) :: flag goat_lost
+  > fail: The hounds are hungrier than you are brave. In the end it's Pip who saves you, dropping the goat's bell on the bigger hound's head from ten feet up. They run. You don't feel very heroic.
+    do: grit -3; flag pip_found; flag pip_saved_you
+    goto: gift
+
+* feed: Throw them the shepherd's bread and your supper, and talk them down.
+  temper: mercy +1
+  challenge: kind=test difficulty=easy tries=2 title="Calming the hounds"
+  approach grace: Low and slow, crouching, no sudden movements.
+  approach ward: Stand between them and the stone, steady, and let them smell you.
+  approach lore: Somebody's dogs, once. Find the old commands they were taught.
+  > triumph: The bigger hound eats from your hand, and then lies down at your feet and sighs. When you walk Pip home, both hounds trot after you at a distance, like an escort.
+    do: flag hounds_fed; flag pip_found; regard 1
+    goto: gift
+  > success: The hounds wolf the bread and slink off into the heather, satisfied. Pip climbs down.
+    do: flag hounds_fed; flag pip_found
+    goto: gift
+  > mixed: They calm down. Not all at once.
+    do: flag hounds_fed; flag pip_found
+    goto: gift
+    cost: One of them takes your fingers with the bread (lose 2 Grit) :: grit -2
+    cost: They take your whole pack, too (lose 3 Coin) :: coin -3
+  > fail: The hounds take the bread and come back for more. In the end the stranger walks up out of the dark and says one word you don't catch, and the hounds go, tails down. "Go on," says the stranger. "Get her down."
+    do: flag pip_found; flag stranger_helped
+    goto: gift
+
+* lure: Get them to chase you instead, and lead them off across the moor.
+  temper: duty -1
+  challenge: kind=test difficulty=easy tries=2 title="Leading the hounds away"
+  approach grace: Run, and keep running, and don't fall over.
+  approach guile: The goat's bell, tied to a stick, jangling off into the dark.
+  approach might: Hurl stones to drive them down the slope, then double back.
+  > triumph: You lead them a mile into the bog and leave them there, baying at your lantern hung on a thorn bush. Back at the stone, Pip is already climbing down.
+    do: flag pip_found; fate 1
+    goto: gift
+  > success: The hounds go after you, and lose you in the dark. You circle back to the stone, out of breath.
+    do: flag pip_found
+    goto: gift
+  > mixed: They chase you. They nearly catch you.
+    do: flag pip_found
+    goto: gift
+    cost: A tumble in the dark (lose 3 Grit) :: grit -3
+    cost: Your lantern is lost in the bog (the walk home is slow) :: fatigue 1
+  > fail: The hounds don't take the bait. They take you down instead. When you get up again, bruised, Pip is standing over you with the goat on a rope. "You're not very good at this," she says, kindly.
+    do: grit -3; flag pip_found; flag pip_saved_you
+    goto: gift
+
+## gift: Home Before Dawn
+act: 3
+tile: inn
+at: 7.0, 0.3
+
+The miller is crying when you bring Pip in, and pretending not to, and the whole tavern, which would not get up from its stools two hours ago, wants to buy you a drink.
+? goat_lost :: The miller looks at the end of the empty rope. Then he looks at his daughter, and decides he doesn't care about the goat.
+? pip_saved_you :: Pip tells everyone that she saved you. She is not wrong.
+? hounds_fed :: Out in the yard, two grey hounds sit in the rain, looking hopeful. The miller sighs and goes to find them a bone.
+The stranger is back at the hearth, as if they never left, throwing six dice into the bowl. When you sit down they hold out their hand for the Pouch, and you give it back.
+"Those were lent," they say. "This is a gift." Three dice in their palm: one warm as a coal, one of smoky violet glass, one of pale willow root. "One. Whichever is yours."
+[i]Choose the one that's most like you. Not the one that's best. None of them is best.[/i]
+
+* ember: The warm one. The one that wanted to go out into the storm.
+  temper: duty +1
+  do: gain stranger_ember_d8; flag chose_ember
+  goto: ending
+  reply: It sits in your palm like a held coal. "Brave," says the stranger. "Try to stay alive as well."
+
+* glass: The glass one. You can't see what's inside it, and you like that.
+  temper: honesty -1
+  do: gain stranger_glass_d6; flag chose_glass
+  goto: ending
+  reply: The stranger smiles under the hood. "Clever. Try to stay honest as well. Or at least interesting."
+
+* willow: The willow one. It bends.
+  temper: mercy +1
+  do: gain stranger_willow_d8; flag chose_willow
+  goto: ending
+  reply: "Kind," says the stranger. "Try to stay kind. It's harder than it sounds, in some of these tales."
+
+## ending: The First Tale
+type: ending
+
++ lost: Carried Home
+  if: defeat or wounds>=3
+  They find you at first light on the moor, the shepherd and old Absalom, and carry you down between them. Pip got home on her own, it turns out. She left you her scarf.
+  [i]Not the ending I'd have chosen for you. Never mind. The stranger left the dice on the stool for you, and a note: tomorrow. There will always be a tomorrow at this hearth.[/i]
+  do: chronicle "On a storm night, a stranger lent you their dice, and the moor got the better of you."
+
++ found: The Stranger's Throw
+  renown: 1
+  When you look up from your new die, the stool by the hearth is empty. The bowl is still there, and in it, one die, six up.
+  ? stranger_answered :: You remember what they said, about an old man who'd want to hear how this one ends. You look around the room. Nobody is old enough.
+  ? stranger_helped :: And you never found out what word it was, that sent the hounds away.
+  Hollis, the barkeep, sets a mug in front of you and a key on the bar. "Room at the top of the stairs," he says. "On the house, for tonight. Pip's my goddaughter." He nods at the shelf behind the bar, full of dice. "You'll want your own, I suppose. Everybody does, in the end."
+  [i]And that's how it begins. It always begins with a stranger, and a storm, and somebody lost out in the dark. Stay a while. I've a great many more of these, and they're better with someone to tell them to.[/i]
+  do: mark met_pilgrim; chronicle "On a storm night, a hooded stranger lent you their dice, and you brought the miller's girl home off the moor."; rumour pilgrim_teller "A hooded pilgrim walks the roads, asking after an old man who tells tales by a fire."; if hounds_fed then mark hounds_fed; if absalom_won then mark absalom_friend

@@ -1,0 +1,458 @@
+title: The Gilded Ruin
+id: gilded_ruin
+patron: Mother Kettle
+start: plea
+arc: kettle
+order: 3
+pitch: Under Saltreach there's a drowned Mint full of the city's lost gold, and Mother Kettle says it's her last job. She's said that before.
+offer: told:dukes_ledger and not season==spring and not season==summer
+teller: triumph :: Now that is how you end a career. In gold, and laughing.
+teller: triumph :: Three hundred years that gold waited. It was worth the wait, for that.
+teller: mixed :: Out, with your pockets lighter than you'd hoped. Ruins are like that.
+teller: fail :: The Mint keeps its own. It always has.
+teller: loaded_caught :: Kettle's eyes go to {die}. "Oh, dearie," she says. "In front of me? After everything?"
+teller: rest :: A chapel for coiners, three hundred years under the river, and one candle still burning.
+teller: downed :: Down, on the gold, in the dark. Get up. Nobody gets rich lying down. Except dukes.
+
+// Mother Kettle's arc, tale 3 of 3. The drowned Mint under Saltreach. Reads both earlier
+// tales: whether you crossed Kettle, the boats, what became of the Duke's ledger (and Kettle's
+// page in it), Isolde, Silas. Kettle's brother, who walked into Marrowmere lake in The Drowned
+// Bell, turns out to have found the Mint first.
+
+## plea: One Last Job
+act: 1
+tile: inn
+at: 0, 0
+token: kettle_trusts => flag "Kettle's word, one last time"
+
+Mother Kettle sits down at your table, and for the first time since you've known her, her hands are still. No cards.
+? seen:kettle_crossed and not seen:ledger_crown :: "You crossed me once," she says. "I've let it go. Mostly. I need someone who can hold a lantern and keep their mouth shut, and you're the best liar I know."
+? seen:ledger_kept :: "You've still got the Duke's book in your coat," she says. "Everybody knows. That makes you either very brave or very stupid. I need one of those tonight."
+? seen:ledger_crown :: She's thinner. There's a warrant out for her in Saltreach with her name on it, thanks to you. "No hard feelings," she says, and seems almost to mean it.
+? seen:ledger_kettle :: She has the whole river in her pocket now, and it shows: rings on every finger, and two of her crew at the door.
+? seen:duke_fled :: "The Duke's gone to ground," she says. "In the one place in Saltreach the Crown doesn't know about."
+"There's a Mint under Saltreach," she says. "The old city's, from before the plague, when they sank the treasury to hide it. Three hundred years under the river. Gold to the ceiling, they say, and a keeper made of brass who weighs everything that comes in." She looks at her hands. "My brother Tobin found the way in. Ten years ago. Then he walked into Marrowmere lake, and never came out."
+? seen:kettle_informer :: [i]You know her page in the Duke's ledger. Eleven years, forty crowns a season. You've never asked her why. Perhaps you're about to find out.[/i]
+"One last job," says Kettle. "Then I'm done. I mean it, this time." She doesn't sound as if she believes it either.
+
+* promise: "One last job, then. Together."
+  temper: duty +1
+  do: flag promised_kettle; flag kettle_trusts
+  goto: prepare
+  reply: Kettle nods, slowly. "Together," she says, and spits in her palm. [i]Together. That's a big word, in a tale about gold.[/i]
+
+* brother: "This isn't about the gold. It's about Tobin."
+  temper: honesty +1
+  do: flag asked_tobin; regard 1
+  goto: prepare
+  reply: Kettle doesn't answer for a long time. "Eleven years," she says at last. "Eleven years I've been doing favours for that man, because he said he'd tell me what happened to my brother. He never has." [i]So that's her page in the book. Not money. A promise.[/i]
+
+* share: "Half. Not a third. Half."
+  temper: honesty -1
+  do: flag half_share
+  goto: prepare
+  reply: "Half," says Kettle, and laughs, the old laugh. "Fine. Half. I always knew you'd make a terrible partner." [i]She agreed very quickly. I'd count that half twice, if I were you.[/i]
+
+## prepare: Packing for the Mint
+act: 1
+type: prepare
+goto: sluice
+
+Hollis has your Pouch on the bar. He looks at it, and at Kettle by the door, and lowers his voice. "Three hundred years under the river," he says. "Whatever's down there has been waiting a long time for somebody to come and take it."
+[i]Choose what you carry. Deep water, old locks, a keeper of brass. And Kettle.[/i]
+
+## sluice: The Old Sluice
+act: 1
+on enter: random_flag weather [low, flood, still]; if season==winter then flag weather ice
+tile: cave
+at: 1.4, 0.3
+
+The way in is under the river wall below the fish market: an old sluice gate, green with weed, with black water going through it into the dark. The lock-keeper's hut stands on the wall above, a lamp in its window.
+? weather==low :: The river is low tonight. The sluice is half dry.
+? weather==flood :: The river is high and fast. The sluice roars.
+? weather==still :: No wind. The river is a sheet of black glass.
+? weather==ice :: Ice on the river, and the sluice gate frozen half open.
+? seen:kettle_partner :: Kettle shows you a smugglers' mark scratched on the stones: Tobin's mark. "His way in," she says. "Under the fish market. I've never had the nerve."
+
+* gate: Through the sluice, now, with the river.
+  challenge: kind=trial progress=15 danger=3 danger_text="The sluice gate shudders on its chains." title="Through the sluice"
+  mod: weather==flood => progress=3
+  mod: weather==low => progress=-3
+  approach might: Brace the gate open with a spar, and haul yourselves through.
+  approach grace: Ride the current through the gap like a fish.
+  approach ward [progress=13]: Rope yourselves together, Kettle first, and go slow.
+  > triumph: Through the sluice and into an old stone channel, dry and lamplit. Lamplit. Somebody has been here recently, and left their lamps burning.
+    do: flag inside; flag lamps_seen
+    goto: hall
+  > success: Through, soaked, into the dark. Kettle lights a lantern with shaking hands.
+    do: flag inside
+    goto: hall
+  > mixed: Through. The river takes its toll.
+    do: flag inside
+    goto: hall
+    cost: The gate falls on your shoulder (lose 4 Grit) :: grit -4
+    cost: The current takes your spare lamps (the dark slows you) :: flag lamps_lost
+  > fail: The gate comes down, and the river takes you through the hard way. You fetch up against a grille, choking, with Kettle hanging on to your belt.
+    do: flag inside; grit -4
+    goto: hall
+
+* keeper: Go up to the lock-keeper's hut and have him open the deep gate.
+  contest: opponent=lock_keeper title="Ferrant the lock-keeper"
+  mod: seen:deeds_returned => resolve=-3
+  approach grace: Share his bottle. He's lonely, and frightened of something.
+  approach guile: You're from the Crown, and you've a warrant. A forged one, but he can't read.
+  approach lore: Know the old Mint's lock-keepers' oath, and say it back to him.
+  > triumph: Ferrant opens the deep gate, and while it grinds up, tells you who else he's let through tonight: the Duke, and twelve hired swords, and a thin man with ink on his cuffs. He gives you the old keeper's key, too. "For the inner doors," he says. "My grandfather's."
+    do: flag inside; flag duke_inside; flag old_key
+    goto: hall
+  > success: Ferrant grumbles, and drinks, and opens the gate. "You're not the first tonight," he says.
+    do: flag inside; flag duke_inside
+    goto: hall
+  > mixed: He opens it. At a price.
+    do: flag inside
+    goto: hall
+    cost: Everything in your purse he can see (lose 10 Coin) :: coin -10
+    cost: He'll tell whoever pays him next that you came (they'll be waiting) :: flag ambushed
+  > fail: Ferrant slams the door. You go through the sluice after all, the hard way.
+    do: flag inside; grit -4
+    goto: hall
+
+* tunnel: Tobin's way, under the fish market.
+  if: seen:kettle_partner or asked_tobin
+  temper: mercy +1
+  do: flag inside; flag tobin_way
+  goto: hall
+  reply: A crawlway under the fish market, low and stinking and safe, with Tobin Kettle's mark scratched every twenty yards. Kettle touches each one as she passes it. Nobody says anything. [i]Ten years, those marks waited for somebody to follow them.[/i]
+
+## hall: The Counting Hall
+act: 2
+type: encounter
+tile: chest
+at: 2.8, -0.4
+token: hall_cleared => foe "The Duke's men, beaten"
+
+The Counting Hall of the old Mint: a great vaulted room half under water, with rows of stone counting-tables standing out of it like gravestones, and gold coins glittering on the floor under the water. Brass scales hang from the ceiling on chains, swaying.
+At the far end, lanterns and voices. A dozen hired swords, wading about with sacks, and on the steps above them, Duke Orrin Mallory himself, grey and thin, wrapped in a cloak.
+? seen:silas_fled or seen:silas_given :: Beside him, Silas Crane, holding the lantern.
+? seen:isolde_free :: "My daughter," the Duke says to the dark, as if he knows you're there. "Is she well?"
+? ambushed :: They're waiting for you. Ferrant sold you, as he said he would.
+? tobin_way :: Tobin's crawlway comes out behind a counting-table, behind them. They haven't seen you.
+
+* fight: Take them, before they take the gold.
+  temper: duty +1
+  combat: foe=dukes_men
+  mod: ambushed => ambushed=1
+  mod: tobin_way => resolve=-4
+  > triumph: The hired swords throw down their sacks and run, and the Duke runs with them, splashing up the far stair into the dark. Silas Crane drops his lantern and goes after his master.
+    do: flag hall_cleared; flag duke_ran; fate 1
+    goto: chapel
+  > success: The last sword goes down in the water, and the Duke is gone up the far stair.
+    do: flag hall_cleared; flag duke_ran
+    goto: chapel
+  > mixed: The hall is yours. It cost you.
+    do: flag hall_cleared; flag duke_ran
+    goto: chapel
+    cost: A crossbow bolt (lose 5 Grit) :: grit -5
+    cost: Kettle takes a bolt instead of you (she's hurt) :: flag kettle_hurt
+  > fail: They drive you off into the side passages and go on looting. You'll have to go round, by the old chapel, and the Duke will be at the vault first.
+    do: grit -4; flag duke_first
+    goto: chapel
+
+* sneak: Go round them in the dark, through the water.
+  challenge: kind=test difficulty=standard tries=2 title="Through the counting hall"
+  mod: lamps_lost => progress=2
+  mod: tobin_way => progress=-4
+  approach grace: Wade between the counting-tables, slow, silent, under the swinging scales.
+  approach guile: Throw a handful of gold coins into the far corner, and let greed do the rest.
+  approach lore: The old Mint had coiners' passages behind every wall. Find one.
+  > triumph: You slip past them into the coiners' passage, and on the way you hear the Duke tell Silas the vault's password: the city's old motto. You'll be at the vault long before him.
+    do: flag passed; flag password
+    goto: chapel
+  > success: Past them, and into the passage beyond, dripping and silent.
+    do: flag passed
+    goto: chapel
+  > mixed: Past them, but not unnoticed.
+    do: flag passed
+    goto: chapel
+    cost: A slip on the coins (lose 3 Grit) :: grit -3
+    cost: Silas sees your lantern for a moment (they'll follow) :: flag followed
+  > fail: A scale chain swings into your head and the whole hall hears it. You run into the coiners' passages with crossbow bolts whining after you.
+    do: grit -3; flag followed
+    goto: chapel
+
+* talk: Walk up to the Duke, and talk.
+  if: seen:isolde_free or seen:ledger_crown or seen:ledger_kept
+  temper: honesty +1
+  do: flag talked_duke
+  goto: chapel
+  reply: The Duke listens. When you've finished, he laughs, a tired old laugh. "Ruined by a fox and a card sharp," he says. "Go on, then. Go to the vault. The Assayer will weigh you, as it weighed me, and find you wanting, as it found me." He sits down on the steps among his sacks. "I'll wait here and see." [i]Men like that are most dangerous when they've stopped wanting anything. Watch him.[/i]
+
+## chapel: The Coiners' Chapel
+act: 2
+type: waystone
+on enter: rest 12
+tile: shrine
+at: 4.2, 0.2
+token: tobin_truth => candle "Tobin's last letter"
+
+A little chapel for the Mint's coiners, cut into the rock, with a saint of beaten gold over the altar: Saint Aurum, patron of honest weight. Three hundred years under the river, and one candle is still burning in front of her.
+Somebody lit it. Recently.
+Behind the candle, tucked into a crack, a packet of oilcloth with a name scratched on it: KETTLE.
+? kettle_hurt :: Kettle sits on the altar step and binds her arm, swearing steadily.
+[i]A Waystone. Rest, swap your dice, and decide whether you want to know what's in the packet. Some things in a tale are better not read. This isn't one of them.[/i]
+
+* read: Open the packet.
+  temper: honesty +1
+  do: flag tobin_truth
+  goto: vault
+  reply: A letter, in a smuggler's careful capitals. [i]MEG. I FOUND IT. THE DUKE KNOWS. HE SAYS HE WILL SHARE IF I SHOW HIM THE WAY. I DON'T TRUST HIM. IF YOU FIND THIS I WAS RIGHT. DON'T GRIEVE. TOBIN.[/i] Kettle reads it over your shoulder, and puts her hand over her mouth, and doesn't make a sound. Meg. Nobody has called her that in ten years.
+
+* give: Give it to Kettle unopened.
+  temper: mercy +1
+  do: flag tobin_truth; flag gave_letter; regard 1
+  goto: vault
+  reply: Kettle takes it, and turns away to read it by the candle, and you look at the gold saint for a long time so that you don't see her face. When she turns back, her eyes are dry and very hard. "The Duke," she says. "Eleven years I fetched and carried for the man who drowned my brother." [i]Now there's a reckoning coming. I can hear it in the water.[/i]
+
+* leave: Leave it. Tobin left it for her, not you.
+  temper: duty +1
+  goto: vault
+  reply: Kettle doesn't see it. She's looking at the vault door, and the gold, and the dark. [i]Some letters wait ten years. This one can wait a little longer. Perhaps.[/i]
+
+## vault: The Assayer
+act: 3
+type: challenge
+tile: keep
+at: 5.6, -0.4
+token: assayer_beaten => skull "The Assayer, stilled"
+
+The vault door is round and taller than a house, and in front of it, on a dais, stands the Assayer: a figure of gilded brass and clockwork the height of two men, with a pair of scales for hands and a face like a coin. It has been standing here for three hundred years. It turns its head toward you with a sound like a mill-wheel.
+"WEIGH," it says. "ALL WHO ENTER ARE WEIGHED. THE HONEST PASS. THE WANTING STAY."
+? password :: You know the city's old motto. You're not sure it will help.
+? old_key :: Ferrant's grandfather's key is warm in your pocket.
+? duke_first :: The Duke is already here, on the floor in front of the dais, with the Assayer's scale-hand closed round his ankle. "Help me," he says. Silas Crane is nowhere to be seen.
+? talked_duke or duke_ran :: Behind you, far off in the counting hall, the Duke's voice, laughing.
+
+* fight: Fight it.
+  temper: duty +1
+  combat: foe=assayer
+  mod: old_key => resolve=-3
+  mod: kettle_hurt => resolve=2
+  > triumph: The Assayer stops, mid-swing, and its coin face cracks across, and it goes down on one knee with a sound like a bell dropped down a well. Behind it, the vault door swings open on its own. Gold. Gold to the ceiling.
+    do: flag assayer_beaten; flag vault_open
+    goto: reckoning
+  > success: The Assayer grinds to a halt at last, and the vault door groans open behind it.
+    do: flag assayer_beaten; flag vault_open
+    goto: reckoning
+  > mixed: It falls. You nearly fall with it.
+    do: flag assayer_beaten; flag vault_open
+    goto: reckoning
+    cost: Its hammer catches you (lose 5 Grit) :: grit -5
+    cost: It falls across the vault door (you can carry less out) :: flag less_gold
+  > fail: The Assayer weighs you, and finds you wanting, and throws you across the vault like a sack of grain. But it has been three hundred years, and something in it breaks with the effort. The door opens a crack. Enough.
+    do: grit -4; flag vault_open; flag less_gold
+    goto: reckoning
+
+* weigh: Step onto the scales, and be weighed.
+  temper: honesty +1
+  challenge: kind=trial progress=18 danger=3 danger_text="The scale tips toward wanting." title="Weighed by the Assayer"
+  mod: tobin_truth => progress=-2
+  mod: password => progress=-3
+  approach ward: Stand still on the scale, and be exactly what you are.
+  approach lore: Answer its questions in the old coiners' tongue: weight, fineness, oath.
+  approach grace [progress=16]: Balance. Just balance, on one foot, on a brass pan the size of a cart wheel.
+  > triumph: The scales settle level. "HONEST," says the Assayer, and steps aside, and bows, and the vault door rolls open. It says one more thing, to Kettle: "TOBIN KETTLE WAS HONEST ALSO." Kettle sits down very suddenly on the floor.
+    do: flag vault_open; flag weighed_true; regard 1
+    goto: reckoning
+  > success: The scales settle, near enough. "PASS," says the Assayer, and the door opens.
+    do: flag vault_open; flag weighed_true
+    goto: reckoning
+  > mixed: You pass. Not by much.
+    do: flag vault_open
+    goto: reckoning
+    cost: The Assayer keeps a weight for the city (lose 10 Coin) :: coin -10
+    cost: It keeps something of you, too (lose 4 Grit) :: grit -4
+  > fail: "WANTING," says the Assayer, and its scale-hand closes on you, and you have to break your way out, and when you do the vault door is open a crack, and the Assayer is weeping oil.
+    do: grit -5; flag vault_open; flag less_gold
+    goto: reckoning
+
+* trick: Weigh it with false coin.
+  temper: honesty -1
+  challenge: kind=test difficulty=hard tries=2 title="False weight"
+  approach guile: Lead slugs gilded with lamp-black, a trick older than the Mint.
+  approach grace: Keep its scales moving, faster and faster, until it loses count.
+  > triumph: The Assayer weighs your false coin, and weighs it again, and for the first time in three hundred years, it can't decide. It stands there, scales swinging, ticking. You walk past it into the vault.
+    do: flag vault_open; flag assayer_fooled; fate 1
+    goto: reckoning
+  > success: It's fooled, long enough. The door rolls open.
+    do: flag vault_open; flag assayer_fooled
+    goto: reckoning
+  > mixed: It's fooled. Not for long.
+    do: flag vault_open; flag assayer_fooled
+    goto: reckoning
+    cost: It works out the trick as you pass (lose 4 Grit) :: grit -4
+    cost: It locks the inner vault (less gold) :: flag less_gold
+  > fail: The Assayer knows lead when it weighs it. Its hammer comes down, and you're lucky it only hits the floor. The door opens a crack in the shaking. Enough.
+    do: grit -4; flag vault_open; flag less_gold
+    goto: reckoning
+
+## reckoning: The Reckoning
+act: 3
+type: encounter
+tile: chest
+at: 7.0, 0.2
+token: kettle_fought => knife "Kettle's knives, turned"
+
+The vault. Gold to the ceiling, as they said: coins and ingots and plate, the whole treasury of a city that died of plague three hundred years ago, gleaming in your lantern.
+? less_gold :: Less than there should be: half of it is under the fallen door. Still more than you've ever seen.
+Kettle stands in the doorway behind you. Her crew stand behind her. All of them.
+? seen:kettle_crossed or seen:ledger_kept or half_share :: She has a crossbow, and it is pointing at you. "Sorry, partner," she says. And she does look sorry. "You crossed me once. I promised myself I'd only ever let that happen once."
+? not seen:kettle_crossed and not seen:ledger_kept and not half_share :: She has a crossbow, and it is pointing at the floor. "Well," she says. "Here we are. How do you want to do this?"
+? tobin_truth :: And somewhere in the dark behind her, the Duke is coming, slowly, step by step down the stair. Kettle hears him. Her face changes.
+
+* fight: Fight her for it.
+  if: seen:kettle_crossed or seen:ledger_kept or half_share
+  temper: duty -1
+  combat: foe=kettle_crew
+  mod: gave_letter => resolve=-4
+  > triumph: Kettle's crew break and run, and Kettle sits down on a pile of gold with her crossbow across her knees and laughs until she cries. "You'd have made a terrible smuggler," she says. "You're far too good at it."
+    do: flag kettle_fought; flag gold_yours
+    goto: flood
+  > success: The last of her crew throws down his knife. Kettle lowers the crossbow. "Take it," she says. "Take it and choke."
+    do: flag kettle_fought; flag gold_yours
+    goto: flood
+  > mixed: You win. Nobody wins, really.
+    do: flag kettle_fought; flag gold_yours
+    goto: flood
+    cost: Kettle's bolt, in the leg (lose 5 Grit) :: grit -5
+    cost: Half the gold goes with her crew as they run :: flag less_gold
+  > fail: They beat you to the floor of the vault, and Kettle stands over you with the crossbow. Then she lowers it. "No," she says. "Not like this." She takes the gold. She leaves you the lantern.
+    do: grit -4; flag kettle_took
+    goto: flood
+
+* deal: Talk her down. Gambler to gambler.
+  contest: opponent=kettle_final title="Mother Kettle"
+  mod: tobin_truth => resolve=-4
+  mod: seen:deeds_returned => resolve=-3
+  approach grace: Tell her the truth: you've never wanted the gold as much as she has.
+  approach lore: Remind her who drowned her brother, and who is coming down the stair.
+  approach guile: Bluff. You've told the Crown where you are. You haven't.
+  > triumph: Kettle lowers the crossbow, and then, very slowly, holds out her hand to you, palm up, spat in. "Partners," she says. "One last time." And then, together, you turn round to face the stair.
+    do: flag partners; flag duke_faced
+    goto: flood
+  > success: Kettle lowers the crossbow. "Half," she says. "And we never see each other again." You shake on it.
+    do: flag partners
+    goto: flood
+  > mixed: She lowers it. Not all the way.
+    do: flag partners
+    goto: flood
+    cost: She takes the bigger half (less gold for you) :: flag less_gold
+    cost: Her crew don't forgive you (Thieves' Guild standing falls) :: standing guild -1
+  > fail: Kettle shakes her head. "Not good enough, dearie." She takes the gold. She leaves you the lantern, and the stair, and whoever is coming down it.
+    do: flag kettle_took
+    goto: flood
+  > caught: Kettle sees your loaded die before it stops rolling. She takes it off the floor and pockets it. "That's mine, now," she says. "So's the gold." She leaves you the lantern.
+    do: flag kettle_took; lose_lowest; flag caught_cheating
+    goto: flood
+
+* give: Give it to her. All of it. It was always Tobin's.
+  temper: mercy +1
+  do: flag gave_gold; regard 1
+  goto: flood
+  reply: Kettle stares at you. The crossbow drops. "Fool," she says, and then she's hugging you, which has never happened before and will never happen again, and smells of tobacco and river. "Fool, fool." [i]There are tales about gold, and tales about people. I know which I'd rather tell.[/i]
+
+* city: "It goes back to Saltreach. It's the city's gold."
+  temper: duty +1
+  do: flag gold_city; standing crown 1
+  goto: flood
+  reply: Kettle laughs, a short bark. "The city," she says. "The city that drowned my brother and taxed his boat." But she lowers the crossbow. "You really mean it." You do. She sighs. "Then I'll take my cut off the top, and the city can have the rest. I'm not a saint, dearie." [i]Neither of you is. That's what makes it interesting.[/i]
+
+## flood: The River Comes In
+act: 3
+tile: cave
+at: 8.4, -0.3
+
+A sound like a door the size of a city opening. The Assayer, behind you, has fallen across the great sluice, or opened it, or simply decided: and the river is coming in. Water pours down the vault stair, black and roaring, rising round your knees, your waist.
+? duke_faced :: On the stair, the Duke. The water takes him off his feet, and he looks at Kettle as it carries him past, and she looks back, and neither of them says anything. Then he's gone.
+? tobin_truth and not duke_faced :: Somewhere up the stair, the Duke screams once, and the water takes him. Kettle closes her eyes.
+"Out!" Kettle shouts. "Out, out, out!"
+
+* run: Out, with whatever you can carry.
+  challenge: kind=trial progress=16 danger=3 danger_text="The water rises over your chest." title="Out of the Mint"
+  mod: less_gold => progress=-2
+  mod: tobin_way => progress=-3
+  approach might: Carry it, and Kettle if you have to, against the current.
+  approach grace: Swim for the old coiners' passages before they flood.
+  approach ward [progress=14]: Lash the gold to a counting-table and ride it out like a raft.
+  > triumph: You come up out of the fish market drain at dawn, with gold in every pocket and Kettle beside you, both of you laughing like idiots in the gutter while the fishwives stare.
+    do: flag escaped; flag full_haul
+    goto: ending
+  > success: Out, through the coiners' passage, into the grey morning, soaked and alive.
+    do: flag escaped
+    goto: ending
+  > mixed: Out. The river keeps its share.
+    do: flag escaped
+    goto: ending
+    cost: The current tears the gold out of your hands (less gold) :: flag less_gold
+    cost: You nearly drown (lose 5 Grit) :: grit -5
+  > fail: The river takes everything: the gold, the lantern, very nearly you. You come out of the sluice at dawn with nothing in your hands but one coin, and that only because it was in your mouth.
+    do: grit -4; flag escaped; flag lost_gold
+    goto: ending
+
+## ending: How It Ended
+type: ending
+
++ drowned: The Mint Keeps Its Own
+  if: defeat or wounds>=3
+  [i]And the river came into the Mint, as it had been waiting three hundred years to do, and it took the gold, and the Duke, and very nearly you.[/i]
+  Kettle dragged you out of the sluice by your collar. She doesn't talk about it. She doesn't talk much at all now. Her table in the tavern is empty most nights.
+  do: mark mint_lost; chronicle "The Gilded Ruin: the river took the Mint, and the gold."
+
++ retire: Mother Kettle Retires
+  if: gave_gold or partners and tobin_truth
+  renown: 5
+  Mother Kettle comes into the tavern one last time, with a new coat and no cards, and sits at your table.
+  ? gave_gold :: "A house," she says, "by the lake. Where Tobin went in. I'll keep a light in the window." She pushes something across the table: a small brass die, worn smooth.
+  ? partners :: "Half was plenty," she says. "More than plenty. I'm going to sit by a lake and do nothing, for once." She pushes something across the table: a small brass die, worn smooth.
+  "Forty years of card tables," she says. "It lands on six three times in four. Every sharp on the river knows it, so don't cheat with it in Saltreach. Cheat with it somewhere nice."
+  [i]She kept the light in the window, too. I've seen it, from the shore road. A small light, and steady.[/i]
+  do: gain kettle_own_d6; if partners then coin 25; standing guild 1; mark kettle_retired; chronicle "The Gilded Ruin: Mother Kettle retired to the lakeshore, and left you her own die."; if tobin_truth then mark tobin_found
+
++ city: The City's Gold
+  if: gold_city
+  renown: 4
+  The gold goes back up to Saltreach in carts, under Crown guard, minus a share that goes somewhere else with Kettle in the night. There's a new hospital by the fish market by spring. They name a ward after you, which is embarrassing.
+  ? tobin_truth :: And a small plaque by the sluice, that Kettle paid for: TOBIN KETTLE, WHO FOUND IT.
+  [i]Three hundred years that gold was lost. Now it's a roof, and beds, and soup. I can't think of a better ending for gold.[/i]
+  do: gain assayer_d8; coin 15; mark mint_returned; chronicle "The Gilded Ruin: the old Mint's gold went back to Saltreach."; if tobin_truth then mark tobin_found
+
++ alone: The Whole Haul
+  if: gold_yours and not lost_gold
+  renown: 3
+  The gold is yours. All of it, or all you could carry. You hide it in places you'll forget, and spend it on things you don't need, and still there's more.
+  At the bottom of the sack, a die you didn't put there: gold, heavy as sin, warm, and hungry.
+  Kettle never sits at her table again. Sometimes you see her on the quay, watching you, and she always tips her hat.
+  [i]You won. You beat Mother Kettle at her own table. I hope it was worth it. It usually isn't, but I hope.[/i]
+  do: gain gilt_d20; coin 40; standing guild -2; mark kettle_enemy; chronicle "The Gilded Ruin: you took the Mint's gold from Mother Kettle."; if tobin_truth then mark tobin_found
+
++ partners: Partners
+  if: partners
+  renown: 4
+  Half the gold of a dead city is a great deal of gold. Kettle takes hers south on a fast boat, and sends you a postcard of the sea every season, with no return address.
+  You keep a coin of the old Mint, struck into a die by Brannoc, who whistles when he sees it.
+  [i]Partners. Not friends, exactly. Something rarer.[/i]
+  do: gain aurum_d12; coin 25; standing guild 1; mark kettle_partner_end; chronicle "The Gilded Ruin: you and Mother Kettle split the Mint's gold."; if tobin_truth then mark tobin_found
+
++ taken: The Lantern
+  if: kettle_took
+  renown: 2
+  Kettle took the gold and left you the lantern. Six months later a box arrives at the tavern with no name on it. Inside, a fat purse and a coin of the old Mint, struck into a die.
+  ? tobin_truth :: And a note, in a careful hand: [i]For Tobin's letter. M.[/i]
+  [i]Betrayed, and paid for it. Kettle always did have her own idea of fair.[/i]
+  do: gain aurum_d12; coin 10; mark kettle_betrayed; chronicle "The Gilded Ruin: Mother Kettle took the Mint's gold and left you the lantern."; if tobin_truth then mark tobin_found
+
++ empty: One Coin
+  renown: 2
+  You come out of the river with one coin of the old Mint, and Brannoc, when he sees it, offers to strike it into a die. The rest of the gold is under the river again, where it was for three hundred years.
+  ? tobin_truth :: Kettle has Tobin's letter. She says that's the only thing in the Mint she ever wanted. You almost believe her.
+  [i]A treasure that stays lost. Old Saltreach would have approved, I think.[/i]
+  do: gain assayer_d8; mark mint_lost; chronicle "The Gilded Ruin: the gold went back under the river."; if tobin_truth then mark tobin_found

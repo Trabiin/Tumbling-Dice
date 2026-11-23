@@ -11,7 +11,10 @@ parser and linter, a text preview for writers, mid-tale saves and the Chronicle)
 and **milestone M4: the vertical slice staged** (the tale board with your figurine, carved foe figurines,
 and a minimal tavern with Hollis's shelf and Brannoc the Dicewright), and **milestone M5: the campaign
 skeleton** (a year of nights and seasons, two patron arcs of six tales, Renown, Standing, Rumours,
-Wounds carried between tales, Sister Maud, materials, loading, rebinding and curses). Design doc: *Tales of the Tumbling Dice: Game Design* (Claude Doc).
+Wounds carried between tales, Sister Maud, materials, loading, rebinding and curses), and the first part of
+**milestone M6: content for 1.0** (the prologue, Mother Kettle's arc, the Hooded Pilgrim's arc with the frame
+story's finale, and two secret tales: fifteen tales in all; the Teller's Mood and Story mode; options for
+text speed, text size and reduced motion; controller support with remapping; and translation support). Design doc: *Tales of the Tumbling Dice: Game Design* (Claude Doc).
 
 The dice, room, flames, tale board, UI widgets and sounds are generated in GDScript and shader code.
 Furniture, clutter, board landmarks and the painted miniatures come from free CC0 kits by
@@ -37,9 +40,71 @@ narration (`fonts/OFL.txt`, `fonts/OFL-IMFellEnglish.txt`).
 | 1 to 9 | Select a thrown die while placing dice |
 | Space | Throw (tossed in from your side of the table) |
 | Enter | Confirm / continue |
+| B | Place every thrown die where it does the most good |
+| Hold Z | Lean in over the tray to read small dice |
+| V | Look between the tray and the tale board |
+| Page Up / Page Down | Scroll back through the Teller's lines |
+| Arrow keys | Move between choices (Enter chooses) |
 | F | Fast dice: skip the physics (same odds, results drawn from each die's measured faces) |
 | F4 | Show or hide the frame rate and draw calls |
 | Esc | Quit |
+
+Every key except F4 can be remapped under **Options**.
+
+### Playing with a controller
+
+Any controller Godot knows (Xbox, PlayStation, Switch Pro and most others) works with no setup.
+
+| Controller | Action |
+|---|---|
+| Left stick or d-pad | Move between choices, dice and slots |
+| A / Cross | Choose; pick or put back a die |
+| Right stick | Push to pick the chosen dice up over the tray, flick and let go to throw. How far you push sets how hard |
+| Y / Triangle | Throw (tossed in from your side) |
+| X / Square | Place dice for the most good |
+| Start | Confirm / continue |
+| Right bumper (hold) | Lean in over the tray |
+| Left bumper | Look between the tray and the board |
+| Triggers | Scroll the Teller's lines |
+| Back / Select | Fast dice on or off |
+
+Focus comes back to the same place after each card is redrawn, so a controller never loses its spot.
+The buttons can be remapped under **Options**.
+
+### Options and accessibility
+
+**Options** on the title screen holds the graphics preset and these, all saved to `user://settings.cfg`:
+
+| Option | What it does |
+|---|---|
+| Text speed | How fast the Teller's lines are written out: Slow, Normal, Fast, or At once. Clicking the parchment always shows the line at once |
+| Text size | 100%, 115% or 130%: every panel and its text |
+| Reduced motion | Stills the camera's slow sway, makes camera moves and banners instant |
+| Fast dice | Results at once, no tumbling (same odds) |
+| Language | Any translation in `locale/` (see below) |
+| Controls | Click an action, then press the new key or button |
+
+Aspects are told apart by a glyph as well as a colour, on every die tile and slot, so the colours are never
+the only clue. Hover any die to read it in full.
+
+### The Teller's Mood and Story mode
+
+**The hearth** in the tavern (between tales) sets two campaign options:
+- **The Teller's Mood**, a challenge ladder of five levels on top of Fair. They stack: Testy (foes and opponents
+  throw one extra d4), Grudging (you start every tale with 1 Fate), Sour (Waystones let you swap only one
+  die), Bitter (Grit starts 4 lower) and Black (every target and every opponent's Resolve is 2 higher). The dice
+  and the odds stay honest at every level: only targets, foes and resources change. You can choose one level
+  above the highest you have beaten, and each level beaten unlocks a new felt for the tray.
+- **Story mode**, for players who want the tales above all: Grit is doubled, and a Fail can always be Defied
+  into a Mixed, for free. Story mode earns no felts.
+
+Neither can be changed while a tale is saved part-way.
+
+### Translating
+
+Interface text is translated with standard gettext `.po` files in `locale/`, made from the template
+`locale/tumbling_dice.pot` (`godot --headless -s res://tools/extract_strings.gd` rebuilds it). Tales are
+translated as whole files in `tales/locale/<code>/`, keeping every id. See [docs/translating.md](docs/translating.md).
 
 The campaign (your dice, Coin, Chronicle, endings found) is saved to `user://campaign.json` when a tale
 ends. Run with `-- --new` to start fresh. The old dice-tray sandbox is still there: `main.tscn`.
@@ -109,12 +174,36 @@ and 52 (and the Saddlebag's at the third and sixth step). **Wounds** taken in a 
 **Curses** bite on their own rules (the Bellmetal tolls at Waystones; the Oath die at setting out) and
 are lifted in the tale they belong to.
 
-### The two arcs
+### The prologue
+
+A new campaign begins with **The Stranger's Throw** (the title screen offers it first; it can be skipped,
+and then it waits at the pilgrim's stool in the tavern). A hooded stranger lends you a fixed Pouch (four Oak
+d6, a Brass d8, a Dragon's Blood d10, and an Oak d6 of Ward in the Saddlebag) and the short tale teaches a
+Test, a Trial, a Contest, a fight and a Waystone. At the end the stranger gives you one of three dice to keep
+(an Ember d8, a Glass d6 or a Willow d8), chosen as a character choice: the brave one, the clever one, the kind
+one. Your own Pouch comes back untouched.
+
+### The arcs
 
 | Arc | Tales | What carries over |
 |---|---|---|
 | Wren | The Drowned Bell, The Bell Market, The Tide Court | Whether the Abbess was freed or destroyed, the bell sold or rung, the gold kept (Marrowmere floods in autumn), Ormond Vane dead or escaped. The Tide Court sits in autumn and can lift the Bellmetal's curse. |
 | Captain Ashgrove | The Last Watch, The Pretender's Road, Siege of Holloway | Sergeant Brask hanged, spared or taken along, the Oath die taken at the chapel, the letter burned or kept, the bridge held or burned or the captain joining the Pretender (then the siege never comes, and the hill farms empty in autumn). Both expire at winter. |
+| Mother Kettle | The Long Con, The Duke's Ledger, The Gilded Ruin | Whether the river folk got their forty boats back, Silas Crane exposed or loose, whether you crossed Kettle; what became of the Duke's ledger (Kettle's, the Crown's, burned, kept) and Kettle's own page in it; Lady Isolde. The Gilded Ruin waits for autumn and ends Kettle's career one way or another. The other arcs leak in: Magistrate Coyle and Harrow are in the ledger, and Ormond Vane bought the Duke's protection. |
+| The Hooded Pilgrim | (The Stranger's Throw), The Witch of Sallow Wood, The Hollow Saint, The Teller's Tale | The frame story. Whether you learned the Teller's name, promised the Old Wood you'd come to its table, burned Mag Sallow's book or gave the willows his black die; who ends up with Saint Hollow's dice (Wenna, the priory, the Wood, a buyer); the lost souls in the fen. The Teller's Tale comes on the longest night (winter) and reads the whole Chronicle: Wren, Captain Ashgrove or Mother Kettle walk into the Wood with you if their arcs went well. |
+
+**The frame story.** The Teller is Aldous Penhallow, a foundling from Saint Hollow's priory who, fifty years
+ago, sat down at the Old Wood's table and threw for his dying sister's life. He lost. The Wood, which is fond
+of a good story, let her live and kept him: a tale at a hearth for every soul it takes, until somebody who has
+heard his tales sits down in his place. The Hooded Pilgrim is his sister, Wenna. On the longest night you can
+throw for him (free), refuse the game and overturn the table (no more wagers for anyone), let Wenna take her
+turn, or sit down in his chair and become the Teller yourself. Every ending marks the campaign as told.
+
+**Secret tales.** Two tales are never pitched until you have heard the right rumour. *The Dicewright's Debt*
+(Brannoc's bench) needs the rumour that Brannoc was once the Wood's dicewright, plus his trust or a good deal of
+Renown; at the Black Forge under Cinder Fell, every cursed die you carry can be unmade. *The Card Sharps' Moon*
+(the cellar door behind the bar) needs the rumour of the Fair Folk's dice table; the Queen of Hours plays for
+years, and knows the King of Hollows' tell, which helps at the Wood's table.
 
 The bots play a whole year (`--only=year`) and check that every tale gets told and that the later tales
 open differently depending on how the earlier ones ended.
@@ -229,7 +318,7 @@ The rules never touch the scene tree, so the same code runs in the game, in test
 | `scripts/rules/teller.gd` | The Teller's reaction lines, keyed to events, with a cooldown |
 | `scripts/rules/conditions.gd` | The small condition language tales use (`rumour_smugglers or has:guile`) |
 | `scripts/rules/bot.gd` | Balance bots with archetype Pouches |
-| `tales/*.tale` | The tales, as text ([format](docs/tale_format.md)): The Drowned Bell and the five M5 tales |
+| `tales/*.tale` | The tales, as text ([format](docs/tale_format.md)): fifteen, from the prologue to The Teller's Tale |
 | `scripts/rules/patrons.gd` | The campaign around the tales: who offers what, the calendar, season events, missed tales, Sister Maud |
 | `scripts/rules/tale_parser.gd`, `tale_writer.gd` | Read a `.tale` file into the dictionary the runner plays, and write one back |
 | `scripts/rules/tale_lint.gd` | The linter: design rules and broken links, reported by file line |

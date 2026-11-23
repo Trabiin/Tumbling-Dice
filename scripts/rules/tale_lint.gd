@@ -30,6 +30,21 @@ static func run(tale: Dictionary, lines := {}) -> Array:
 	return L.issues
 
 
+## A translated tale must have the same shape as the original: the same tale id, scenes, options,
+## outcomes and endings (the parser's line map has one key for each). Returns readable problems.
+static func same_shape(orig: Dictionary, orig_lines: Dictionary, tr_tale: Dictionary, tr_lines: Dictionary) -> Array:
+	var out: Array = []
+	if str(orig.get("id", "")) != str(tr_tale.get("id", "")):
+		out.append("the tale id differs ('%s' against '%s')" % [tr_tale.get("id", ""), orig.get("id", "")])
+	for k in orig_lines:
+		if not tr_lines.has(k):
+			out.append("missing '%s'" % k)
+	for k in tr_lines:
+		if not orig_lines.has(k):
+			out.append("'%s' is not in the original" % k)
+	return out
+
+
 class _Lint:
 	var issues: Array = []
 	var lines := {}
@@ -89,6 +104,11 @@ class _Lint:
 			if tale.get("expires", "") != "" and tale.get("missed", "") == "":
 				add("", "A tale that expires needs a missed: line, told when it goes by without you.")
 			campaign_reads(tale.get("offer", ""), "")
+		# A fixed Pouch (the prologue): every die named must exist.
+		for k in ["pouch", "saddle"]:
+			for b in String(tale.get(k, "")).split(",", false):
+				if not b.strip_edges() in Dice.ALL_IDS:
+					add("", "%s: names an unknown die '%s'." % [k, b.strip_edges()])
 		if not scenes.has(tale.get("start", "")):
 			add("", "The start scene '%s' does not exist." % tale.get("start", ""))
 		var edges := {}

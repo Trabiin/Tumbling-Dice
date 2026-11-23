@@ -32,6 +32,7 @@ const TaleState := preload("res://scripts/rules/tale_state.gd")
 const Teller := preload("res://scripts/rules/teller.gd")
 const Cond := preload("res://scripts/rules/conditions.gd")
 const Forge := preload("res://scripts/rules/forge.gd")
+const Mood := preload("res://scripts/rules/mood.gd")
 
 const TIER_KEYS := ["fail", "mixed", "success", "triumph"]
 
@@ -66,6 +67,7 @@ func start(p_tale: Dictionary, p_campaign, seed_value := -1) -> void:
 	campaign = p_campaign
 	pouch = campaign.pouch
 	state = TaleState.new()
+	Mood.start_tale(campaign, state)
 	teller.extra = tale.get("teller", {})
 	if seed_value >= 0:
 		rng.seed = seed_value
@@ -75,6 +77,7 @@ func start(p_tale: Dictionary, p_campaign, seed_value := -1) -> void:
 		teller.rng.randomize()
 	pouch.hand_penalty = 0
 	_say(tale.title, "title")
+	_fixed_pouch()
 	if campaign.get("wounds") != null and not campaign.wounds.is_empty():
 		state.carry_in(campaign.wounds)
 		_say("You carry %s from an earlier tale: %s" % ["a Wound" if campaign.wounds.size() == 1 else "%d Wounds" % campaign.wounds.size(),
@@ -264,7 +267,7 @@ func pick_approach(i: int) -> void:
 	else:
 		var c: Dictionary = option.contest
 		var mods := _mods(c.get("mods", []))
-		active = {"type": "contest", "run": Contest.create(Foes.opponent(c.opponent), approach.aspect, mods)}
+		active = {"type": "contest", "run": Contest.create(Mood.opponent(campaign, Foes.opponent(c.opponent)), approach.aspect, mods)}
 	_begin_try()
 
 
@@ -280,7 +283,7 @@ func challenge_def(appr: Dictionary) -> Dictionary:
 	if state.flag("no_lantern") and scene.id == "chamber":
 		target += 2
 	def.target = maxi(1, target)
-	return def
+	return Mood.challenge_def(campaign, def)
 
 
 ## Sum of the mods whose conditions hold: [[cond, {key: value}], ...]
@@ -302,7 +305,7 @@ func approach_odds(i: int) -> Dictionary:
 	if option.has("challenge"):
 		return Odds.approach_odds(challenge_def(appr), appr.aspect, pouch.hand, throw_ctx("test"), pouch, 250)
 	# Contests: how well the Hand matches, as expected value per die.
-	var c = Contest.create(Foes.opponent(option.contest.opponent), appr.aspect, _mods(option.contest.get("mods", [])))
+	var c = Contest.create(Mood.opponent(campaign, Foes.opponent(option.contest.opponent)), appr.aspect, _mods(option.contest.get("mods", [])))
 	var best := Odds.pick(pouch.hand, [{"aspect": appr.aspect}], c.effort)
 	var e := 0.0
 	for d in best:
@@ -682,7 +685,7 @@ func _assign_combat(assign_arr: Array, pair_pick: int, read_mode: String) -> voi
 
 func _start_combat() -> void:
 	var cb: Dictionary = option.combat
-	var foe := Foes.foe(cb.foe)
+	var foe := Mood.foe(campaign, Foes.foe(cb.foe))
 	var mods := _mods(cb.get("mods", []))
 	if state.arrow():
 		mods["ambushed"] = int(mods.get("ambushed", 0)) + 1
@@ -834,7 +837,7 @@ func _finish(t: int, caught := false) -> void:
 		_grudge()
 		# Defy answers a single bad throw. A fight lost over many rounds has its own safety
 		# net (the Last Stand), so it cannot be Defied.
-		if not caught and not state.defy_used and state.fate >= 3 and active.type != "combat":
+		if not caught and Mood.can_defy(campaign, state) and active.type != "combat":
 			outcome = {"caught": caught}
 			_set_phase("defy")
 			return
@@ -854,8 +857,8 @@ func _grudge() -> void:
 
 func defy(yes: bool) -> void:
 	var caught: bool = outcome.get("caught", false)
-	if yes and state.fate >= 3 and not state.defy_used:
-		state.fate -= 3
+	if yes and Mood.can_defy(campaign, state):
+		state.fate -= Mood.defy_cost(campaign)
 		state.defy_used = true
 		_say(teller.line("defy"), "teller")
 		tier = S.MIXED
@@ -1041,11 +1044,12 @@ func _effect(e: Array) -> void:
 			# A Waystone gets you back on your feet, not back to full: Grit rises to n if it is lower.
 			var before_rest: int = state.grit
 			state.grit = clampi(maxi(state.grit, int(e[1])), state.grit, state.grit_max)
-			pouch.rest(rng, 2)
+			pouch.rest(rng, Mood.swaps(campaign))
 			_say(teller.line("rest"), "teller")
 			_curses("rest")
 			var grit_text := ("Grit back up to %d." % state.grit) if state.grit > before_rest else ("Grit stays at %d." % state.grit)
-			_say("%s Fatigue cleared. You may swap up to 2 dice with your Saddlebag." % grit_text, "system")
+			var sw: int = Mood.swaps(campaign)
+			_say("%s Fatigue cleared. You may swap up to %d %s with your Saddlebag." % [grit_text, sw, "die" if sw == 1 else "dice"], "system")
 		"practice_reset":
 			# The practice table: every challenge starts from the same footing.
 			state.grit_max = TaleState.START_GRIT
@@ -1112,6 +1116,52 @@ func _gain(base: String, ally: bool, prefix := "") -> void:
 	events.append({"type": "gain", "die": d})
 
 
+# ------------------------------------------------------------------ a fixed Pouch
+
+## A tale can hand you its own Pouch (the prologue: `pouch: oak_might, ...`, `saddle: oak_ward`).
+## The dice are lent for the tale; your own packing is put aside and comes back at the ending.
+func _fixed_pouch() -> void:
+	var bases := String(tale.get("pouch", "")).split(",", false)
+	if bases.is_empty():
+		return
+	state.set_flag("kept_pouch", ",".join(pouch.pouch.map(func(d): return d.id)))
+	state.set_flag("kept_saddle", ",".join(pouch.saddlebag.map(func(d): return d.id)))
+	pouch.pouch.clear()
+	pouch.saddlebag.clear()
+	for k in ["pouch", "saddle"]:
+		for b in String(tale.get(k, "")).split(",", false):
+			var d := Dice.create(b.strip_edges())
+			d.ally = true
+			d.history.append("Lent to you in %s." % tale.title)
+			pouch.collection.append(d)
+			if k == "pouch":
+				pouch.pouch.append(d)
+			else:
+				pouch.saddlebag.append(d)
+	pouch.start_tale(rng)
+	_say("You are handed a Pouch for this tale: %s." % ", ".join(pouch.pouch.map(func(d): return d.name)), "system")
+
+
+func _restore_pouch() -> void:
+	if String(tale.get("pouch", "")) == "":
+		return
+	var by_id := {}
+	for d in pouch.collection:
+		by_id[d.id] = d
+	pouch.pouch.clear()
+	pouch.saddlebag.clear()
+	for id in String(state.flags.get("kept_pouch", "")).split(",", false):
+		if by_id.has(id):
+			pouch.pouch.append(by_id[id])
+	for id in String(state.flags.get("kept_saddle", "")).split(",", false):
+		if by_id.has(id):
+			pouch.saddlebag.append(by_id[id])
+	# Dice gained in the tale go into the Pouch if they fit, as usual.
+	for d in state.gained:
+		if pouch.collection.has(d) and not pouch.pouch.has(d) and not d.get("ally", false) and pouch.weight() + int(d.weight) <= pouch.weight_limit:
+			pouch.pouch.append(d)
+
+
 # ------------------------------------------------------------------ the end
 
 func _finish_tale() -> void:
@@ -1155,6 +1205,10 @@ func _finish_tale() -> void:
 			rn += 1
 		rn = clampi(rn + state.num("renown_bonus"), 0 if not won else 1, 5)
 		var up: int = campaign.add_renown(rn)
+		if won and campaign.get("mood_best") != null:
+			var ml: String = Mood.record_win(campaign)
+			if ml != "":
+				_say(ml, "gain")
 		if rn > 0:
 			_say("Renown +%d%s." % [rn, (": your Pouch can carry weight %d now" % pouch.weight_limit) if up > 0 else ""], "gain")
 		# Wounds come home with you, two at most: Sister Maud can treat them at the tavern.
@@ -1183,5 +1237,6 @@ func _finish_tale() -> void:
 	var gone: Array = pouch.end_tale()
 	for d in gone:
 		_say("%s goes back to its owner." % d.name, "system")
+	_restore_pouch()
 	_set_phase("ending")
 

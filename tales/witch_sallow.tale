@@ -1,0 +1,439 @@
+title: The Witch of Sallow Wood
+id: witch_sallow
+patron: The Hooded Pilgrim
+start: plea
+arc: pilgrim
+order: 1
+pitch: The hooded stranger is back by the hearth, with a die of black wood that has to go to the witch in Sallow Wood before the moon is full.
+offer: told:strangers_throw and night>=5
+teller: triumph :: There. Even the Wood was impressed, and the Wood has seen everything twice.
+teller: triumph :: The willows will whisper that one for a hundred years.
+teller: mixed :: Through, and the Wood takes its tithe. It always does. It always has.
+teller: fail :: The Wood wins that one. It usually does. That isn't the end of anything.
+teller: loaded_caught :: The Wood looks at {die} with a thousand eyes. Lead doesn't fool the trees.
+teller: rest :: A ring of old stones in a wood that hasn't changed since before the stones.
+teller: downed :: Down, in the leaf-mould. The roots are reaching for you. Up.
+
+// The Hooded Pilgrim's arc, tale 1 of 3 (after the prologue). The frame story begins to show:
+// the Teller made a wager with the Old Wood fifty years ago, and Mag Sallow keeps the Wood's book
+// of debts. Sets what you learned (teller_debt, the Teller's name), and how the Wood feels about
+// you. The Hollow Saint and The Teller's Tale read it.
+
+## plea: The Stranger Returns
+act: 1
+tile: inn
+at: 0, 0
+token: promised_pilgrim => candle "A promise to the stranger"
+
+The stool by the hearth isn't empty tonight. The hooded stranger is back, travel-stained, throwing their six dice into the wooden bowl. When you sit down they stop, and take something out of their coat: a single die of black wood, old and smooth, with no numbers on it at all.
+? seen:hounds_fed :: "The miller's hounds still follow you about, I hear," the stranger says. "Good. The Wood likes people that dogs like."
+"This has to go to Mag Sallow, the witch in Sallow Wood, before the moon is full," they say. "I'd take it myself. But the Wood knows me, and it wouldn't let me out again." They hesitate. "It knows you, too. A little. From the tales."
+[i]Ah. This one. I'd hoped she'd ask somebody else.[/i]
+? seen:met_pilgrim :: You realise you've never seen the stranger's face. In the firelight, under the hood, all you see is an old woman's chin, and a smile that's been waiting a long time.
+
+* promise: "I'll take it."
+  temper: duty +1
+  do: flag promised_pilgrim; regard 1
+  goto: prepare
+  reply: The stranger puts the black die in your palm and closes your fingers over it. It's warm. "Don't throw it," they say. "Whatever happens. It isn't yours to throw."
+
+* who: "Who is Mag Sallow to you?"
+  temper: honesty +1
+  do: flag asked_mag
+  goto: prepare
+  reply: "An old enemy," says the stranger. "And the only one who still remembers my name. Ask her about the man at the hearth. Watch her face when you do." [i]Don't. Please. No, ask. I said I'd tell these straight.[/i]
+
+* price: "And what's it worth, carrying a witch's post?"
+  temper: honesty -1
+  do: flag asked_price
+  goto: prepare
+  reply: The stranger laughs, the dry-leaf laugh. "More than money. Less than you'd think. Carry it, and you'll find out what it's worth, and to whom."
+
+## prepare: Packing for the Wood
+act: 1
+type: prepare
+goto: edge
+
+Hollis has your Pouch on the bar. He looks at the black die on the counter beside it and doesn't touch it. "Sallow Wood," he says. "My grandad went in for a bet once. Came out the same night, forty years older." He pushes the Pouch over. "Don't bet with anything in there."
+[i]Choose what you carry. The Wood respects old knowledge and good manners. It respects a sharp axe too, but it remembers it longer.[/i]
+
+## edge: The Edge of the Wood
+act: 1
+on enter: random_flag weather [mist, moon, rain]; if season==winter then flag weather snow; if season==autumn then flag weather leaves
+tile: forest
+at: 1.3, 0.3
+token: ferry_paid => coins "The ferryman's coin"
+
+Sallow Wood starts all at once, at the bottom of a field: a wall of grey willows, leaning together over black water, their long leaves trailing. There's no path. There's a ferry, of sorts: a punt on a chain, and an old man in it with a lantern and no eyes.
+? weather==mist :: Mist on the water, and the willows coming and going in it like breathing.
+? weather==moon :: A huge moon, nearly full. Every leaf silver.
+? weather==rain :: Soft rain, and the whole wood dripping and whispering.
+? weather==snow :: Snow on the willows, and the black water steaming in the cold.
+? weather==leaves :: Yellow leaves falling into the black water, turning slowly as they sink.
+"Fare's a word," says the ferryman. "A true one. The Wood likes true words."
+[i]Every road into Sallow Wood asks something of you. This one only wants the truth. It's the cheapest road in, and the hardest.[/i]
+
+* truth: Pay the ferryman a true word.
+  temper: honesty +1
+  challenge: kind=test difficulty=standard tries=2 title="A true word"
+  approach lore: The oldest true thing you know: a word in the tongue the willows speak.
+  approach grace: Something true about yourself that you've never said out loud.
+  approach ward: A promise, and mean it, and let him hear that you do.
+  > triumph: The ferryman smiles with his whole blind face, and poles you over, and on the far bank tells you a true word back: "The witch keeps a book. Ask to see the page with the hearth on it."
+    do: flag ferry_paid; flag page_known; fate 1
+    goto: wisps
+  > success: The ferryman nods. The punt slides across the black water without a sound.
+    do: flag ferry_paid
+    goto: wisps
+  > mixed: He takes your word. He takes something else with it.
+    do: flag ferry_paid
+    goto: wisps
+    cost: A memory, small and warm (lose 1 Fate) :: fate -1
+    cost: He drops you on the wrong bank (a long wet walk) :: fatigue 2
+  > fail: "Not true enough," says the ferryman, and the punt tips, and you go into the black water and come up on the far bank anyway, cold to the soul. The Wood doesn't mind you coming in. It just wanted you to know it noticed.
+    do: grit -3
+    goto: wisps
+
+* wade: Wade across. You don't pay fares to blind men in punts.
+  temper: duty -1
+  challenge: kind=trial progress=15 danger=3 danger_text="Something touches your ankle under the water." title="The black water"
+  mod: weather==snow => progress=2
+  approach might: Straight across, chest-deep, and don't look down.
+  approach grace: From root to root along the leaning willows, above the water.
+  approach guile [progress=13]: Follow the ferryman's chain across, hand over hand, while he isn't looking.
+  > triumph: You come out on the far bank dry above the knee, and the ferryman, behind you, laughs. "Rude," he calls. "But quick. The Wood likes quick, too."
+    do: flag crossed_rude
+    goto: wisps
+  > success: Across, soaked and shivering, with something in the water following you to the bank and then giving up.
+    do: flag crossed_rude
+    goto: wisps
+  > mixed: Across. The water keeps something.
+    do: flag crossed_rude
+    goto: wisps
+    cost: The cold of it (lose 4 Grit) :: grit -4
+    cost: The water takes one of your dice (lose your lowest) :: lose_lowest
+  > fail: Hands under the water pull you down, and let you go, and you come up on the far bank coughing. You will dream about those hands.
+    do: grit -4; flag crossed_rude
+    goto: wisps
+
+## wisps: The Wisp Fen
+act: 2
+tile: place
+at: 2.6, -0.4
+token: wisps_freed => lamp "The wisps, let go"
+
+Past the willows, a fen: tussocks and black pools and dead white trees, and over it all, drifting, a hundred little lights. They gather when they see you, the way moths gather at a lantern, and some of them, when they come close, have faces. Very small faces. Lost ones.
+? asked_mag :: One of them whispers a name as it passes your ear. You don't catch it, but it sounded like it was asking for somebody.
+"Follow us," the lights say, all together, in voices like breath on a window. "We know the way. Follow, follow."
+[i]Will-o'-the-wisps. Travellers who came into the Wood and didn't come out. They take their names, here, and leave you the light. I know. I've seen the book.[/i]
+
+* follow: Follow the lights.
+  temper: duty -1
+  challenge: kind=test difficulty=standard tries=2 title="Following the wisps"
+  approach grace: Light-footed from tussock to tussock, keeping up.
+  approach lore: Follow them, but count every turn, so you can find your way back.
+  approach guile: Follow the wisp that's lying, because the liar knows the way out.
+  > triumph: The wisps lead you through the fen and out the other side, dry, onto a path of white stones. The last of them lingers by your ear. "Tell her we're still here," it whispers. "Tell Mag."
+    do: flag fen_crossed; fate 1
+    goto: court
+  > success: The wisps take you a long way round, and laugh, and leave you on a path of white stones.
+    do: flag fen_crossed
+    goto: court
+  > mixed: They lead you through. They lead you astray first.
+    do: flag fen_crossed
+    goto: court
+    cost: Into a pool to the waist (lose 3 Grit) :: grit -3
+    cost: Round and round for an hour (tired for a while) :: fatigue 2
+  > fail: The wisps lead you into the deepest pool in the fen and leave you there, giggling. You crawl out an hour later, onto a path of white stones, with weed in your hair and no sense of time at all.
+    do: grit -3; fatigue 1
+    goto: court
+
+* names: Ask the lights their names.
+  temper: mercy +1
+  challenge: kind=test difficulty=hard tries=2 title="The names of the lost"
+  approach lore: They were people. People have names. Find the shape of one in the light.
+  approach ward: Stand still in the fen, and let them come to you, and wait.
+  approach grace: Sing them a song from home. Somebody's home.
+  > triumph: One by one they remember. A miller's son. A soldier from the Greyfell company. A girl who went after a goat, forty years ago. As each name comes back the light goes out, and something like a sigh goes over the fen, and they're gone, and the path opens. The Wood is not pleased.
+    do: flag wisps_freed; standing wood -1; regard 2
+    goto: court
+  > success: A few remember. A few lights go out, gently. The rest lead you on, quieter now.
+    do: flag wisps_freed; standing wood -1; regard 1
+    goto: court
+  > mixed: Some remember. The Wood notices.
+    do: flag wisps_freed
+    goto: court
+    cost: The Wood's displeasure (Old Wood standing falls) :: standing wood -1
+    cost: Their cold goes into you (lose 4 Grit) :: grit -4
+  > fail: They don't remember. They don't want to. They lead you into the fen until you're nearly one of them, and then the path of white stones is under your feet, and you don't know how.
+    do: grit -4
+    goto: court
+
+## court: The Willow Court
+act: 2
+type: encounter
+tile: forest
+at: 3.9, 0.4
+
+A clearing in the willows, and in it the willows themselves, standing in a ring. Not trees. Not only trees. They turn their heads, slowly, with a sound like a field in the wind, and their faces are bark and their eyes are knots, and one of them, the oldest, bends down over you.
+"A courier," says the Willow, "with a black die. We know that die. We carved it." It holds out a hand of twigs. "Give it to us. Mag needn't know."
+? crossed_rude :: "You came in rude," says another. "Through the water, without a fare."
+? wisps_freed :: "You let our lights go," says a third, and the ring creaks closer.
+[i]The willows. They were the first ones in the Wood, before the Wood had a name. They remember the wager. They were the dice.[/i]
+
+* refuse: "It goes to Mag Sallow. I promised."
+  temper: duty +1
+  contest: opponent=willow_elder title="The Eldest Willow"
+  mod: promised_pilgrim => resolve=-3
+  mod: wisps_freed => resolve=3
+  approach ward: Stand your ground, with the black die closed in your fist.
+  approach lore: Recite the old courtesy: a courier is not to be stopped in the Wood.
+  approach grace: Bow, very low, and keep walking, and don't stop.
+  > triumph: The Eldest Willow straightens with a groan of old wood. "A promise," it says, and the others sigh. "We respect a promise. We were made of one." It breaks off a twig and gives it to you: a little die of willow, carved by the Wood itself.
+    do: flag court_passed; flag willow_gift; standing wood 1
+    goto: stones
+  > success: The willows part, creaking. "Go on, then," says the Eldest. "Mag's waiting."
+    do: flag court_passed
+    goto: stones
+  > mixed: They let you by. With a toll.
+    do: flag court_passed
+    goto: stones
+    cost: A root across your shins (lose 3 Grit) :: grit -3
+    cost: They take a hair, and a drop of blood, for the Wood's book :: flag in_the_book
+  > fail: The willows close in, and lift you off your feet, and throw you out of the ring like a child throwing a doll. You land on the far side, in the stones, with the black die still in your fist. That's something.
+    do: grit -4; flag court_passed
+    goto: stones
+
+* give: Give the willows the black die.
+  temper: honesty -1
+  do: flag die_given; standing wood 2
+  goto: stones
+  reply: The Eldest Willow takes it, and turns it over in its twigs, and laughs, a sound like a tree falling a long way off. "He'll be angry," it says. "The old man at the hearth. And his sister. Fifty years they've been trying to send this to Mag." [i]Oh. Oh, you didn't. Well. It's done. It's a tale. Tales go where they go.[/i]
+
+* axe: Take an axe to the oldest willow.
+  temper: mercy -1
+  combat: foe=willow_men
+  > triumph: The willows go down, groaning, and the oldest of them splits from crown to root, and inside it, where the heartwood should be, there's a hollow full of dice. Hundreds. Old ones. Every traveller who ever lost to the Wood. You take one.
+    do: flag court_passed; flag willow_felled; standing wood -2; material heartwood
+    goto: stones
+  > success: The willows fall back, bleeding sap. The way through is open.
+    do: flag court_passed; flag willow_felled; standing wood -2
+    goto: stones
+  > mixed: They let you through. You'll carry the marks.
+    do: flag court_passed; flag willow_felled; standing wood -2
+    goto: stones
+    cost: Lashed by a hundred twigs (lose 5 Grit) :: grit -5
+    cost: Your axe-arm is torn (Old Wood standing falls further) :: standing wood -1
+  > fail: The willows take your axe off you and break it over their knees and throw you out of the ring. The Wood won't forget that you tried.
+    do: grit -4; flag court_passed; standing wood -2
+    goto: stones
+
+## stones: The Ring of Stones
+act: 2
+type: waystone
+on enter: rest 12
+tile: shrine
+at: 5.2, -0.4
+
+A ring of nine old stones in a dip of the wood, with grass inside it, short and green as a lawn, and no leaves on it at all, though the willows lean right over. It's quiet in here. The Wood doesn't come in.
+? die_given :: Your pocket feels very light without the black die. You keep reaching for it.
+[i]A Waystone. Older than the Wood's rules, so the Wood can't touch you here. Rest. Swap your dice. Mag's cottage is just over the rise. I remember the way.[/i]
+[i]...I mean, I've been told the way.[/i]
+
+* on: Go on to the cottage.
+  goto: cottage
+  reply: You go over the rise. There's a light in a window.
+
+* ask: Ask the Teller, out loud, how he knows the way.
+  temper: honesty +1
+  do: flag asked_teller
+  goto: cottage
+  reply: [i]...[/i] [i]Nobody's ever asked me that before. Nobody's ever heard me, not properly, in fifty years. Go on. Go to the cottage. She'll tell you. She always did like telling.[/i]
+
+## cottage: Mag Sallow's Cottage
+act: 3
+type: encounter
+tile: village
+at: 6.4, 0.3
+token: page_seen => seal "The page with the hearth on it"
+
+The cottage is small and crooked and grown into the roots of a dead oak, with herbs at the windows and smoke from the chimney that smells of apples. Mag Sallow sits by her fire in a chair made of antlers. She's older than anybody you've ever seen, and her eyes are green all the way through, like leaves with the light behind them.
+On the table in front of her, a book bound in bark, open, and a quill made from a heron's feather.
+? die_given :: "You gave it to the willows," she says, before you open your mouth. "They brought it to me an hour ago, laughing. Sit down, courier. Sit."
+? not die_given :: "The black die," she says, and holds out her hand. "Fifty years late. Sit down, courier."
+? wisps_freed :: "And you let my lights go," she adds, mildly. "Some of them. That will cost somebody."
+? willow_felled :: She looks at the sap on your hands for a long, long time, and says nothing at all, which is worse.
+"Do you know what it is you've carried?" she says. "No. Of course not. She'd never tell you. The Penhallows were always close."
+
+* hear: "Tell me."
+  temper: honesty +1
+  do: flag mag_told; flag teller_named
+  goto: bargain
+  reply: Mag Sallow turns the bark book round so you can see the page. At the top, in old brown ink: [i]ALDOUS PENHALLOW, TELLER OF TALES. MIDSUMMER. A THROW FOR HIS SISTER'S LIFE.[/i] Under it, a tally. Hundreds of marks. "He sat at the Wood's table and lost," Mag says, "and the Wood, which is fond of a good story, gave him terms. A tale at a hearth for every soul the Wood takes, until somebody who has heard his tales sits down in his place." She taps the black die. "That's his die. The one he lost with. His sister's been trying to send it back to me for fifty years, to call the debt in." [i]Yes. Well. Now you know. That's my name. I'd almost forgotten it.[/i]
+
+* page: Ask to see the page with the hearth on it.
+  if: page_known
+  temper: honesty +1
+  do: flag mag_told; flag teller_named; flag page_seen; regard 1
+  goto: bargain
+  reply: Mag laughs, delighted. "Somebody's been talking to my ferryman." She opens the bark book to a page soft with handling. [i]ALDOUS PENHALLOW. A THROW FOR HIS SISTER'S LIFE.[/i] Under it, a tally that goes on for pages. And at the bottom, very small, in a different hand: [i]Wenna walks, to find his replacement.[/i] "His sister," says Mag. "Your hooded friend. She thinks you might be the one." [i]Wenna. Oh, Wenna. You never did know when to leave a thing alone.[/i]
+
+* deal: "I don't care what it is. What will you give me for it?"
+  if: not die_given
+  temper: honesty -1
+  contest: opponent=mag_sallow title="Bargaining with Mag Sallow"
+  approach guile: Make her want it more than she'll admit.
+  approach lore: Know what a debt-die is worth to a witch, and name the price.
+  approach grace: Be charming. She's lonely, out here with only the trees.
+  > triumph: Mag laughs until she has to wipe her green eyes. She gives you a bone die from her own pocket, and a sprig of something that smells of summer, and then, because she likes you, she tells you whose die you carried. [i]ALDOUS PENHALLOW. A THROW FOR HIS SISTER'S LIFE.[/i]
+    do: flag mag_told; flag teller_named; flag mag_paid; fate 1
+    goto: bargain
+  > success: Mag gives you a bone die for it, and a cup of something hot. "You've no idea what you just sold," she says, not unkindly.
+    do: flag mag_paid
+    goto: bargain
+  > mixed: She pays. Witches always pay in two coins.
+    do: flag mag_paid
+    goto: bargain
+    cost: She takes a year off your luck (lose 1 Fate) :: fate -1
+    cost: She writes your name in her book, small :: flag in_the_book
+  > fail: Mag takes the die out of your hand while you're still talking, and pats your cheek. "Bless," she says.
+    goto: bargain
+  > caught: Mag picks your loaded die up off the table between finger and thumb. "Lead," she says, "in front of a witch." She drops it in her pocket, and takes the black die too, and writes your name in her book. Small.
+    do: flag in_the_book; flag caught_cheating
+    goto: bargain
+
+## bargain: What the Wood Wants
+act: 3
+tile: village
+at: 7.6, -0.2
+token: wood_peace => dove "Peace with the Wood"
+
+Mag Sallow sets the black die on the open page.
+"Fifty years," she says. "The debt's nearly paid. Another year, perhaps two, of tales, and the Wood will have had its fill, and Aldous Penhallow can go. Or someone could sit down at the Wood's table on the longest night, and throw in his place, and end it sooner." She looks at you with her green eyes. "Win, and he's free. Lose, and you take his chair by the hearth. That's the game."
+? in_the_book :: "You're in my book already, a little," she adds. "Don't worry. Only a little."
+? willow_felled :: "Though after what you did to my willows," she says, "the Wood may not deal with you at all."
+"Now. Before you go. There's the matter of the Wood's toll."
+
+* peace: Make your peace with the Wood: a promise to come back on the longest night.
+  temper: duty +1
+  do: flag wood_peace; flag sworn_to_table; standing wood 1
+  goto: hunt
+  reply: Mag writes it in the book in heron-ink: your name, and a date, the longest night. "Then you'll come to the table," she says. "And we'll see." [i]Don't. Don't promise her that. ...You've promised her that.[/i]
+
+* refuse: "I'm not sitting at anybody's table. I carried the post. That's all."
+  temper: duty -1
+  do: flag refused_table
+  goto: hunt
+  reply: Mag shrugs. "Then the Wood's Huntsman will see you out," she says. "He always sees out the ones who leave in a hurry." [i]Good. Good. Go home. Leave it alone. It's my debt.[/i]
+
+* fire: Take the bark book and throw it in her fire.
+  if: not die_given
+  temper: mercy -1
+  do: flag book_burned; standing wood -2
+  goto: hunt
+  reply: The book goes into the flames with a sound like a scream, and every page goes up at once, and Mag Sallow doesn't move to stop you. "That's only the copy," she says quietly, watching it burn. "The Wood remembers. But it was a brave thing, and a foolish one, and he'd have done the same, at your age." Then she stands up. "Run."
+
+## hunt: The Huntsman
+act: 3
+type: challenge
+tile: road
+at: 8.3, 0.6
+token: huntsman_beaten => skull "The Huntsman, unhorsed"
+
+Out of Mag's door, and the Wood is waiting. Somewhere behind you, a horn: low and long, like a bull in fog. Then hooves. The Wood's Huntsman is coming to see you out, on a horse made of mist, with antlers on his helm and a spear of ash.
+? wood_peace :: But he rides alongside you, not after you, and tips his spear, and shows you the way. You're a guest now, of a sort.
+? book_burned :: He comes fast, and the whole Wood comes with him.
+
+* ride: Walk out with the Huntsman, as a guest.
+  if: wood_peace
+  do: flag escorted
+  goto: ending
+  reply: He leads you to the edge of the Wood without a word, and at the field's edge he stops, and looks down at you through the eyeholes of his helm. "On the longest night," he says, in a voice like wind in a chimney. "We'll lay a place."
+
+* fight: Turn and face him.
+  temper: duty +1
+  combat: foe=huntsman
+  mod: willow_gift => resolve=-3
+  mod: book_burned => resolve=3
+  > triumph: The Huntsman goes down off his misty horse, and the horse goes to fog, and he lies in the leaves and laughs. "Good," he says. "Good. Bring that to the table." He gives you his spear-butt, carved into a die.
+    do: flag huntsman_beaten; flag escaped
+    goto: ending
+  > success: The Huntsman falls back into the mist, and the horn sounds once more, far off, and stops.
+    do: flag huntsman_beaten; flag escaped
+    goto: ending
+  > mixed: He lets you go. He's marked you.
+    do: flag escaped
+    goto: ending
+    cost: An ash spear through the side (lose 5 Grit) :: grit -5
+    cost: He takes a die for his master (lose your lowest) :: lose_lowest
+  > fail: He runs you down at the edge of the Wood and leaves you lying in the field, alive, because the Wood isn't finished with you yet.
+    do: grit -4; flag escaped
+    goto: ending
+
+* run: Run for the fields.
+  temper: duty -1
+  challenge: kind=trial progress=16 danger=3 danger_text="The horn, closer." title="Out of Sallow Wood"
+  mod: book_burned => progress=3
+  mod: fen_crossed => progress=-2
+  approach grace: Run like a hare, jinking through the willows.
+  approach guile: Double back through the wisp fen, where horses won't go.
+  approach lore [progress=14]: Iron and running water: the old rules. Find a stream and follow it out.
+  > triumph: You come out of the willows into the open field at dawn with the horn still sounding behind you, furious, and the Huntsman's horse rearing at the Wood's edge, unable to follow.
+    do: flag escaped
+    goto: ending
+  > success: Out into the field, gasping. The horn stops.
+    do: flag escaped
+    goto: ending
+  > mixed: Out. Not untouched.
+    do: flag escaped
+    goto: ending
+    cost: Thorns and branches all the way (lose 4 Grit) :: grit -4
+    cost: You drop your pack in the fen (lose 6 Coin) :: coin -6
+  > fail: The Huntsman's spear catches you at the last tree, and you go head over heels into the field, and lie there while the sun comes up, and the Wood watches you from its edge.
+    do: grit -5; flag escaped
+    goto: ending
+
+## ending: How It Ended
+type: ending
+
++ kept: Kept by the Wood
+  if: defeat or wounds>=3
+  [i]And the Wood kept you a while. A night, a week. Long enough that when you came out, the moon had been full and gone.[/i]
+  The stranger is waiting at the hearth when Hollis lets you in. They look at you for a long time, and then put a hand on your arm. "It does that," they say. "It let you go. That means it wants you back."
+  do: mark wood_kept; chronicle "The Witch of Sallow Wood: the Wood kept you a while."
+
++ sworn: The Longest Night
+  if: wood_peace
+  renown: 3
+  You come home at dawn with green on your boots and the Huntsman's horn still in your ears. The stranger is at the hearth.
+  ? teller_named :: "Aldous Penhallow," you say. The stranger's hood comes down, slowly. An old woman, very old, with eyes the colour of the hearthstone. "Wenna," she says. "My name's Wenna. He's my brother." She looks at the empty stool by the chimney breast. "He always did talk too much."
+  ? not teller_named :: The stranger listens to it all, and nods at the part about the table, and says nothing.
+  ? willow_gift :: The willow die in your pocket has put out a single green leaf.
+  [i]You promised her. You promised the Wood. Well. That's a tale I'll have to tell, then, when the night comes. I hope it ends better than mine.[/i]
+  do: if willow_gift then gain witch_willow_d8; if huntsman_beaten then gain huntsman_d10; if mag_paid then gain witch_bone_d6; mark wood_sworn; mark witch_seen; if teller_named then mark teller_named; if wisps_freed then mark wisps_freed; chronicle "The Witch of Sallow Wood: you promised the Wood you'd come to its table on the longest night."; rumour teller_debt "The Teller at the hearth lost a wager with the Old Wood fifty years ago."; rumour fair_game "Under an old inn, at a full moon, the Fair Folk keep a dice table. They play for years."
+
++ burned: The Book in the Fire
+  if: book_burned
+  renown: 3
+  You come home with smoke in your hair and the Wood howling behind you. The stranger is at the hearth, and stands up when they see your face.
+  ? teller_named :: "Aldous Penhallow," you say. The hood comes down: an old woman with hearthstone eyes. "Wenna," she says. "His sister." When you tell her about the book, she laughs until she cries. "He'd have done the same," she says. "Exactly the same. Oh, he'll be furious."
+  [i]I'm not furious. I'm a great many things just now. Furious isn't one of them.[/i]
+  do: if huntsman_beaten then gain huntsman_d10; mark book_burned; mark witch_seen; if teller_named then mark teller_named; if wisps_freed then mark wisps_freed; chronicle "The Witch of Sallow Wood: you burned Mag Sallow's book of debts."; rumour teller_debt "The Teller at the hearth lost a wager with the Old Wood fifty years ago."; rumour first_forge "Old Brannoc was the Wood's own dicewright once, they say, before he came to the tavern."
+
++ given: The Willows' Laughter
+  if: die_given
+  renown: 2
+  You come home without the black die. The stranger sees your empty hands, and closes their eyes, and is quiet for a long time.
+  ? teller_named :: "Aldous," they say at last, to the empty stool by the chimney. "I'm sorry. I'll find another way." Then, to you: "My name's Wenna. It's not your fault. The Wood is very old, and very good at asking."
+  ? not teller_named :: "It's not your fault," they say at last. "The Wood is very old, and very good at asking."
+  [i]Don't fret. It's only fifty years. What's another fifty.[/i]
+  do: if huntsman_beaten then gain huntsman_d10; mark die_given; mark witch_seen; if teller_named then mark teller_named; if wisps_freed then mark wisps_freed; chronicle "The Witch of Sallow Wood: the willows have the Teller's black die."; rumour teller_debt "The Teller at the hearth lost a wager with the Old Wood fifty years ago."; rumour fair_game "Under an old inn, at a full moon, the Fair Folk keep a dice table. They play for years."
+
++ carried: The Post Delivered
+  renown: 2
+  You come home with mud to the knee and the black die delivered. The stranger is at the hearth.
+  ? teller_named :: "Aldous Penhallow," you say. The hood comes down: an old woman, eyes like the hearthstone. "Wenna," she says. "I'm his sister. Thank you." She looks at the empty stool. "It's started now. He knows it has."
+  ? not teller_named :: The stranger thanks you, and looks at the empty stool by the chimney, and says, "It's started now."
+  ? wisps_freed :: When you tell her about the lights in the fen, she takes your hand in both of hers.
+  [i]Started. Yes. Everything has to start somewhere. Even endings.[/i]
+  do: if willow_gift then gain witch_willow_d8; if huntsman_beaten then gain huntsman_d10; if mag_paid then gain witch_bone_d6; if not willow_gift and not huntsman_beaten and not mag_paid then gain wisp_d4; mark witch_seen; if teller_named then mark teller_named; if wisps_freed then mark wisps_freed; if refused_table then mark refused_table; chronicle "The Witch of Sallow Wood: you carried the black die to Mag Sallow."; rumour teller_debt "The Teller at the hearth lost a wager with the Old Wood fifty years ago."; rumour first_forge "Old Brannoc was the Wood's own dicewright once, they say, before he came to the tavern."

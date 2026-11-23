@@ -263,7 +263,10 @@ static func _at(parent: Transform3D, pos: Vector3, rot_deg := Vector3.ZERO, scl 
 const FIGURES := ["hero", "wolf", "drowned", "smuggler", "abbess", "innkeeper", "kettle", "hooded", "knight", "mage", "warrior"]
 const OPPONENT_FIGURE := {"odile": "innkeeper", "kettle": "kettle", "kettle_threat": "kettle", "abbess_name": "abbess",
 	"pell": "smuggler", "ormond_bid": "mage", "court_judge": "abbess", "drowned_court": "warrior", "brask": "innkeeper",
-	"magistrate": "hooded", "harrow_parley": "knight", "holloway_council": "innkeeper", "ashgrove": "knight"}
+	"magistrate": "hooded", "harrow_parley": "knight", "holloway_council": "innkeeper", "ashgrove": "knight",
+	"absalom": "innkeeper", "purser": "smuggler", "grisewold": "mage", "watch_captain": "knight", "steward": "hooded",
+	"isolde": "mage", "duke_parley": "knight", "lock_keeper": "innkeeper", "kettle_final": "kettle",
+	"willow_elder": "hooded", "mag_sallow": "abbess", "prior_anselm": "hooded", "king_wager": "hooded", "cinder_smith_parley": "warrior", "fae_queen": "mage"}
 ## Figures that only exist as kit miniatures stand in as the nearest code-built figure when the
 ## kits are off (-- --kits=off).
 const CODE_FALLBACK := {"knight": "smuggler", "mage": "abbess", "warrior": "drowned", "hooded": "abbess"}
