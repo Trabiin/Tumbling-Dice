@@ -4,6 +4,7 @@ patron: Captain Ashgrove
 start: summons
 arc: ashgrove
 order: 1
+stakes: 4
 pitch: A knight with no spurs wants his company's banner back from the tower where his men broke and ran.
 teller: triumph :: They will tell that one in every barracks on the border, and get the numbers wrong.
 teller: triumph :: Even the wind on the ridge stopped to watch that.
@@ -518,7 +519,7 @@ act: 3
 type: ending
 
 + fallen: The Last Watch
-  if: defeat or wounds>=3
+  if: defeat or fallen
   [i]And so the tower kept one more.[/i]
   They found you at dawn on the ridge, the shepherds of Greyfell, and carried you down to Tamsin's fire. The tower burned all night. The banner, the box, whatever truth was in it: ash, on the wind, over the border.
   [i]Ashgrove still sits at his table. He doesn't blame you. That's the worst of it. Come back when you're mended. The tower isn't going anywhere, and neither is he.[/i]

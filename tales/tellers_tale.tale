@@ -4,6 +4,7 @@ patron: The Hooded Pilgrim
 start: hearth
 arc: pilgrim
 order: 3
+stakes: 2
 pitch: The longest night is coming. Wenna says the Wood has laid a place at its table, and the Teller, for once, has nothing to say.
 offer: told:hollow_saint and season==winter
 teller: triumph :: ...I don't have a line for that. I've had a line for everything, for fifty years. Not for that.
@@ -352,7 +353,7 @@ Dawn comes up grey and pink over Sallow Wood.
 type: ending
 
 + lost: The Longest Night
-  if: defeat or wounds>=3
+  if: defeat or fallen
   [i]And the Wood kept the night, and the night was long, and in the morning the stones found you lying in the snow inside their ring, alive, with Wenna's blanket over you.[/i]
   Aldous Penhallow is still at the hearth. You can hear him, if you listen: telling tales, as he has for fifty years. The Wood will lay a place again next winter. It always does.
   do: mark table_lost; chronicle "The Teller's Tale: the Wood kept the longest night."

@@ -42,7 +42,7 @@ static func foe(id: String) -> Dictionary:
 				"phases": [{"resolve": 14, "traits": ["hamstring"],
 					"dice": [{"name": "Fang", "sides": 8, "kind": "attack"}, {"name": "Pack", "sides": 4, "kind": "pack"}],
 					"summon": {"name": "Second Wolf", "sides": 6, "kind": "attack"}}],
-				"weakness": "", "loot": "", "figure": "wolf"}
+				"weakness": "grace", "loot": "", "figure": "wolf"}
 		"drowned_pair":
 			return {"id": id, "name": "Two Drowned", "kind": "minion", "speed": 6,
 				"text": "Grey men in sodden wool, lake water pouring from their sleeves.",
@@ -53,7 +53,7 @@ static func foe(id: String) -> Dictionary:
 		"kettle_knives":
 			return {"id": id, "name": "Kettle's Knives", "kind": "elite", "speed": 11, "no_flee": false,
 				"text": "Three of Mother Kettle's crew, and the knives come out together.",
-				"phases": [{"resolve": 26, "traits": ["thief", "ambush"],
+				"phases": [{"resolve": 24, "traits": ["thief", "ambush"],
 					"dice": [{"name": "Knife", "sides": 8, "kind": "attack"}, {"name": "Knife", "sides": 8, "kind": "attack"},
 						{"name": "Cudgel", "sides": 6, "kind": "guard"}]}],
 				"weakness": "grace", "loot": "kettle_knife_d8", "figure": "smuggler"}
@@ -61,10 +61,10 @@ static func foe(id: String) -> Dictionary:
 			return {"id": id, "name": "The Drowned Abbess", "kind": "boss", "speed": 99, "no_flee": true,
 				"text": "Mother Ysolde, forty years under the lake, her habit drifting like weed.",
 				"phases": [
-					{"resolve": 18, "traits": ["ghostly"], "title": "The Toll",
+					{"resolve": 16, "traits": ["ghostly"], "title": "The Toll",
 						"dice": [{"name": "Toll", "sides": 6, "kind": "toll"}, {"name": "Grief", "sides": 8, "kind": "attack"}],
 						"wardens": [{"name": "Wardens", "sides": 4, "kind": "attack"}]},
-					{"resolve": 12, "traits": ["relentless"], "title": "Under the Water", "danger": 5,
+					{"resolve": 10, "traits": ["relentless"], "title": "Under the Water", "danger": 5,
 						"danger_text": "The water closes over your head.",
 						"dice": [{"name": "Drag", "sides": 8, "kind": "attack"}, {"name": "Grief", "sides": 6, "kind": "attack"}]},
 				],
@@ -74,7 +74,7 @@ static func foe(id: String) -> Dictionary:
 		"hollowmen":
 			return {"id": id, "name": "Ormond's Hollowmen", "kind": "minion", "speed": 7,
 				"text": "Drowned men in good black coats, bought out of the river and made to stand up. Their buttons are new.",
-				"phases": [{"resolve": 16, "traits": ["ghostly"],
+				"phases": [{"resolve": 18, "traits": ["ghostly"],
 					"dice": [{"name": "Grasp", "sides": 6, "kind": "attack"}, {"name": "Grasp", "sides": 6, "kind": "attack"},
 						{"name": "Boathook", "sides": 8, "kind": "attack"}],
 					"split": 8}],
@@ -83,10 +83,10 @@ static func foe(id: String) -> Dictionary:
 			return {"id": id, "name": "Ormond Vane, Collector", "kind": "boss", "speed": 99, "no_flee": true,
 				"text": "A thin man in river-green, with a silver-headed cane and the patient smile of somebody who buys the dead.",
 				"phases": [
-					{"resolve": 16, "traits": ["relentless"], "title": "The Collector",
+					{"resolve": 18, "traits": ["relentless"], "title": "The Collector",
 						"dice": [{"name": "Cane", "sides": 8, "kind": "attack"}, {"name": "Cloak", "sides": 6, "kind": "guard"}],
 						"wardens": [{"name": "Hollowman", "sides": 4, "kind": "attack"}]},
-					{"resolve": 10, "traits": ["ghostly"], "title": "The River Answers", "danger": 4,
+					{"resolve": 12, "traits": ["ghostly"], "title": "The River Answers", "danger": 4,
 						"danger_text": "The river comes up over the quay, cold to the knee.",
 						"dice": [{"name": "Toll", "sides": 6, "kind": "toll"}, {"name": "Drown", "sides": 8, "kind": "attack"}]},
 				],
@@ -115,7 +115,7 @@ static func foe(id: String) -> Dictionary:
 		"deserters":
 			return {"id": id, "name": "Brask's Deserters", "kind": "elite", "speed": 10,
 				"text": "Five men in what is left of the Greyfell livery, with the badges cut off. They were soldiers once. They remember how.",
-				"phases": [{"resolve": 22, "traits": ["ambush"],
+				"phases": [{"resolve": 24, "traits": ["ambush"],
 					"dice": [{"name": "Axe", "sides": 8, "kind": "attack"}, {"name": "Club", "sides": 6, "kind": "attack"},
 						{"name": "Shield", "sides": 6, "kind": "guard"}]}],
 				"weakness": "ward", "loot": "deserter_d6", "figure": "innkeeper"}
@@ -128,7 +128,7 @@ static func foe(id: String) -> Dictionary:
 		"sappers":
 			return {"id": id, "name": "Harrow's Sappers", "kind": "minion", "speed": 6,
 				"text": "Men with picks and pitch, digging under Holloway's wall by lantern light.",
-				"phases": [{"resolve": 16, "traits": [],
+				"phases": [{"resolve": 14, "traits": [],
 					"dice": [{"name": "Pick", "sides": 6, "kind": "attack"}, {"name": "Pick", "sides": 6, "kind": "attack"},
 						{"name": "Pitch", "sides": 4, "kind": "attack"}],
 					"split": 8}],
@@ -137,10 +137,10 @@ static func foe(id: String) -> Dictionary:
 			return {"id": id, "name": "Harrow, the Pretender", "kind": "boss", "speed": 99, "no_flee": true,
 				"text": "Lord Marshal Harrow, who would be king, in black plate with a gold circlet welded to the helm. He fights like a man who has never once doubted he was right.",
 				"phases": [
-					{"resolve": 20, "traits": ["relentless"], "title": "The Breach",
+					{"resolve": 18, "traits": ["relentless"], "title": "The Breach",
 						"dice": [{"name": "Sword", "sides": 10, "kind": "attack"}, {"name": "Shield", "sides": 8, "kind": "guard"}],
 						"wardens": [{"name": "Men-at-arms", "sides": 6, "kind": "attack"}]},
-					{"resolve": 14, "traits": ["hamstring"], "title": "The Pretender Alone",
+					{"resolve": 12, "traits": ["hamstring"], "title": "The Pretender Alone",
 						"dice": [{"name": "Sword", "sides": 10, "kind": "attack"}, {"name": "Fury", "sides": 8, "kind": "attack"}]},
 				],
 				"weakness": "guile", "loot": "", "figure": "knight"}
@@ -201,10 +201,10 @@ static func foe(id: String) -> Dictionary:
 		"willow_men":
 			return {"id": id, "name": "The Willow Court", "kind": "elite", "speed": 7,
 				"text": "The oldest willows in the Wood, with faces of bark and eyes of knots, and arms like whips.",
-				"phases": [{"resolve": 22, "traits": ["hamstring"],
+				"phases": [{"resolve": 20, "traits": ["hamstring", "ghostly"],
 					"dice": [{"name": "Lash", "sides": 6, "kind": "attack"}, {"name": "Lash", "sides": 6, "kind": "attack"},
 						{"name": "Bark", "sides": 8, "kind": "guard"}]}],
-				"weakness": "might", "loot": "", "figure": "hooded"}
+				"weakness": "lore", "loot": "", "figure": "hooded"}
 		"huntsman":
 			return {"id": id, "name": "The Wood's Huntsman", "kind": "boss", "speed": 99, "no_flee": true,
 				"text": "Antlers on his helm, a spear of ash, and a horse made of fog. He has seen out every guest who ever left the Wood in a hurry.",
@@ -219,7 +219,7 @@ static func foe(id: String) -> Dictionary:
 		"reliquary_thieves":
 			return {"id": id, "name": "Sister Thorn's Crew", "kind": "elite", "speed": 9,
 				"text": "Five burglars in pilgrim grey, with bark on their sleeves and the Wood's green at the edges of their eyes.",
-				"phases": [{"resolve": 20, "traits": ["thief"],
+				"phases": [{"resolve": 22, "traits": ["thief"],
 					"dice": [{"name": "Knife", "sides": 6, "kind": "attack"}, {"name": "Knife", "sides": 6, "kind": "attack"},
 						{"name": "Staff", "sides": 8, "kind": "guard"}]}],
 				"weakness": "lore", "loot": "", "figure": "hooded"}
@@ -227,14 +227,14 @@ static func foe(id: String) -> Dictionary:
 			return {"id": id, "name": "Saint Hollow", "kind": "boss", "speed": 99, "no_flee": true,
 				"text": "A saint of bark and bone in a robe of moss, six hundred years in the ground, empty behind the eyes.",
 				"phases": [
-					{"resolve": 16, "traits": ["ghostly"], "title": "The Saint Rises",
+					{"resolve": 18, "traits": ["ghostly"], "title": "The Saint Rises",
 						"dice": [{"name": "Grief", "sides": 8, "kind": "attack"}, {"name": "Bark", "sides": 6, "kind": "guard"}],
 						"wardens": [{"name": "Roots", "sides": 4, "kind": "attack"}]},
-					{"resolve": 12, "traits": ["relentless"], "title": "Hollow", "danger": 5,
+					{"resolve": 14, "traits": ["relentless", "ghostly"], "title": "Hollow", "danger": 5,
 						"danger_text": "The ground opens under the stones.",
 						"dice": [{"name": "Grasp", "sides": 10, "kind": "attack"}, {"name": "Toll", "sides": 6, "kind": "toll"}]},
 				],
-				"weakness": "ward", "loot": "", "figure": "abbess"}
+				"weakness": "grace", "loot": "", "figure": "abbess"}
 		"king_of_hollows":
 			return {"id": id, "name": "The King of Hollows", "kind": "boss", "speed": 99, "no_flee": true,
 				"text": "The Old Wood gathered into one shape: antlers of willow, a face of bark, eyes like green light under deep water.",
@@ -242,11 +242,11 @@ static func foe(id: String) -> Dictionary:
 					{"resolve": 20, "traits": ["ghostly"], "title": "The Table Overturned",
 						"dice": [{"name": "Antler", "sides": 10, "kind": "attack"}, {"name": "Bark", "sides": 8, "kind": "guard"}],
 						"wardens": [{"name": "Willows", "sides": 6, "kind": "attack"}]},
-					{"resolve": 14, "traits": ["relentless"], "title": "The Whole Wood", "danger": 5,
+					{"resolve": 14, "traits": ["relentless", "ghostly"], "title": "The Whole Wood", "danger": 5,
 						"danger_text": "The Wood closes in, every tree at once.",
 						"dice": [{"name": "Root", "sides": 10, "kind": "attack"}, {"name": "Winter", "sides": 6, "kind": "toll"}]},
 				],
-				"weakness": "ward", "loot": "", "figure": "hooded"}
+				"weakness": "guile", "loot": "", "figure": "hooded"}
 		# ---- secret tales: The Dicewright's Debt, The Card Sharps' Moon
 		"cinder_smith":
 			return {"id": id, "name": "The Smith of the Black Forge", "kind": "boss", "speed": 99, "no_flee": true,
@@ -259,7 +259,7 @@ static func foe(id: String) -> Dictionary:
 						"danger_text": "The forge roars up, and the heat comes in a wave.",
 						"dice": [{"name": "Tongs", "sides": 8, "kind": "attack"}, {"name": "Bellows", "sides": 6, "kind": "toll"}]},
 				],
-				"weakness": "ward", "loot": "", "figure": "warrior"}
+				"weakness": "lore", "loot": "", "figure": "warrior"}
 	push_error("Unknown foe " + id)
 	return {}
 

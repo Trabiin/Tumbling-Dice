@@ -267,8 +267,14 @@ func pick_approach(i: int) -> void:
 	else:
 		var c: Dictionary = option.contest
 		var mods := _mods(c.get("mods", []))
-		active = {"type": "contest", "run": Contest.create(Mood.opponent(campaign, Foes.opponent(c.opponent)), approach.aspect, mods)}
+		active = {"type": "contest", "run": Contest.create(Mood.opponent(campaign, Foes.opponent(c.opponent), stakes()), approach.aspect, mods)}
 	_begin_try()
+
+
+## The tale's `stakes:` header: how much every target and Resolve in it is raised (or lowered).
+func stakes() -> int:
+	var v := String(tale.get("stakes", "0"))
+	return int(v) if v.is_valid_int() else 0
 
 
 ## The challenge as it will be played with this approach: base, then conditional mods, then the
@@ -283,7 +289,7 @@ func challenge_def(appr: Dictionary) -> Dictionary:
 	if state.flag("no_lantern") and scene.id == "chamber":
 		target += 2
 	def.target = maxi(1, target)
-	return Mood.challenge_def(campaign, def)
+	return Mood.challenge_def(campaign, def, stakes())
 
 
 ## Sum of the mods whose conditions hold: [[cond, {key: value}], ...]
@@ -305,7 +311,7 @@ func approach_odds(i: int) -> Dictionary:
 	if option.has("challenge"):
 		return Odds.approach_odds(challenge_def(appr), appr.aspect, pouch.hand, throw_ctx("test"), pouch, 250)
 	# Contests: how well the Hand matches, as expected value per die.
-	var c = Contest.create(Mood.opponent(campaign, Foes.opponent(option.contest.opponent)), appr.aspect, _mods(option.contest.get("mods", [])))
+	var c = Contest.create(Mood.opponent(campaign, Foes.opponent(option.contest.opponent), stakes()), appr.aspect, _mods(option.contest.get("mods", [])))
 	var best := Odds.pick(pouch.hand, [{"aspect": appr.aspect}], c.effort)
 	var e := 0.0
 	for d in best:
@@ -695,7 +701,7 @@ func _start_combat() -> void:
 	for t in run.traits():
 		_say(Foes.TRAIT_TEXT.get(t, t), "system")
 	if foe.get("weakness", "") != "":
-		_say("Weak to %s: your %s dice strike it in full." % [Dice.ASPECT_NAMES[foe.weakness], Dice.ASPECT_NAMES[foe.weakness]], "system")
+		_say("Weak to %s: your %s dice strike it for double." % [Dice.ASPECT_NAMES[foe.weakness], Dice.ASPECT_NAMES[foe.weakness]], "system")
 	if state.flag("no_lantern") and scene.id == "chamber":
 		run.effort_base -= 1
 		_say("In the dark you can manage one die fewer.", "system")
@@ -769,7 +775,7 @@ func _finish_last_stand(ok: bool) -> void:
 	var outer: Dictionary = active.outer
 	pouch.return_hand(rng)
 	var w = state.add_wound()
-	state.grit = mini(5, state.grit_max)
+	state.grit = mini(TaleState.LAST_STAND_GRIT, state.grit_max)
 	if ok:
 		_say(teller.line("last_stand_win"), "teller")
 	else:
@@ -1051,8 +1057,9 @@ func _effect(e: Array) -> void:
 			var sw: int = Mood.swaps(campaign)
 			_say("%s Fatigue cleared. You may swap up to %d %s with your Saddlebag." % [grit_text, sw, "die" if sw == 1 else "dice"], "system")
 		"practice_reset":
-			# The practice table: every challenge starts from the same footing.
-			state.grit_max = TaleState.START_GRIT
+			# The practice table: every challenge starts from the same footing, with Story mode's
+			# doubled Grit, so a practice fight can't throw you out of the practice room.
+			state.grit_max = TaleState.START_GRIT * 2
 			state.grit = state.grit_max
 			state.fate = TaleState.START_FATE
 			state.wounds.clear()

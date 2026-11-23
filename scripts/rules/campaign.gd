@@ -31,8 +31,8 @@ const YEAR_NIGHTS := 24
 const RENOWN_STEPS := [3, 7, 12, 18, 25, 33, 42, 52]
 const BASE_WEIGHT := 12
 const BASE_SADDLE := 4
-## Wounds you can carry home. The third is what loses a tale, so at most two come back with you.
-const MAX_CARRIED_WOUNDS := 2
+## Wounds you can carry home. The second (TaleState.MAX_WOUNDS) loses a tale, so at most one comes back with you.
+const MAX_CARRIED_WOUNDS := 1
 ## Factions as tales name them, and the short ids conditions use (standing:guild>=1).
 const FACTIONS := {"guild": "Thieves' Guild", "abbey": "Abbey", "crown": "The Crown", "holloway": "Holloway",
 	"marrowmere": "Marrowmere", "wood": "The Old Wood"}
@@ -280,7 +280,7 @@ func from_dict(d: Dictionary) -> void:
 	forged = int(d.get("forged", 0))
 	night = int(d.get("night", 1))
 	renown = int(d.get("renown", 0))
-	wounds = d.get("wounds", [])
+	wounds = d.get("wounds", []).slice(0, MAX_CARRIED_WOUNDS)
 	materials = {}
 	var mats: Dictionary = d.get("materials", {})
 	for k in mats:

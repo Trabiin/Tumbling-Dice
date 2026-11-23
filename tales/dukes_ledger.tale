@@ -4,6 +4,7 @@ patron: Mother Kettle
 start: plea
 arc: kettle
 order: 2
+stakes: 3
 pitch: The Duke of Saltreach keeps a ledger of every man he has ever bought, and Mother Kettle wants it before the masque is over.
 offer: ended:long_con
 expires: winter
@@ -413,7 +414,7 @@ Dawn on the water. Kettle's boat rocks at its mooring under the cliffs. Kettle h
 type: ending
 
 + thrown: Off the Cliff
-  if: defeat or wounds>=3
+  if: defeat or fallen
   [i]And the Seawatch Guard did throw you off the cliff, as the Duke promised, and the sea, which is more merciful than dukes, threw you back on the beach.[/i]
   Kettle's boat found you there at dawn. The ledger is still in the Duke's map room, under new glass.
   do: mark ledger_lost; chronicle "The Duke's Ledger: thrown off the cliff at Seawatch House."

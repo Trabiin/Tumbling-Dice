@@ -90,9 +90,9 @@ the only clue. Hover any die to read it in full.
 ### The Teller's Mood and Story mode
 
 **The hearth** in the tavern (between tales) sets two campaign options:
-- **The Teller's Mood**, a challenge ladder of five levels on top of Fair. They stack: Testy (foes and opponents
-  throw one extra d4), Grudging (you start every tale with 1 Fate), Sour (Waystones let you swap only one
-  die), Bitter (Grit starts 4 lower) and Black (every target and every opponent's Resolve is 2 higher). The dice
+- **The Teller's Mood**, a challenge ladder of five levels on top of Fair. They stack: Testy (every foe and
+  opponent has 2 more Resolve), Grudging (you start every tale with 1 Fate), Sour (Waystones let you swap only
+  one die), Bitter (Grit starts 2 lower) and Black (every target is 2 higher, and Resolve rises 2 more). The dice
   and the odds stay honest at every level: only targets, foes and resources change. You can choose one level
   above the highest you have beaten, and each level beaten unlocks a new felt for the tray.
 - **Story mode**, for players who want the tales above all: Grit is doubled, and a Fail can always be Defied
@@ -170,7 +170,7 @@ six nights (spring, summer, autumn, winter: a year is 24 nights).
 
 **Renown** comes from each ending (1 to 5) and raises your Pouch's weight at 3, 7, 12, 18, 25, 33, 42
 and 52 (and the Saddlebag's at the third and sixth step). **Wounds** taken in a tale come home with you
-(two at most) and are still on you when the next tale starts; the turning of a season mends one.
+(one at most) and are still on you when the next tale starts; the turning of a season mends one.
 **Curses** bite on their own rules (the Bellmetal tolls at Waystones; the Oath die at setting out) and
 are lifted in the tale they belong to.
 
@@ -362,12 +362,37 @@ reward, every Mixed offers at least two costs, every flag read is set somewhere,
 The odds test compares the odds shown against 20,000 simulated throws. Latest report:
 [media/balance.md](media/balance.md).
 
+## Balance after M6
+
+Bots brought home 89 to 99% of tales against the design doc's 75 to 85%. The probe
+(`tools/balance_probe.gd`, the `builds` test loop with per-tale detail) showed why: almost every lost tale
+was lost in a fight, and losing took three Wounds, with plenty of Grit to spend before each one. Harder
+targets alone only raised Fail rates (to 40% in places) without bringing more tales to an end. The knobs now:
+
+| Knob | Where | Was | Now |
+|---|---|---|---|
+| Wounds that lose a tale | `TaleState.MAX_WOUNDS` | 3 | 2 (and only 1 comes home with you) |
+| Grit at the start of a tale | `TaleState.START_GRIT` | 20 | 11 (Story mode doubles it) |
+| Grit after a Last Stand | `TaleState.LAST_STAND_GRIT` | 5 | 2 |
+| A foe's weakness | `combat.gd` | that aspect strikes in full | strikes for double |
+| Per-tale difficulty | `stakes:` header | none | -4 to +5 on targets and contest Resolve |
+| Per-foe difficulty | `foes.gd` | | Resolve tuned on 10 foes; 3 Wood foes became Ghostly; 4 weaknesses moved off Ward and Might |
+
+The weakness change and the moved weaknesses are what even the builds out: fights favoured the bruiser's big
+Might dice once fights mattered, and most weaknesses were Ward, which the bruiser can spare for Strike.
+
+Result over 40 bot years per build (`--stakes=` on the probe tries other stakes without editing tales):
+balanced 79%, bruiser 85%, sage 81%, swindler 82%; the campaign is finished in about 9 years in 10. Story mode
+brings home 92 to 95%. The Teller's Mood falls gently: about 80% at Testy and Sour, 75% at Bitter and 70% at
+Black (it was a cliff to under 50% when Black added a foe die). The prologue and The Card Sharps' Moon stay
+at 100%: the prologue teaches, and the Moon is a short gamble for years (Grit), not a fight.
+
 ## Rules decisions made while building M1
 
 Where the design doc left a gap or two rules pulled against each other, this is what the code does:
 
-- **Defeat** comes only from failing the Last Stand in the final fight, or from a third Wound. A Last Stand
-  failed earlier costs a Wound and moves the story on. This reconciles "Last Stand fail ends the tale" with
+- **Defeat** comes only from failing the Last Stand in the final fight, or from a second Wound (rebalanced
+  after M6: it was a third). A Last Stand failed earlier costs a Wound and moves the story on. This reconciles "Last Stand fail ends the tale" with
   "one throw can't end a run".
 - **Defy** turns a single Fail into a Mixed, but not a fight that was lost over several rounds (the Last Stand is
   the fight's safety net).

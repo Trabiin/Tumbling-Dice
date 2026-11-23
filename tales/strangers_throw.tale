@@ -303,7 +303,7 @@ The stranger is back at the hearth, as if they never left, throwing six dice int
 type: ending
 
 + lost: Carried Home
-  if: defeat or wounds>=3
+  if: defeat or fallen
   They find you at first light on the moor, the shepherd and old Absalom, and carry you down between them. Pip got home on her own, it turns out. She left you her scarf.
   [i]Not the ending I'd have chosen for you. Never mind. The stranger left the dice on the stool for you, and a note: tomorrow. There will always be a tomorrow at this hearth.[/i]
   do: chronicle "On a storm night, a stranger lent you their dice, and the moor got the better of you."
