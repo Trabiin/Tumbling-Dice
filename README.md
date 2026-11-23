@@ -11,7 +11,9 @@ parser and linter, a text preview for writers, mid-tale saves and the Chronicle)
 and **milestone M4: the vertical slice staged** (the tale board with your figurine, carved foe figurines,
 and a minimal tavern with Hollis's shelf and Brannoc the Dicewright), and **milestone M5: the campaign
 skeleton** (a year of nights and seasons, two patron arcs of six tales, Renown, Standing, Rumours,
-Wounds carried between tales, Sister Maud, materials, loading, rebinding and curses). Design doc: *Tales of the Tumbling Dice: Game Design* (Claude Doc).
+Wounds carried between tales, Sister Maud, materials, loading, rebinding and curses), and the first part of
+**milestone M6: content for 1.0** (the prologue, Mother Kettle's arc, the Hooded Pilgrim's arc with the frame
+story's finale, and two secret tales: fifteen tales in all). Design doc: *Tales of the Tumbling Dice: Game Design* (Claude Doc).
 
 The dice, room, flames, tale board, UI widgets and sounds are generated in GDScript and shader code.
 Furniture, clutter, board landmarks and the painted miniatures come from free CC0 kits by
@@ -109,12 +111,36 @@ and 52 (and the Saddlebag's at the third and sixth step). **Wounds** taken in a 
 **Curses** bite on their own rules (the Bellmetal tolls at Waystones; the Oath die at setting out) and
 are lifted in the tale they belong to.
 
-### The two arcs
+### The prologue
+
+A new campaign begins with **The Stranger's Throw** (the title screen offers it first; it can be skipped,
+and then it waits at the pilgrim's stool in the tavern). A hooded stranger lends you a fixed Pouch (four Oak
+d6, a Brass d8, a Dragon's Blood d10, and an Oak d6 of Ward in the Saddlebag) and the short tale teaches a
+Test, a Trial, a Contest, a fight and a Waystone. At the end the stranger gives you one of three dice to keep
+(an Ember d8, a Glass d6 or a Willow d8), chosen as a character choice: the brave one, the clever one, the kind
+one. Your own Pouch comes back untouched.
+
+### The arcs
 
 | Arc | Tales | What carries over |
 |---|---|---|
 | Wren | The Drowned Bell, The Bell Market, The Tide Court | Whether the Abbess was freed or destroyed, the bell sold or rung, the gold kept (Marrowmere floods in autumn), Ormond Vane dead or escaped. The Tide Court sits in autumn and can lift the Bellmetal's curse. |
 | Captain Ashgrove | The Last Watch, The Pretender's Road, Siege of Holloway | Sergeant Brask hanged, spared or taken along, the Oath die taken at the chapel, the letter burned or kept, the bridge held or burned or the captain joining the Pretender (then the siege never comes, and the hill farms empty in autumn). Both expire at winter. |
+| Mother Kettle | The Long Con, The Duke's Ledger, The Gilded Ruin | Whether the river folk got their forty boats back, Silas Crane exposed or loose, whether you crossed Kettle; what became of the Duke's ledger (Kettle's, the Crown's, burned, kept) and Kettle's own page in it; Lady Isolde. The Gilded Ruin waits for autumn and ends Kettle's career one way or another. The other arcs leak in: Magistrate Coyle and Harrow are in the ledger, and Ormond Vane bought the Duke's protection. |
+| The Hooded Pilgrim | (The Stranger's Throw), The Witch of Sallow Wood, The Hollow Saint, The Teller's Tale | The frame story. Whether you learned the Teller's name, promised the Old Wood you'd come to its table, burned Mag Sallow's book or gave the willows his black die; who ends up with Saint Hollow's dice (Wenna, the priory, the Wood, a buyer); the lost souls in the fen. The Teller's Tale comes on the longest night (winter) and reads the whole Chronicle: Wren, Captain Ashgrove or Mother Kettle walk into the Wood with you if their arcs went well. |
+
+**The frame story.** The Teller is Aldous Penhallow, a foundling from Saint Hollow's priory who, fifty years
+ago, sat down at the Old Wood's table and threw for his dying sister's life. He lost. The Wood, which is fond
+of a good story, let her live and kept him: a tale at a hearth for every soul it takes, until somebody who has
+heard his tales sits down in his place. The Hooded Pilgrim is his sister, Wenna. On the longest night you can
+throw for him (free), refuse the game and overturn the table (no more wagers for anyone), let Wenna take her
+turn, or sit down in his chair and become the Teller yourself. Every ending marks the campaign as told.
+
+**Secret tales.** Two tales are never pitched until you have heard the right rumour. *The Dicewright's Debt*
+(Brannoc's bench) needs the rumour that Brannoc was once the Wood's dicewright, plus his trust or a good deal of
+Renown; at the Black Forge under Cinder Fell, every cursed die you carry can be unmade. *The Card Sharps' Moon*
+(the cellar door behind the bar) needs the rumour of the Fair Folk's dice table; the Queen of Hours plays for
+years, and knows the King of Hollows' tell, which helps at the Wood's table.
 
 The bots play a whole year (`--only=year`) and check that every tale gets told and that the later tales
 open differently depending on how the earlier ones ended.
@@ -229,7 +255,7 @@ The rules never touch the scene tree, so the same code runs in the game, in test
 | `scripts/rules/teller.gd` | The Teller's reaction lines, keyed to events, with a cooldown |
 | `scripts/rules/conditions.gd` | The small condition language tales use (`rumour_smugglers or has:guile`) |
 | `scripts/rules/bot.gd` | Balance bots with archetype Pouches |
-| `tales/*.tale` | The tales, as text ([format](docs/tale_format.md)): The Drowned Bell and the five M5 tales |
+| `tales/*.tale` | The tales, as text ([format](docs/tale_format.md)): fifteen, from the prologue to The Teller's Tale |
 | `scripts/rules/patrons.gd` | The campaign around the tales: who offers what, the calendar, season events, missed tales, Sister Maud |
 | `scripts/rules/tale_parser.gd`, `tale_writer.gd` | Read a `.tale` file into the dictionary the runner plays, and write one back |
 | `scripts/rules/tale_lint.gd` | The linter: design rules and broken links, reported by file line |

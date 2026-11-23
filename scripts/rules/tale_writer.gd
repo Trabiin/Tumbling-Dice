@@ -13,7 +13,7 @@ static func write(tale: Dictionary) -> String:
 	if tale.get("patron", "") != "":
 		out.append("patron: " + tale.patron)
 	out.append("start: " + tale.get("start", ""))
-	for k in ["arc", "order", "pitch", "offer", "expires", "missed"]:
+	for k in ["arc", "order", "pitch", "offer", "expires", "missed", "pouch", "saddle"]:
 		if str(tale.get(k, "")) != "":
 			out.append("%s: %s" % [k, str(tale[k])])
 	var tl: Dictionary = tale.get("teller", {})

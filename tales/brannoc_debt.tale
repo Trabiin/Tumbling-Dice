@@ -1,0 +1,311 @@
+title: The Dicewright's Debt
+id: brannoc_debt
+patron: Brannoc
+start: bench
+arc: brannoc
+order: 1
+pitch: Old Brannoc puts down his knife and says there's a forge under Cinder Fell where cursed dice are born, and he owes it a debt.
+offer: rumour:first_forge and trust>=1 or rumour:first_forge and renown>=15
+teller: triumph :: Brannoc will carve that one into a die, you watch. He carves everything that matters.
+teller: triumph :: Even the forge stopped roaring to look at that.
+teller: mixed :: Through. Forges always take a little of whoever works them.
+teller: fail :: Burned. It happens, at a forge. Brannoc has the scars to prove it.
+teller: loaded_caught :: The smith's furnace-eyes go to {die}. "I made the first of those," it says. "Did you think I wouldn't know?"
+teller: rest :: An old miners' chapel cut into the fell, cold and quiet after the heat.
+teller: downed :: Down, on the hot stone. Up, before it sets around you.
+
+// A secret tale. Offered only once you've heard that Brannoc was the Wood's dicewright (the
+// rumour first_forge, from the Pilgrim's or Kettle's arc) and earned his trust or a good deal of
+// Renown. Brannoc carved the dice the Old Wood threw against the Teller. At the Black Forge
+// under Cinder Fell, where cursed dice are made, the curses on every die you carry can be lifted.
+
+## bench: Brannoc's Confession
+act: 1
+tile: inn
+at: 0, 0
+
+Brannoc puts down his carving knife, which he never does, and wipes his hands, and squints at you with his one good eye.
+"You've heard it, then," he says. "What they say about me. That I carved for the Wood, before I came here." He nods slowly. "True. I carved the dice the King of Hollows throws. Bone and willow, and a little something from the Black Forge under Cinder Fell, to make them lucky. For the Wood."
+? seen:teller_named :: "I carved the dice that beat Aldous Penhallow," he says, very low. "I've known whose voice that is at the hearth, every night, for fifty years."
+"The Black Forge is where cursed dice come from. All of them. The Bellmetal's hunger, the oath that bites, the gold that's never full: they learn it there. I went to see how. That's how I lost the eye." He touches it. "I want to put the fire out. I'm too old. You're not."
+? cursed :: He looks at your Pouch, where something cursed sits heavy. "And you've a reason of your own to go, I think."
+
+* go: "Tell me the way."
+  temper: duty +1
+  do: flag promised_brannoc; regard 1
+  goto: prepare
+  reply: Brannoc draws you a map on the back of an invoice, in charcoal, from memory. His hand doesn't shake at all. [i]Fifty years he's been drawing that map in his head, I'd guess. Every night.[/i]
+
+* eye: "What did you see, in the forge?"
+  temper: honesty +1
+  do: flag asked_eye
+  goto: prepare
+  reply: "Something working," says Brannoc. "With its back to me. Hammering a die out of somebody's bad luck. It turned round." He picks up his knife again. "I don't remember its face. That's the mercy."
+
+* price: "And what do I get for walking into a cursed forge?"
+  temper: honesty -1
+  do: flag asked_price
+  goto: prepare
+  reply: Brannoc snorts. "The forge's own iron," he says. "Black iron, that only comes out of there. Bring me some, and I'll carve you something they'll write songs about." [i]He'd do it for nothing, if you asked. He wanted you to ask.[/i]
+
+## prepare: Packing for Cinder Fell
+act: 1
+type: prepare
+goto: fell
+
+Hollis has your Pouch on the bar. He looks across the room at Brannoc's bench, empty for the first time in thirty years, and shakes his head. "Mind the heat," he says.
+[i]Choose what you carry. The fell is a long climb. The forge is hotter than anything you've known. And the thing at the anvil is still working.[/i]
+
+## fell: Cinder Fell
+act: 1
+on enter: random_flag weather [ash, wind, clear]; if season==winter then flag weather snow
+tile: cave
+at: 1.4, 0.3
+
+Cinder Fell is a black hill north of the moors, where nothing grows, and the stones are warm to the touch even in winter. Smoke leaks out of cracks in the hillside. Halfway up, an old mine adit, propped with timbers gone to charcoal, breathes hot air like an animal.
+? weather==ash :: Fine ash falling like grey snow.
+? weather==wind :: A hard wind on the fell, and the smoke torn sideways.
+? weather==snow :: Snow everywhere but here. The fell is bare and steaming.
+? weather==clear :: Clear sky, and the whole fell shimmering with heat.
+
+* adit: Down the old adit.
+  challenge: kind=trial progress=15 danger=3 danger_text="A timber groans overhead." title="The burning adit"
+  mod: weather==ash => progress=2
+  approach might: Shoulder through the fallen timbers, and keep going.
+  approach lore: Read the old miners' marks: which way is safe, which way is not.
+  approach ward [progress=13]: Prop every timber as you pass, slowly, and come back the same way.
+  > triumph: Down through the adit without a scratch, and at the bottom, a miners' chapel cut into the rock, and beyond it the red glow and the hammering.
+    do: flag down; fate 1
+    goto: chapel
+  > success: Down, sweating, coughing, into the deep.
+    do: flag down
+    goto: chapel
+  > mixed: Down. The fell takes its due.
+    do: flag down
+    goto: chapel
+    cost: A falling timber (lose 4 Grit) :: grit -4
+    cost: The heat cracks one of your dice :: crack_best
+  > fail: The adit collapses behind you. There's only one way now, and that's down.
+    do: grit -4; flag down
+    goto: chapel
+
+* vent: Down a smoke-vent, on a rope.
+  temper: duty -1
+  challenge: kind=test difficulty=standard tries=2 title="Down the smoke-vent"
+  approach grace: Light and quick on the rope, before the smoke gets you.
+  approach guile: Wait for the forge to breathe in, and drop with the draught.
+  approach ward: Wet cloth over your face, and steady, hand under hand.
+  > triumph: You drop out of the vent into a gallery above the forge itself, and look down on the whole of it before anything down there knows you've come.
+    do: flag down; flag seen_from_above
+    goto: chapel
+  > success: Down the vent, black with soot, into the deep workings.
+    do: flag down
+    goto: chapel
+  > mixed: Down. Scorched.
+    do: flag down
+    goto: chapel
+    cost: Burned hands (lose 4 Grit) :: grit -4
+    cost: The smoke gets into your chest (tired for a while) :: fatigue 2
+  > fail: The rope burns through and you fall the last twenty feet into a pile of slag. You're down. That was the idea.
+    do: grit -4; flag down
+    goto: chapel
+
+## chapel: The Miners' Chapel
+act: 2
+type: waystone
+on enter: rest 12
+tile: shrine
+at: 2.8, -0.4
+
+A chapel cut into the living rock by miners long dead, with a stone altar and a soot-black saint, and it's cool in here, impossibly, as if the heat outside can't come in. Through the doorway, the red light, and the hammering, which never stops.
+? cursed :: The cursed die in your Pouch is restless here. It wants to go to the forge. It knows the way.
+[i]A Waystone. Rest, swap your dice. The hammering doesn't stop while you do. It hasn't stopped in a thousand years.[/i]
+
+* on: Go toward the hammering.
+  goto: forge
+  reply: Out of the cool, into the red.
+
+* listen: Count the hammer-strokes first.
+  temper: honesty +1
+  do: flag counted; regard 1
+  goto: forge
+  reply: Seven, and a pause. Seven, and a pause. Always seven. [i]Like a die with one face missing. I wonder if that means anything. In a tale, it usually does.[/i]
+
+## forge: The Black Forge
+act: 2
+type: encounter
+tile: keep
+at: 4.2, 0.3
+
+A cavern the size of a cathedral, red with heat, with a river of molten slag running through it. In the middle, an anvil of black iron, and at the anvil, its back to you, the smith: taller than a man, made of cinders and old iron, hammering. On the anvil, a die, glowing. All round it, on shelves cut in the rock, more dice than you could count, cooling, each one with a little curse in it like a worm in an apple.
+? seen_from_above :: From the gallery you saw where it keeps its tongs, and its water-trough, and its book.
+? counted :: Seven strokes, and a pause.
+The smith stops. It turns round. Its face is a furnace door.
+"A customer," it says. "Or a thief. Brannoc sent you. Brannoc always did lack the nerve to come back himself."
+
+* parley: "I'm here to buy. Your fire, and what it's made."
+  contest: opponent=cinder_smith_parley title="The Smith at the Black Forge"
+  mod: seen_from_above => resolve=-2
+  mod: counted => resolve=-2
+  approach lore: Talk shop. You know a forge. Ask about its craft, and mean it.
+  approach guile: Offer to bring it a better customer than Brannoc ever was.
+  approach ward: Stand at its anvil, in its heat, and don't flinch.
+  > triumph: The smith laughs, a roar of sparks. "Nobody's talked shop with me in a thousand years," it says. It puts down its hammer. "Ask." And it tells you how to quench the fire, and gives you an ingot of black iron for your trouble.
+    do: flag smith_talked; flag quench_known; material black_iron
+    goto: anvil
+  > success: The smith grunts, and lets you come to the anvil. "Look, then," it says. "Look and see how it's done."
+    do: flag smith_talked
+    goto: anvil
+  > mixed: It hears you out. It burns you a little, for manners.
+    do: flag smith_talked
+    goto: anvil
+    cost: A spark in the eye (lose 4 Grit) :: grit -4
+    cost: It takes a die for its shelves (lose your lowest) :: lose_lowest
+  > fail: "Thief," says the smith, and picks up its hammer. You'll have to get to the anvil another way.
+    goto: anvil
+  > caught: "I made the first loaded die," says the smith, looking at yours. "I know my own work." It takes the die and puts it on a shelf to cool.
+    do: lose_lowest; flag caught_cheating
+    goto: anvil
+
+* shelves: Smash the cursed dice on its shelves while it's talking.
+  temper: duty -1
+  challenge: kind=test difficulty=hard tries=2 title="The shelves of curses"
+  approach might: Sweep them into the slag river, armful by armful.
+  approach grace: Run the length of the shelves, knocking them down as you go.
+  > triumph: A thousand curses go into the slag and hiss and die, and the smith howls, and for one moment the forge's fire gutters blue. You see the trough, the tongs, the way to put it out.
+    do: flag shelves_smashed; flag quench_known
+    goto: anvil
+  > success: Hundreds of cursed dice go into the slag. The smith turns on you, roaring.
+    do: flag shelves_smashed
+    goto: anvil
+  > mixed: You break a lot of them. Some break you.
+    do: flag shelves_smashed
+    goto: anvil
+    cost: Curses bite as they die (lose 4 Grit) :: grit -4
+    cost: One curse jumps to you (lose 1 Fate) :: fate -1
+  > fail: The smith catches you by the collar before you've reached the second shelf and throws you against the anvil.
+    do: grit -4
+    goto: anvil
+
+## anvil: At the Anvil
+act: 3
+type: challenge
+tile: chest
+at: 5.6, -0.4
+token: forge_quenched => fire "The Black Forge, cold"
+
+The anvil. The smith. The fire roaring behind it in a mouth of black stone. A trough of dark water beside it that has never once been used.
+? quench_known :: You know how: the trough, tipped into the fire, while the smith's back is turned.
+? cursed :: The cursed die in your Pouch is hot as a coal now, straining toward the fire it came from.
+
+* fight: Fight the smith for its forge.
+  temper: duty +1
+  combat: foe=cinder_smith
+  mod: shelves_smashed => resolve=-3
+  mod: quench_known => resolve=-2
+  > triumph: The smith falls back into its own fire and the fire takes it, and you tip the trough after it, and the Black Forge goes out with a scream of steam that you hear in your sleep for a month.
+    do: flag forge_quenched; flag smith_down
+    goto: unmake
+  > success: The smith goes down on one knee by the anvil, and you get to the trough, and the fire dies.
+    do: flag forge_quenched; flag smith_down
+    goto: unmake
+  > mixed: The fire goes out. You're burned getting there.
+    do: flag forge_quenched
+    goto: unmake
+    cost: Burned to the shoulder (lose 5 Grit) :: grit -5
+    cost: The steam takes your breath (a Wound you'll carry home) :: wound "Waterlogged Lungs"
+  > fail: The smith beats you down beside its anvil, and then, unaccountably, stops, and looks at you, and lowers its hammer. "Brave," it says. "Stupid. Like Brannoc was."
+    do: grit -4; flag spared_by_smith
+    goto: unmake
+
+* quench: Tip the trough into the fire.
+  if: quench_known
+  temper: duty +1
+  challenge: kind=trial progress=15 danger=3 danger_text="The smith turns from the anvil." title="Quenching the forge"
+  approach might: Heave the trough over, all at once.
+  approach grace: Duck under the hammer and kick the trough's prop out.
+  approach lore [progress=13]: Open the old sluice from the mine above: let the fell's own water in.
+  > triumph: The water goes in, and the forge goes out, and in the steam and the dark the smith just stands there, cooling, going grey, until it's only a statue of cinders with a hammer in its hand.
+    do: flag forge_quenched; regard 1
+    goto: unmake
+  > success: The fire dies in a great cough of steam.
+    do: flag forge_quenched
+    goto: unmake
+  > mixed: It goes out. Not all at once.
+    do: flag forge_quenched
+    goto: unmake
+    cost: The steam (lose 4 Grit) :: grit -4
+    cost: The smith's last blow (a die cracks) :: crack_best
+  > fail: The trough tips, and half of it goes in, and the fire gutters but doesn't die. It'll burn low now, for a few hundred years. That's something.
+    do: flag forge_low
+    goto: unmake
+
+* deal: Ask the smith to unmake your curses, and leave it its fire.
+  if: smith_talked
+  temper: mercy +1
+  do: flag smith_deal
+  goto: unmake
+  reply: The smith looks at you for a long time with its furnace face. "Fair," it says. "A customer. Bring them here." [i]Leaving the fire burning. Somebody else will come, one day, with a worse reason. But it's honest, a deal. Brannoc made one too.[/i]
+
+## unmake: Unmaking
+act: 3
+tile: keep
+at: 7.0, 0.3
+
+? forge_quenched :: The forge is cold. In the sudden dark the shelves of cursed dice are only dice: bone, wood, metal, sitting quietly like children after a fever.
+? forge_low :: The forge burns low, red and sullen.
+? smith_deal or spared_by_smith :: The smith holds out a hand of cinders for your dice.
+? cursed :: The cursed die in your Pouch has gone quiet.
+
+* unmake: Lay your cursed dice on the cold anvil.
+  if: cursed
+  temper: mercy +1
+  do: lift_curse; flag curses_lifted
+  goto: ending
+  reply: One by one they go quiet, under your hand or the smith's. They keep their faces. They lose their hunger.
+
+* iron: Take black iron for Brannoc, and go.
+  temper: duty +1
+  do: material black_iron; flag iron_taken
+  goto: ending
+  reply: A bar of black iron, cold now, from beside the anvil. It's heavier than it should be. Brannoc will know what to do with it.
+
+* dice: Take a few of the cursed dice off the shelves, as proof.
+  if: not cursed
+  temper: honesty -1
+  do: flag took_proof
+  goto: ending
+  reply: You fill your pockets. [i]Careful. Those have curses in them still. Or had. Or will.[/i]
+
+## ending: How It Ended
+type: ending
+
++ burned: Burned
+  if: defeat or wounds>=3
+  [i]And the fell spat you out at dawn, scorched and black, and you walked home with your eyebrows gone.[/i]
+  Brannoc treats your burns himself, with goose-grease and swearing. "My fault," he says. "My debt." He won't let you pay for anything at his bench for a month.
+  do: chronicle "The Dicewright's Debt: the Black Forge burned you."
+
++ quenched: The Forge Gone Cold
+  if: forge_quenched
+  renown: 4
+  You come home with soot to the eyebrows, and put a bar of black iron on Brannoc's bench, and tell him the forge is cold.
+  Brannoc sits down very slowly. Then he takes off the patch over his bad eye, and blinks it, and laughs. "Light," he says. "I can see light out of it." He carves you a die from the black iron that week, working all night, singing.
+  ? curses_lifted :: And the dice you carried there sit quiet in your Pouch, their hunger gone.
+  [i]A debt paid. They're rarer than you'd think, debts paid. Most just get passed on.[/i]
+  do: gain black_iron_d8; material black_iron; mark forge_quenched; chronicle "The Dicewright's Debt: you put out the Black Forge under Cinder Fell."; rumour kings_dice "Brannoc says the King of Hollows' dice were carved crooked on purpose: the five is a hair too heavy."
+
++ deal: A Customer
+  if: smith_deal
+  renown: 3
+  You come home with your curses lifted and the Black Forge still burning, and Brannoc listens to the whole story without a word.
+  "A deal," he says at last. "That's what I did, too." He doesn't say anything else, but he carves you a die from cinder-glass that you brought home in your pocket.
+  [i]Not every fire goes out. Some just get a new customer. Time will tell which kind that was.[/i]
+  do: gain cinder_d10; mark forge_deal; chronicle "The Dicewright's Debt: you struck a deal with the smith of the Black Forge."; rumour kings_dice "Brannoc says the King of Hollows' dice were carved crooked on purpose: the five is a hair too heavy."
+
++ home: The Long Climb Home
+  renown: 2
+  The forge burns on, lower than it did. You bring Brannoc what you brought, and he turns it over and over in his good hand.
+  "Next time," he says. "Or the time after. It'll keep. It's kept a thousand years."
+  [i]A tale half finished. They're the ones people remember, oddly.[/i]
+  do: gain cinder_d10; mark forge_seen; chronicle "The Dicewright's Debt: you went down to the Black Forge, and came back."; rumour kings_dice "Brannoc says the King of Hollows' dice were carved crooked on purpose: the five is a hair too heavy."

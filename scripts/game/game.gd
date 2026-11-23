@@ -893,7 +893,14 @@ func _show_title() -> void:
 		cb.tooltip_text = "Saved %s." % str(snap.get("saved_at", "")).replace("T", " at ")
 		cb.pressed.connect(func(): _continue_tale(snap))
 		v.add_child(cb)
-	var hb := UI.seal_button("Into the tavern", 18 if snap.is_empty() else 15)
+	# A new campaign begins with the prologue (it can be skipped: the stranger stays by the hearth).
+	var fresh: bool = snap.is_empty() and campaign.tales_played == 0 and not campaign.told(PROLOGUE_ID)
+	if fresh:
+		var pb0 := UI.seal_button("Begin: The Stranger's Throw", 18)
+		pb0.tooltip_text = "The first tale: a storm night, a stranger's borrowed dice, and a girl lost on the moor. It teaches every kind of throw."
+		pb0.pressed.connect(func(): _begin_tale(PROLOGUE_PATH))
+		v.add_child(pb0)
+	var hb := UI.seal_button("Into the tavern" + (" (skip the first tale)" if fresh else ""), 15 if (fresh or not snap.is_empty()) else 18)
 	hb.tooltip_text = "The patrons' tables, Hollis's shelf with your dice, old Brannoc the Dicewright, and Sister Maud's corner."
 	hb.pressed.connect(_show_tavern)
 	v.add_child(hb)
@@ -953,6 +960,8 @@ func _begin_tale(path := "") -> void:
 # ---------------------------------------------------------------- mid-tale saves
 
 const TALE_SAVE := "user://tale_save.json"
+const PROLOGUE_ID := "strangers_throw"
+const PROLOGUE_PATH := "res://tales/strangers_throw.tale"
 var tale_path := ""
 
 

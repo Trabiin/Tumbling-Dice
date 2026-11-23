@@ -20,6 +20,13 @@ const PATRONS := {
 		"idle": "Wren is mending a net by the window, and doesn't look up."},
 	"ashgrove": {"name": "Captain Ashgrove", "place": "Captain Ashgrove's table", "who": "a disgraced knight",
 		"idle": "The captain sits with his back to the wall, his sword across his knees, saying nothing to anyone."},
+	"kettle": {"name": "Mother Kettle", "place": "Mother Kettle's table", "who": "a smuggler and card sharp",
+		"idle": "Mother Kettle is dealing patience in the corner, and cheating at it."},
+	"pilgrim": {"name": "The Hooded Pilgrim", "place": "The pilgrim's stool", "who": "a stranger on the road",
+		"idle": "The stool by the hearth is empty, but somebody has left a single die on it, six up."},
+	# Secret tales: offered only when the right rumours have been found. No idle line.
+	"brannoc": {"name": "Brannoc", "place": "Brannoc's bench", "who": "the Dicewright", "secret": true, "idle": ""},
+	"hollis": {"name": "Hollis", "place": "The cellar door", "who": "the barkeep", "secret": true, "idle": ""},
 }
 
 ## What the turning of each season brings. Each fires once, when the season begins, if its
@@ -201,4 +208,6 @@ static func curse_advice(d: Dictionary) -> String:
 		return "Maud won't touch the Bellmetal. \"That's the lake's. Ask the fisher girl, Wren. Whoever lifts that curse will do it on the water.\""
 	if d.base == "oath_d10":
 		return "Maud crosses herself. \"A broken oath. Only the one it was sworn to can loose it. Your captain knows whose it was.\""
+	if d.base == "gilt_d20":
+		return "Maud weighs it in her hand and gives it straight back. \"Gold that hungry was stolen from somebody. Give it back where it was struck, and it'll go quiet.\""
 	return "Maud turns it over and gives it back. \"Not mine to lift. Whoever it was taken from, that's where it ends.\""

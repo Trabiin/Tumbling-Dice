@@ -75,6 +75,7 @@ func start(p_tale: Dictionary, p_campaign, seed_value := -1) -> void:
 		teller.rng.randomize()
 	pouch.hand_penalty = 0
 	_say(tale.title, "title")
+	_fixed_pouch()
 	if campaign.get("wounds") != null and not campaign.wounds.is_empty():
 		state.carry_in(campaign.wounds)
 		_say("You carry %s from an earlier tale: %s" % ["a Wound" if campaign.wounds.size() == 1 else "%d Wounds" % campaign.wounds.size(),
@@ -1112,6 +1113,52 @@ func _gain(base: String, ally: bool, prefix := "") -> void:
 	events.append({"type": "gain", "die": d})
 
 
+# ------------------------------------------------------------------ a fixed Pouch
+
+## A tale can hand you its own Pouch (the prologue: `pouch: oak_might, ...`, `saddle: oak_ward`).
+## The dice are lent for the tale; your own packing is put aside and comes back at the ending.
+func _fixed_pouch() -> void:
+	var bases := String(tale.get("pouch", "")).split(",", false)
+	if bases.is_empty():
+		return
+	state.set_flag("kept_pouch", ",".join(pouch.pouch.map(func(d): return d.id)))
+	state.set_flag("kept_saddle", ",".join(pouch.saddlebag.map(func(d): return d.id)))
+	pouch.pouch.clear()
+	pouch.saddlebag.clear()
+	for k in ["pouch", "saddle"]:
+		for b in String(tale.get(k, "")).split(",", false):
+			var d := Dice.create(b.strip_edges())
+			d.ally = true
+			d.history.append("Lent to you in %s." % tale.title)
+			pouch.collection.append(d)
+			if k == "pouch":
+				pouch.pouch.append(d)
+			else:
+				pouch.saddlebag.append(d)
+	pouch.start_tale(rng)
+	_say("You are handed a Pouch for this tale: %s." % ", ".join(pouch.pouch.map(func(d): return d.name)), "system")
+
+
+func _restore_pouch() -> void:
+	if String(tale.get("pouch", "")) == "":
+		return
+	var by_id := {}
+	for d in pouch.collection:
+		by_id[d.id] = d
+	pouch.pouch.clear()
+	pouch.saddlebag.clear()
+	for id in String(state.flags.get("kept_pouch", "")).split(",", false):
+		if by_id.has(id):
+			pouch.pouch.append(by_id[id])
+	for id in String(state.flags.get("kept_saddle", "")).split(",", false):
+		if by_id.has(id):
+			pouch.saddlebag.append(by_id[id])
+	# Dice gained in the tale go into the Pouch if they fit, as usual.
+	for d in state.gained:
+		if pouch.collection.has(d) and not pouch.pouch.has(d) and not d.get("ally", false) and pouch.weight() + int(d.weight) <= pouch.weight_limit:
+			pouch.pouch.append(d)
+
+
 # ------------------------------------------------------------------ the end
 
 func _finish_tale() -> void:
@@ -1183,5 +1230,6 @@ func _finish_tale() -> void:
 	var gone: Array = pouch.end_tale()
 	for d in gone:
 		_say("%s goes back to its owner." % d.name, "system")
+	_restore_pouch()
 	_set_phase("ending")
 

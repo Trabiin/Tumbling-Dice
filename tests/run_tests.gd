@@ -43,7 +43,7 @@ func _init() -> void:
 		elif a.begins_with("--report="): report_path = a.substr(9)
 		elif a.begins_with("--only="): only = a.substr(7)
 	var t0 := Time.get_ticks_msec()
-	var suites := ["pouch", "scoring", "odds", "combat", "contest", "challenges", "lint", "format", "preview", "save", "board", "forge", "campaign", "practice", "bots", "year"]
+	var suites := ["pouch", "scoring", "odds", "combat", "contest", "challenges", "lint", "format", "preview", "save", "board", "forge", "campaign", "m6", "practice", "bots", "year"]
 	for s in suites:
 		if only == "" or only == s:
 			print("== ", s)
@@ -850,19 +850,19 @@ func test_campaign() -> void:
 	# Patrons' offers follow the arcs.
 	c = Campaign.new()
 	c.new_campaign()
-	var ids: Array = Patrons.offers(c).map(func(h): return h.id)
+	var ids: Array = Patrons.offers(c).filter(func(h): return h.arc in ["wren", "ashgrove"]).map(func(h): return h.id)
 	eq(ids, ["drowned_bell", "last_watch"], "the first night, Wren and the captain each offer their first tale")
 	c.record_tale("drowned_bell", "rest", true)
 	c.record_tale("last_watch", "banner", true)
-	ids = Patrons.offers(c).map(func(h): return h.id)
+	ids = Patrons.offers(c).filter(func(h): return h.arc in ["wren", "ashgrove"]).map(func(h): return h.id)
 	eq(ids, ["bell_market", "pretender_road"], "then the second tale of each arc")
 	c.record_tale("bell_market", "rest", true)
 	c.record_tale("pretender_road", "joined", true)
 	c.mark("sided_harrow")
-	ids = Patrons.offers(c).map(func(h): return h.id)
+	ids = Patrons.offers(c).filter(func(h): return h.arc in ["wren", "ashgrove"]).map(func(h): return h.id)
 	eq(ids, [], "the Tide Court waits for autumn, and the siege won't come to a turncoat")
 	c.night = 13
-	ids = Patrons.offers(c).map(func(h): return h.id)
+	ids = Patrons.offers(c).filter(func(h): return h.arc in ["wren", "ashgrove"]).map(func(h): return h.id)
 	eq(ids, ["tide_court"], "in autumn the Tide Court sits")
 	check(Patrons.offer_note(c, _header("bell_market")) == "", "a done tale has nothing running out")
 	c.tales.erase("bell_market")
@@ -947,6 +947,60 @@ func test_campaign() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
+## M6: the prologue's lent Pouch, the new arcs' offers.
+func test_m6() -> void:
+	# Every foe, opponent and die named in the data is complete.
+	for id in Foes.FOE_IDS:
+		var f: Dictionary = Foes.foe(id)
+		check(not f.is_empty() and not f.get("phases", []).is_empty(), "foe %s exists" % id)
+		for ph in f.get("phases", []):
+			var packs: bool = (ph.dice + ph.get("wardens", [])).any(func(d): return d.kind == "pack")
+			check(not packs or ph.has("summon"), "foe %s: a pack die needs a summon" % id)
+	for id in Foes.OPPONENT_IDS:
+		check(Foes.opponent(id).has("resolve"), "opponent %s exists" % id)
+	for b in Dice.ALL_IDS:
+		check(not Dice.create(b).is_empty(), "die %s exists" % b)
+	# The prologue lends a fixed Pouch and hands your own back at the end, plus the die you chose.
+	for k in 6:
+		var c := Campaign.new()
+		c.new_campaign()
+		var bt := Bot.new()
+		bt.rng.seed = 900 + k
+		bt.pack(c, "sage")
+		var before: Array = c.pouch.pouch.map(func(d): return d.id)
+		var n_before: int = c.pouch.collection.size()
+		var r := Runner.new()
+		var lent := []
+		r.changed.connect(func():
+			if r.phase == "approach" and lent.is_empty():
+				lent.append(r.pouch.pouch.map(func(d): return d.base)))
+		r.start(Tales.load_tale("res://tales/strangers_throw.tale"), c, 77 + k)
+		bt.play(r)
+		check(r.phase == "ending", "prologue run %d reaches an ending" % k)
+		check(not lent.is_empty() and lent[0].has("oak_might") and lent[0].has("dragon_d10") and not lent[0].has("jade_d8"), "the prologue is played with the stranger's Pouch")
+		var after: Array = c.pouch.pouch.map(func(d): return d.id)
+		for id in before:
+			check(after.has(id), "your own Pouch comes back after the prologue (%s)" % id)
+		check(not c.pouch.collection.any(func(d): return d.get("ally", false)), "the lent dice go back to the stranger")
+		if r.state.ending == "found":
+			eq(c.pouch.collection.size(), n_before + 1, "and you keep one gift die")
+			check(c.pouch.collection.any(func(d): return String(d.base).begins_with("stranger_")), "a stranger's die")
+	# Offers: the prologue is offered first; Kettle turns up on night 3 or after The Drowned Bell's cove.
+	var c2 := Campaign.new()
+	c2.new_campaign()
+	var ids: Array = Patrons.offers(c2).map(func(h): return h.id)
+	check(ids.has("strangers_throw"), "a new campaign offers the prologue")
+	check(not ids.has("long_con"), "Mother Kettle isn't in on the first night")
+	Patrons.pass_nights(c2, 2)
+	check(Patrons.offers(c2).map(func(h): return h.id).has("long_con"), "she is by night 3")
+	c2.record_tale("long_con", "river", true)
+	check(Patrons.offers(c2).map(func(h): return h.id).has("dukes_ledger"), "The Duke's Ledger follows The Long Con")
+	c2.record_tale("dukes_ledger", "burned", true)
+	check(not Patrons.offers(c2).map(func(h): return h.id).has("gilded_ruin"), "The Gilded Ruin waits for autumn")
+	Patrons.pass_nights(c2, 12)
+	check(Patrons.offers(c2).map(func(h): return h.id).has("gilded_ruin"), "and comes in autumn")
+
+
 func _header(id: String) -> Dictionary:
 	for h in Patrons.catalog():
 		if h.id == id:
@@ -1001,7 +1055,8 @@ func test_year() -> void:
 			var ek: String = "%s:%s" % [h.id, r.state.ending]
 			endings[ek] = endings.get(ek, 0) + 1
 			# Which earlier ending was this telling built on?
-			var prev := {"bell_market": "drowned_bell", "tide_court": "drowned_bell", "pretender_road": "last_watch", "siege_holloway": "last_watch"}
+			var prev := {"bell_market": "drowned_bell", "tide_court": "drowned_bell", "pretender_road": "last_watch", "siege_holloway": "last_watch",
+				"dukes_ledger": "long_con", "gilded_ruin": "long_con"}
 			if prev.has(h.id):
 				var key: String = "%s <- %s:%s" % [h.id, prev[h.id], c.ending_of(prev[h.id])]
 				if not openings.has(h.id):
@@ -1016,7 +1071,7 @@ func test_year() -> void:
 	for h in cat:
 		check(told.has(h.id), "%s is told in some year" % h.id)
 	# The gate: the opening of a later tale reads differently depending on how an earlier one ended.
-	for later in ["bell_market", "tide_court", "siege_holloway"]:
+	for later in ["bell_market", "tide_court", "siege_holloway", "dukes_ledger", "gilded_ruin"]:
 		var by_ending: Dictionary = openings.get(later, {})
 		var texts := {}
 		for k in by_ending:

@@ -89,6 +89,11 @@ class _Lint:
 			if tale.get("expires", "") != "" and tale.get("missed", "") == "":
 				add("", "A tale that expires needs a missed: line, told when it goes by without you.")
 			campaign_reads(tale.get("offer", ""), "")
+		# A fixed Pouch (the prologue): every die named must exist.
+		for k in ["pouch", "saddle"]:
+			for b in String(tale.get(k, "")).split(",", false):
+				if not b.strip_edges() in Dice.ALL_IDS:
+					add("", "%s: names an unknown die '%s'." % [k, b.strip_edges()])
 		if not scenes.has(tale.get("start", "")):
 			add("", "The start scene '%s' does not exist." % tale.get("start", ""))
 		var edges := {}

@@ -1,0 +1,399 @@
+title: The Teller's Tale
+id: tellers_tale
+patron: The Hooded Pilgrim
+start: hearth
+arc: pilgrim
+order: 3
+pitch: The longest night is coming. Wenna says the Wood has laid a place at its table, and the Teller, for once, has nothing to say.
+offer: told:hollow_saint and season==winter
+teller: triumph :: ...I don't have a line for that. I've had a line for everything, for fifty years. Not for that.
+teller: triumph :: There. That's the one. That's the throw I should have made.
+teller: mixed :: Through. It costs. It always costs, at this table. I should know.
+teller: fail :: No. No, that's how it went for me, too. Don't stop. Please don't stop.
+teller: loaded_caught :: The King of Hollows looks at {die} and laughs like a tree splitting. "Lead," it says. "He tried that too."
+teller: rest :: The ring of stones, in the snow, and the whole Wood holding its breath outside it.
+teller: downed :: Get up. Get up. I didn't, and look at me.
+
+// The Hooded Pilgrim's arc, tale 3 of 3: the campaign's last tale and the frame story's end.
+// The Teller, Aldous Penhallow, lost a wager with the Old Wood fifty years ago and has told tales
+// at the hearth ever since. On the longest night you can sit at the Wood's table in his place.
+// Reads the whole Chronicle: the Pilgrim's arc (the Teller's name, the black die, the saint's
+// dice, the wisps), and who will come with you from the other arcs (Wren, Ashgrove, Kettle).
+
+## hearth: The Longest Night
+act: 1
+tile: inn
+at: 0, 0
+
+[i]Pull your stool in. Closer. No, that one's fine. I won't be needing mine tonight.[/i]
+[i]I've told you a great many tales at this hearth. I've never told you mine. I think tonight I'd better.[/i]
+Snow against the window. The whole tavern crowded round the fire, and nobody talking much. Wenna sits by the hearth with a blanket round her shoulders, and she looks smaller than she did, and older, as if the year has been a long one for her.
+? seen:teller_named :: "Aldous," she says to the empty stool. "Tell them."
+[i]Midsummer, fifty years ago. My sister had the fever. The sisters at Greyfell said she'd be dead by morning. So I walked into Sallow Wood with six dice in my pocket and a head full of stories, and I sat down at the Wood's table, and I threw for her life.[/i]
+[i]I lost. Of course I lost. You can't beat the Wood at its own table, not with six oak dice and a head full of stories.[/i]
+[i]But the Wood liked the stories. So it let her live, and it kept me. A tale at a hearth for every soul it takes, until somebody who's heard them sits down in my place. Win, and I'm free. Lose, and you're me.[/i]
+? seen:wood_sworn :: [i]And you promised it you would. I heard you. I told you not to.[/i]
+? seen:saint_dice :: Wenna looks at the pouch where you keep the saint's dice, and then away.
+
+* go: "Then I'll sit down in your place."
+  temper: duty +1
+  do: flag going; regard 1
+  goto: prepare
+  reply: [i]...Yes. I knew you'd say that. They always say that, in my tales. That's why I tell them.[/i]
+
+* why: "Why didn't you tell me? All this time."
+  temper: honesty +1
+  do: flag going; flag asked_why
+  goto: prepare
+  reply: [i]Because then you'd have gone. And I'd have had to watch, and tell it, the way I've told everything else. I didn't want to tell that one.[/i] Wenna reaches over and puts her hand on the empty stool. "He's frightened," she says. "He's always been frightened. He went anyway. That's the whole of him."
+
+* wenna: "Wenna stays here, by the fire. Whatever happens."
+  temper: mercy +1
+  do: flag going; flag wenna_stays
+  goto: prepare
+  reply: Wenna opens her mouth to argue, and then closes it. "All right," she says. "I'm tired. I'll keep his stool warm." [i]Thank you. I couldn't have asked. She'd have hit me.[/i]
+
+## prepare: The Last Packing
+act: 1
+type: prepare
+goto: company
+
+Hollis puts your Pouch on the bar, and then, after a moment, a lantern beside it, and his own good coat. He doesn't say anything. He doesn't need to.
+[i]Choose what you carry. The Wood's table takes every kind of throw. Bring what you are.[/i]
+
+## company: Who Comes With You
+act: 1
+tile: inn
+at: 1.3, 0.6
+
+You stand up from the hearth, and the tavern stands up with you. Not everyone. But the ones who owe you a tale.
+? ending:tide_court==peace or ending:drowned_bell==rest :: Wren, with her grandmother's hand-bell, already in her coat. "The drowned owe you," she says. "So do I."
+? seen:holloway_held or seen:banner_home :: Captain Ashgrove, buckling on his sword. "I've stood one long watch," he says. "I can stand another."
+? seen:kettle_retired or seen:kettle_partner_end or seen:kettle_partner :: Mother Kettle, shuffling. "Card game, is it?" she says. "Against a cheat? Oh, you'll want me."
+? seen:wisps_freed :: And at the window, faint as frost, small lights, a dozen of them, waiting.
+[i]People come back for you, if you went for them. That's the oldest rule in the tales. Older than the Wood's.[/i]
+
+* wren: Take Wren, and her bell.
+  if: ending:tide_court==peace or ending:drowned_bell==rest
+  temper: mercy +1
+  do: flag with_wren; ally wren_bell_d4
+  goto: wood
+  reply: Wren rings the hand-bell once, softly, at the door, and every lamp in the tavern flickers. "For the drowned," she says. "They'll hear it in the Wood."
+
+* ashgrove: Take the captain.
+  if: seen:holloway_held or seen:banner_home
+  temper: duty +1
+  do: flag with_ashgrove; ally ashgrove_d10
+  goto: wood
+  reply: The captain lends you his own die, the one he swore on. "Bring it back," he says. "Or don't. Either way, I'm coming."
+
+* kettle: Take Mother Kettle.
+  if: seen:kettle_retired or seen:kettle_partner_end or seen:kettle_partner
+  temper: honesty -1
+  do: flag with_kettle; ally hook_d6
+  goto: wood
+  reply: Kettle tucks the deck away and hands you a brass die. "The Hook," she says. "For friends. I'll be watching the King's hands."
+
+* alone: Go alone. It's your seat to take.
+  temper: duty -1
+  do: flag alone
+  goto: wood
+  reply: They let you go. Hollis holds the door. [i]Alone. That's how I went. I'm not sure it's braver. I'm not sure it isn't.[/i]
+
+## wood: Sallow Wood in Snow
+act: 2
+type: challenge
+tile: forest
+at: 2.6, -0.4
+
+Sallow Wood on the longest night: the willows white with snow, the black water frozen, and the whole Wood awake and watching. Every branch turns as you pass. Far ahead, between the trees, a light like a hearth.
+? seen:wood_sworn :: The Huntsman is waiting at the Wood's edge on his horse of fog. He bows from the saddle. "You promised," he says. "We laid a place."
+? seen:book_burned :: The Huntsman is waiting at the Wood's edge, and his spear is down. "Book-burner," he says. "The Wood hasn't forgotten."
+? seen:die_given :: The willows lean in as you pass, whispering. One of them is holding a small black die in its twigs, turning it over and over.
+? with_wren :: Wren rings her bell, and the frozen water under the willows answers, very faintly, with bells of its own.
+? seen:wisps_freed :: The little lights from the fen drift out of the trees and gather round your lantern, and go ahead of you, showing the way.
+
+* guest: Walk in as the Wood's guest, behind the Huntsman.
+  if: seen:wood_sworn
+  temper: duty +1
+  do: flag arrived; flag as_guest
+  goto: stones
+  reply: The Huntsman turns his horse and leads you in, at a walk, through the snow. Nothing touches you. [i]A guest. I went in as a beggar. It makes a difference, I think.[/i]
+
+* through: Go through the Wood to the light.
+  challenge: kind=trial progress=17 danger=3 danger_text="The willows close the path behind you." title="The longest night"
+  mod: seen:book_burned => progress=3
+  mod: seen:wisps_freed => progress=-3
+  mod: with_ashgrove => progress=-2
+  approach might: Straight through, breaking a path in the snow, with the willows lashing at you.
+  approach lore: The old rules: iron, salt, and a courtesy for every tree you pass.
+  approach grace [progress=15]: Over the frozen water, quick and light, before it remembers it's water.
+  > triumph: You come out of the willows into a clearing with the snow falling soft and straight, and there's the light ahead, and there's nothing between you and it.
+    do: flag arrived; fate 1
+    goto: stones
+  > success: Through, scratched and frozen. The light is close now.
+    do: flag arrived
+    goto: stones
+  > mixed: Through. The Wood takes its toll on the way.
+    do: flag arrived
+    goto: stones
+    cost: Willow-lashes across your face (lose 4 Grit) :: grit -4
+    cost: The cold gets into your hands (tired for a while) :: fatigue 2
+  > fail: The Wood leads you round and round until you're nearly part of it, and then, as if it has decided you've suffered enough, lets you stumble out into the clearing, half-frozen.
+    do: grit -5; flag arrived
+    goto: stones
+
+* hunt: Face the Huntsman, here, on the edge.
+  if: seen:book_burned
+  temper: duty +1
+  combat: foe=huntsman
+  > triumph: The Huntsman goes down in the snow, laughing. "Good," he says again. "Better than last time." He sends his horse of fog ahead of you to light the way.
+    do: flag arrived; flag huntsman_down
+    goto: stones
+  > success: He falls back into the mist, and the path opens.
+    do: flag arrived; flag huntsman_down
+    goto: stones
+  > mixed: He lets you by. He takes a toll.
+    do: flag arrived
+    goto: stones
+    cost: His spear in your side (lose 5 Grit) :: grit -5
+    cost: His hounds take a die (lose your lowest) :: lose_lowest
+  > fail: He leaves you lying in the snow, and rides on ahead, and after a while you get up and follow his tracks to the light.
+    do: grit -5; flag arrived
+    goto: stones
+
+## stones: The Ring of Stones
+act: 2
+type: waystone
+on enter: rest 14
+tile: shrine
+at: 3.9, 0.4
+
+The nine stones again, with snow on their heads like old men's hair. Inside the ring the grass is green, and it isn't snowing. Beyond it, through the trees, the table. You can see it from here: long, and laid, and lit, and a figure at the head of it, waiting.
+? seen:saint_dice :: The saint's dice are warm against your chest. Warmer than they've ever been.
+? not wenna_stays :: Wenna is here. You don't know how she got here before you. She's sitting on the stone with the flat top, in her blanket, looking at the table through the trees. "I sat here," she says, "the morning after. Waiting for him to come out. He came out. Just not all of him."
+[i]A Waystone. The last one. Rest, swap your dice, say what you need to say.[/i]
+
+* ready: "I'm ready."
+  temper: duty +1
+  goto: table
+  reply: [i]No one's ever ready. That's not a reason not to go. Come on, then. I'll tell it as it happens.[/i]
+
+* ask: Ask the Teller what it was like, the first time, at the table.
+  temper: honesty +1
+  do: flag heard_first; regard 1
+  goto: table
+  reply: [i]Warm. That's the surprising part. Warm, and kind, and very fair. It explained the rules twice. It let me throw first. It even told me the odds. I just didn't listen to them.[/i]
+
+* wenna: Tell Wenna to go home.
+  if: not wenna_stays
+  temper: mercy +1
+  do: flag wenna_sent_home
+  goto: table
+  reply: "No," says Wenna. Then, after a while, "I'll wait here. Inside the stones. He'd want me to wait inside the stones." She pulls the blanket tighter. "He always fussed."
+
+## table: The Wood's Table
+act: 3
+type: challenge
+tile: keep
+at: 5.3, -0.3
+token: freed => dove "Aldous Penhallow, free"
+token: taken => candle "A new Teller"
+token: broken => fire "The table, broken"
+
+A long table in a clearing, laid with a white cloth, and candles in the snow, and two chairs: one at the head, one at the foot. At the head sits the King of Hollows. It's the Wood, gathered into one shape: antlers of willow and a face of bark, and eyes like the green light under deep water. It's enormous, and old, and it smiles at you with real warmth.
+"You've heard his tales," it says. "All of them, I think. Sit. Sit down. You know the game."
+On the cloth in front of the empty chair, six dice. And in front of the King, three of its own.
+? seen:die_given :: And in the middle of the table, a small black die with no numbers on it. "His," says the King. "The willows brought it. You may use it, if you like. It lost last time."
+? seen:saint_dice :: The King looks at the pouch on your chest, and its smile goes still. "Ah," it says. "Those. I wondered where those had got to."
+? seen:saint_wood :: "You gave me back my dice," the King says. "I don't forget a gift." Its eyes are kind.
+? with_kettle :: Kettle stands behind your chair, watching the King's hands like a hawk.
+? with_ashgrove :: The captain stands at your shoulder, sword grounded, very still.
+? with_wren :: Wren rings her bell, once, and the King inclines its great head to her, politely.
+? seen:kings_tell :: You watch the King's antler, as the Queen of Hours told you. It hasn't moved. Yet.
+[i]Here's the table. Here's the chair I sat in. I can see it, you know. I can always see it. Now: throw.[/i]
+
+* throw: Throw for Aldous Penhallow's freedom.
+  temper: duty +1
+  contest: opponent=king_wager title="The King of Hollows"
+  mod: seen:saint_dice => resolve=-4
+  mod: seen:saint_wood => resolve=-3
+  mod: seen:wisps_freed => resolve=-2
+  mod: with_kettle => resolve=-2
+  mod: with_wren => resolve=-2
+  mod: with_ashgrove => resolve=-2
+  mod: seen:kings_tell => resolve=-3
+  mod: rumour:kings_dice => resolve=-2
+  mod: seen:book_burned => resolve=3
+  mod: seen:die_given => resolve=2
+  approach lore: Know the game better than he did. He never read the rules. You have.
+  approach grace: Play it the way he told it: lightly, laughing, as if nothing were at stake.
+  approach ward: Hold, and hold, and never once let the King see you're afraid.
+  approach guile: Watch its hands. The Wood doesn't cheat. But it doesn't mind if you think it does.
+  > triumph: The last die stops, and the King of Hollows looks at it for a long time, and then it laughs, a great creaking happy laugh that shakes the snow off every willow in the Wood. "Free," it says. "Free and fair. Oh, well thrown." And somewhere, a long way off, a door opens.
+    do: flag freed; flag won_clean; regard 2
+    goto: dawn
+  > success: The King looks at the dice, and nods, slowly. "Fair," it says. "He's free. Go and tell him."
+    do: flag freed
+    goto: dawn
+  > mixed: You win. The Wood always takes its tithe.
+    do: flag freed
+    goto: dawn
+    cost: The Wood keeps a year of your luck (lose 2 Fate, and the Wood's mark is on you) :: fate -2; flag wood_mark
+    cost: The Wood keeps something of you (a Wound you'll carry home) :: wound "Frostbite"
+  > fail: The last die stops, and you've lost, as he lost. The King of Hollows sighs, and its eyes are very kind. "Well," it says. "You know the terms." The chair at the foot of the table is warm, and it fits you. Behind you, somebody moves.
+    do: flag lost_throw
+    goto: lost
+  > caught: The King lifts your loaded die off the cloth with two twigs, and laughs. "Lead," it says. "He tried that too. Oh, you are his, aren't you." It doesn't count the throw. It's waiting for you to throw again.
+    do: flag caught_cheating; flag lost_throw
+    goto: lost
+
+* take: Don't throw. Sit down in his chair. Let him go.
+  temper: mercy +1
+  do: flag taken
+  goto: dawn
+  reply: You sit down in the chair at the foot of the table, and push the six dice back across the cloth unthrown. The King looks at you for a long time. "That's not the game," it says softly. "But it's in the terms. Somebody who has heard his tales, in his place." It nods. "So be it." [i]No. No, I didn't mean. You didn't have to. ...Oh. Oh, it's warm out here. I'd forgotten.[/i]
+
+* break: Overturn the table. No more wagers. Not for him, not for anyone.
+  temper: duty -1
+  combat: foe=king_of_hollows
+  mod: seen:saint_dice => resolve=-3
+  mod: with_ashgrove => resolve=-3
+  mod: seen:willow_felled => resolve=2
+  > triumph: The table goes over, and the candles go out, and the King of Hollows comes apart into willows and wind and snow, howling, and the whole Wood howls with it, and then it's quiet. Every debt in Mag Sallow's book is ash. Every light in the fen goes out at once, gently, like a sigh.
+    do: flag broken; flag freed
+    goto: dawn
+  > success: The table breaks, and the King goes back into the Wood, and the Wood is quiet, and the debt is gone.
+    do: flag broken; flag freed
+    goto: dawn
+  > mixed: It breaks. So do you, a little.
+    do: flag broken; flag freed
+    goto: dawn
+    cost: The King's antler through your shoulder (a Wound you'll carry home) :: wound "Arrow in the Shoulder"
+    cost: The Wood's curse on you for ever (Old Wood standing falls to nothing) :: standing wood -3
+  > fail: The King puts you back in the chair, gently, the way a parent puts a child to bed. "No," it says. "That's not the game either."
+    do: grit -4; flag lost_throw
+    goto: lost
+
+## lost: The Chair at the Foot of the Table
+act: 3
+tile: keep
+at: 6.4, 0.5
+
+The chair is warm. The King of Hollows waits. The snow falls.
+And then somebody else's hand is on the back of your chair.
+? not wenna_stays and not wenna_sent_home :: Wenna. She's walked from the stones, in her blanket, through the snow, and her hand on your shoulder is so light you can hardly feel it.
+? wenna_stays or wenna_sent_home :: Wenna. She came anyway, of course she did. She never did know when to leave a thing alone.
+"My turn," says Wenna Penhallow. "Fifty years I've been waiting for my turn."
+[i]Wenna, no. No. Don't you dare.[/i]
+
+* again: "No. I'll throw again."
+  temper: duty +1
+  contest: opponent=king_wager title="The King of Hollows, again"
+  mod: seen:saint_dice => resolve=-4
+  mod: heard_first => resolve=-2
+  mod: seen:kings_tell => resolve=-3
+  mod: with_kettle => resolve=-2
+  approach lore: You know the game now. You've lost it once.
+  approach grace: Lightly. Laughing. The way he would have, if he'd had a second chance.
+  approach ward: You've been in the chair. You know it's warm. You're not afraid of it any more.
+  > triumph: The King of Hollows laughs. "Twice in one night," it says. "Nobody has ever done that." The door opens, far away.
+    do: flag freed
+    goto: dawn
+  > success: "Fair," says the King, and sighs, and lets him go.
+    do: flag freed
+    goto: dawn
+  > mixed: You win. You pay.
+    do: flag freed
+    goto: dawn
+    cost: A year of your luck (lose 2 Fate) :: fate -2
+    cost: A Wound you'll carry home :: wound "Frostbite"
+  > fail: You lose again. And Wenna sits down in your lap, as if she were a child, and puts her arms round your neck, and says, "There. My turn," and the King nods.
+    do: flag wenna_paid
+    goto: dawn
+  > caught: "Lead again," says the King, almost fondly, and sets your die aside. Wenna's hand tightens on your shoulder. "My turn," she says, and this time she doesn't ask.
+    do: flag wenna_paid; flag caught_cheating
+    goto: dawn
+
+* wenna: Let Wenna take her turn.
+  temper: mercy -1
+  do: flag wenna_paid
+  goto: dawn
+  reply: You stand up out of the warm chair, and Wenna sits down in it, and folds her hands on the white cloth, and looks up at the King with her chin out, exactly like a girl stealing apples. "Well?" she says. "Deal."
+
+* stay: "No. I'll stay. That was the bargain."
+  temper: duty +1
+  do: flag taken
+  goto: dawn
+  reply: You put your hand over Wenna's on your shoulder, and shake your head. The King inclines its great head. "So be it," it says. [i]No. ...No. Well. You'll be good at it. You've listened to enough of them.[/i]
+
+## dawn: Dawn
+act: 3
+tile: inn
+at: 7.0, -0.2
+
+Dawn comes up grey and pink over Sallow Wood.
+? freed and not broken :: At the edge of the Wood, by the frozen water, an old man is standing in the snow in clothes fifty years out of fashion, with his face turned up to the sky. He's crying, or laughing. You can't tell. When he sees you, he lifts one hand, and his voice is the voice you've heard at every tale, by every fire. "Hello," says Aldous Penhallow. "I've wanted to say that to you for a very long time."
+? broken :: The Wood is quiet. Not dead: quiet, like a forest after a storm. At its edge, an old man in clothes fifty years out of fashion stands in the snow with his hands open, as if he's just put something down. "Hello," says Aldous Penhallow, in the voice you know. "I'm sorry about the noise."
+? taken :: The chair at the foot of the table is warm, and you're in it, and the King of Hollows is pouring you something hot from a jug. "You'll need a hearth," it says. "Somewhere with good company. I believe there's one in town."
+? wenna_paid :: At the edge of the Wood, an old man in fifty-year-old clothes stands in the snow with his sister's blanket in his hands, and nothing else. "She always did get us into trouble," says Aldous Penhallow. "And I always talked us out of it. Every time but this one."
+
+* home: Take him home.
+  if: freed or wenna_paid
+  goto: ending
+  reply: You walk out of Sallow Wood together, slowly, because he hasn't walked anywhere in fifty years and his knees remember it.
+
+* hearth: Go to your hearth.
+  if: taken
+  goto: ending
+  reply: [i]Well. Pull your stool in.[/i]
+
+## ending: How It Ended
+type: ending
+
++ lost: The Longest Night
+  if: defeat or wounds>=3
+  [i]And the Wood kept the night, and the night was long, and in the morning the stones found you lying in the snow inside their ring, alive, with Wenna's blanket over you.[/i]
+  Aldous Penhallow is still at the hearth. You can hear him, if you listen: telling tales, as he has for fifty years. The Wood will lay a place again next winter. It always does.
+  do: mark table_lost; chronicle "The Teller's Tale: the Wood kept the longest night."
+
++ freed: Free and Fair
+  if: freed and not broken and not wenna_paid
+  renown: 5
+  They walk into the tavern at noon, Aldous and Wenna Penhallow, arm in arm, two old people with snow on their boots, and the whole room stands up, though nobody quite knows why.
+  Aldous sits down on the stool by the hearth, the one that was always taken. He looks round the room, at the fire and the faces and the shelf of dice, as if he's never seen any of it before. "Smaller than I thought," he says. "Warmer."
+  ? won_clean :: "You threw it clean," he tells you. "I'll be telling that one for years. If you'll let me. Out loud, this time."
+  ? with_wren or with_ashgrove or with_kettle :: Your friends from the other tales stand round the hearth, and he knows every one of them by name, and every one of their tales, and they don't know what to make of it at all.
+  Wenna falls asleep in her chair by the fire with her hand in his. She doesn't wake up. She's smiling. It was a long walk, fifty years, and she got there.
+  He gives you the black die, his, the one he lost with. It has numbers on it now.
+  [i]That's the end of my tale. Thank you for it. There'll be other tellers, other hearths. This one's yours now, if you want it. Pull your stool in.[/i]
+  do: gain penhallow_d6; standing wood 1; mark teller_freed; mark campaign_done; chronicle "The Teller's Tale: you beat the Wood at its own table, and Aldous Penhallow came home."
+
++ broken: The Table Broken
+  if: broken
+  renown: 5
+  Aldous Penhallow walks into the tavern at noon with a broken willow branch in one hand, as a walking stick. Every debt in the Wood is gone: his, and everyone's. The lights in the fen are gone too, gently.
+  The Wood will grow back. Woods do. But it'll grow back without a table, and without a book, and some people say it'll grow back kinder.
+  ? not wenna_stays :: Wenna walked back from the stones beside him. She's asleep now, by the fire. She doesn't wake. She's smiling.
+  ? wenna_stays :: Wenna kept his stool warm, as she promised. She's asleep in it when he comes in. She doesn't wake. She's smiling.
+  He gives you one of the King's antlers, cut down into a die. "A souvenir," he says. "Don't tell the Wood."
+  [i]No more wagers. Not for anybody. I never thought of that. Fifty years, and I never once thought of just tipping the table over.[/i]
+  do: gain antler_d12; standing wood -2; mark table_broken; mark campaign_done; chronicle "The Teller's Tale: you overturned the Wood's table, and every debt in it was cancelled."
+
++ wenna: Wenna's Turn
+  if: wenna_paid
+  renown: 4
+  Aldous Penhallow walks into the tavern alone, at noon, with his sister's blanket over his arm. He sits on the stool by the hearth for a long time without saying anything.
+  Then, very quietly, to the whole room, he begins: "Pull your stools in. I've a tale to tell you. It's about my sister, who never did know when to leave a thing alone."
+  He tells it every night, after that, out loud, with his own voice. People come from all over to hear it. You hear it more than anyone.
+  [i]She's at the hearth now, Wenna. Somewhere you can't see. I hear her sometimes, telling it better than I do.[/i]
+  do: gain penhallow_d6; mark wenna_teller; mark campaign_done; chronicle "The Teller's Tale: Wenna Penhallow took her brother's place at the Wood's hearth."
+
++ taken: The New Teller
+  if: taken
+  renown: 4
+  Aldous Penhallow walks into the tavern at noon with Wenna on his arm. He sits on the stool by the hearth, the one that was always taken, and it isn't, now. You're not on it either. You're somewhere else. Somewhere warm.
+  ? with_wren or with_ashgrove or with_kettle :: Your friends come in after him, quietly, and look at the empty stool, and somebody puts a cup down in front of it. Every night after that, somebody does.
+  Aldous orders a drink, and turns to the empty stool, and says, as if he knows exactly who's listening: "Go on, then. Tell them one. I'll listen for once."
+  [i]Pull your stool in. Closer. That's it. Now: there was a fisherman's daughter, and a bell under a lake...[/i]
+  do: gain hearth_d10; mark player_teller; mark campaign_done; chronicle "The Teller's Tale: you took Aldous Penhallow's chair at the Wood's table, and his place at the hearth."

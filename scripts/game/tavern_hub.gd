@@ -203,7 +203,7 @@ func _room_text(offers: Array) -> String:
 			for h in offers:
 				if h.arc == arc:
 					bits.append(String(h.pitch))
-		elif c.told("drowned_bell") or arc != "wren":
+		elif (c.told("drowned_bell") or arc != "wren") and String(p.get("idle", "")) != "":
 			bits.append(p.idle)
 	if c.has_mark("marrowmere_flooded"):
 		bits.append("A woman from Marrowmere sits nearest the fire, and won't look at you.")
