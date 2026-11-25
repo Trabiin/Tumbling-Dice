@@ -476,7 +476,7 @@ type: ending
   if: defeat or fallen
   [i]And the Watch fished you out of the river at dawn, and the Duke's magistrate gave you a month in the Saltreach gaol for it.[/i]
   Kettle got you out in a week. She doesn't say how. She doesn't say anything about the deeds, either. Grisewold is still going up and down the river with his ledger.
-  [i]Kettle doesn't hold it against you. She has failed more cons than you've had dinners. Come back when you're mended.[/i]
+  [i]Kettle doesn't hold it against you. She has failed more cons than you've had dinners. "Forty boats," she says, "and not one coming back. Well. Grisewold knows our faces now. We'll have to be cleverer next time."[/i]
   do: mark con_rumbled; chronicle "The Long Con: rumbled on the Gilded Swan."
 
 + river: Forty Boats

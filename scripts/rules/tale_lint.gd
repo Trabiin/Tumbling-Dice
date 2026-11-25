@@ -90,7 +90,7 @@ class _Lint:
 						add(where, "season== takes a season (spring, summer, autumn, winter).")
 				elif a.contains(":"):
 					var pre := a.substr(0, a.find(":"))
-					if not pre in ["has", "mat", "seen", "rumour", "told", "ended", "missed", "ending", "standing", "temper"]:
+					if not pre in ["has", "mat", "seen", "rumour", "told", "ended", "fell", "missed", "ending", "standing", "temper"]:
 						add(where, "Unknown condition '%s:'." % pre)
 
 	func check_tale(tale: Dictionary) -> void:

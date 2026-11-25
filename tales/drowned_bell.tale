@@ -22,7 +22,6 @@ at: 0, 0
 token: promised_wren => seal "A promise to Wren"
 token: paid_wren => coins "Wren's fifteen coins, taken"
 
-? seen:drowned_before :: [i]They say a traveller tried this before you. They say the lake kept them. Well. Here you are again, and here is the girl again, and the bell has not stopped.[/i]
 [i]Pull your stool closer to the fire. This one is cold.[/i]
 A girl in a fisherman's oilskin stands at your table, dripping on the boards. She has not taken off her hood. "You're the one with the dice," she says. "They say you go out and come back."
 Her name is Wren. Three nights ago her father, Hobb, walked into Marrowmere lake with his boots on. He was not the first. Every night since midsummer the bell of the drowned abbey rings from the bottom of the lake, and every night someone answers it.
@@ -664,10 +663,11 @@ type: ending
 
 + drowned: Drowned
   if: defeat or fallen
-  [i]And so the lake kept another one.[/i]
-  They say in Marrowmere that a traveller went down the abbey stair and never came up, and that the bell rang all that winter, and that by spring there were not enough fishermen left to mend the nets.
-  [i]But tales can be told again. Come back to the fire when you're ready. The bell is still ringing.[/i]
-  do: mark drowned_before; chronicle "Marrowmere: drowned, until you return."; lose_wager
+  [i]And so the lake very nearly kept another one.[/i]
+  Wren's net brings you up at dawn, half drowned, a mile down the shore. She sits with you until you can breathe properly, and then she goes home without a word.
+  The bell rang all that winter. By spring there were not enough fishermen left in Marrowmere to mend the nets.
+  [i]Not every tale ends with the bell stopping. This one didn't. Wren still comes to the tavern, and she still sits at her window, and she still talks to you, which is more than I would manage.[/i]
+  do: mark bell_ringing; chronicle "Marrowmere: the bell kept ringing, and the lake kept the village."; lose_wager
 
 + rest: Rest
   if: climax==freed

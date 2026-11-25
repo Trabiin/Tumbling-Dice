@@ -35,6 +35,7 @@ Snow against the window. The whole tavern crowded round the fire, and nobody tal
 [i]But the Wood liked the stories. So it let her live, and it kept me. A tale at a hearth for every soul it takes, until somebody who's heard them sits down in my place. Win, and I'm free. Lose, and you're me.[/i]
 ? seen:wood_sworn :: [i]And you promised it you would. I heard you. I told you not to.[/i]
 ? seen:saint_dice :: Wenna looks at the pouch where you keep the saint's dice, and then away.
+? seen:saint_lost :: Wenna doesn't look at your Pouch. There's nothing from the saint in it. The Prior sold the reliquary in the end, and neither of you has asked who to.
 
 * go: "Then I'll sit down in your place."
   temper: duty +1
@@ -352,11 +353,14 @@ Dawn comes up grey and pink over Sallow Wood.
 ## ending: How It Ended
 type: ending
 
-+ lost: The Longest Night
++ lost: The Tale Goes On
   if: defeat or fallen
   [i]And the Wood kept the night, and the night was long, and in the morning the stones found you lying in the snow inside their ring, alive, with Wenna's blanket over you.[/i]
-  Aldous Penhallow is still at the hearth. You can hear him, if you listen: telling tales, as he has for fifty years. The Wood will lay a place again next winter. It always does.
-  do: mark table_lost; chronicle "The Teller's Tale: the Wood kept the longest night."
+  The Wood can't keep what didn't finish the game. You fell before the last throw, and a wager not thrown is no wager at all.
+  Wenna takes you home in the hired cart. Halfway down the hill she says, "He'd have liked you," and then nothing more.
+  Aldous Penhallow is still at the hearth. You can hear him, if you listen: telling tales, as he has for fifty years. He tells one now about a traveller who sat at the Wood's table on the longest night and threw for him, and very nearly won. He tells it well. He doesn't look at you while he tells it.
+  [i]That's the trouble with tables, traveller. Somebody has to lose at them. I've had fifty years to get used to it. Pull your stool in. I've a great many more of these.[/i]
+  do: mark table_lost; mark campaign_done; chronicle "The Teller's Tale: the Wood kept the longest night, and Aldous Penhallow stayed at the hearth."
 
 + freed: Free and Fair
   if: freed and not broken and not wenna_paid

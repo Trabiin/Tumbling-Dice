@@ -31,6 +31,7 @@ Mother Kettle sits down at your table, and for the first time since you've known
 ? seen:ledger_kept :: "You've still got the Duke's book in your coat," she says. "Everybody knows. That makes you either very brave or very stupid. I need one of those tonight."
 ? seen:ledger_crown :: She's thinner. There's a warrant out for her in Saltreach with her name on it, thanks to you. "No hard feelings," she says, and seems almost to mean it.
 ? seen:ledger_kettle :: She has the whole river in her pocket now, and it shows: rings on every finger, and two of her crew at the door.
+? fell:dukes_ledger :: She looks at the scar the Seawatch rocks left on your hand. "The sea gave you back," she says. "Let's see if the river's as generous."
 ? seen:duke_fled :: "The Duke's gone to ground," she says. "In the one place in Saltreach the Crown doesn't know about."
 "There's a Mint under Saltreach," she says. "The old city's, from before the plague, when they sank the treasury to hide it. Three hundred years under the river. Gold to the ceiling, they say, and a keeper made of brass who weighs everything that comes in." She looks at her hands. "My brother Tobin found the way in. Ten years ago. Then he walked into Marrowmere lake, and never came out."
 ? seen:kettle_informer :: [i]You know her page in the Duke's ledger. Eleven years, forty crowns a season. You've never asked her why. Perhaps you're about to find out.[/i]

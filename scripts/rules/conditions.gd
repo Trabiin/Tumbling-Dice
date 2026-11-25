@@ -13,6 +13,7 @@ extends RefCounted
 ##   rumour:tide_turn                 a Rumour you hold (from this tale or an earlier one)
 ##   told:drowned_bell                you have told that tale (any ending)
 ##   ended:drowned_bell               it ended without defeat
+##   fell:drowned_bell                it ended in defeat
 ##   missed:siege_holloway            it went by without you
 ##   ending:drowned_bell==rest        how it ended (the last ending that was not a defeat)
 ##   standing:guild>=1                faction standing, -3 to 3 (guild, abbey, crown, holloway...)
@@ -61,6 +62,8 @@ static func _atom(a: String, ctx: Dictionary) -> bool:
 		return camp != null and camp.told(a.substr(5))
 	if a.begins_with("ended:"):
 		return camp != null and camp.done(a.substr(6))
+	if a.begins_with("fell:"):
+		return camp != null and camp.fell(a.substr(5))
 	if a.begins_with("missed:"):
 		return camp != null and camp.missed.has(a.substr(7))
 	if a == "fallen":

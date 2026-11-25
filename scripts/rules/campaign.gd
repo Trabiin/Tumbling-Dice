@@ -183,9 +183,15 @@ func told(tale_id: String) -> bool:
 	return tales.has(tale_id)
 
 
-## The tale has ended at least once without defeat. Patrons do not offer it again.
+## The tale ended without defeat.
 func done(tale_id: String) -> bool:
 	return tales.has(tale_id) and bool(tales[tale_id].get("won", false))
+
+
+## The tale ended in defeat. A defeat is an ending like any other: the tale is told, patrons do
+## not offer it again, and the tales after it read how you fell.
+func fell(tale_id: String) -> bool:
+	return tales.has(tale_id) and not bool(tales[tale_id].get("won", false))
 
 
 ## How a tale ended: the last ending that was not a defeat, or the defeat if that is all there is.

@@ -6,7 +6,7 @@ arc: kettle
 order: 2
 stakes: 3
 pitch: The Duke of Saltreach keeps a ledger of every man he has ever bought, and Mother Kettle wants it before the masque is over.
-offer: ended:long_con
+offer: told:long_con
 expires: winter
 missed: At midwinter the Duke burned his ledger in his own hearth, and every name in it slept easier. Kettle doesn't mention it. She doesn't have to.
 teller: triumph :: Now that was a masque. They'll be talking about it in Seawatch House for a generation, behind their fans.
@@ -30,6 +30,8 @@ token: kettle_trusts => flag "Kettle's word, given again"
 ? seen:kettle_crossed :: Mother Kettle sits down at your table. She doesn't bring you a drink. "You took the Duke's gold and left me holding forty wet boats," she says pleasantly. "I've decided to forgive you. Because I need you. When I stop needing you, we'll talk again."
 ? seen:deeds_returned :: Mother Kettle sits down at your table with two cups. "Forty boats," she says. "Every family on the river knows your face. You're a saint now. It's terrible for business." She grins. "I've got another job."
 ? seen:kettle_partner and not seen:deeds_returned :: Mother Kettle sits down at your table with two cups and a pack of cards. "Partner," she says.
+? seen:con_rumbled :: Mother Kettle sits down at your table and deals you a hand without asking. "A week in the Saltreach gaol," she says. "Everybody should do one. Teaches you to keep your hat on." The forty boats are still in the Duke's impound. Neither of you mentions them.
+? seen:con_rumbled :: "Grisewold's put the word out about the pair of us," she adds. "So we go in masked. Luckily, I know a party."
 ? seen:silas_fled :: "Silas Crane is in Seawatch House," she adds, "on the Duke's payroll, eating off silver."
 "The Duke of Saltreach," she says, "Orrin Mallory, keeps a ledger. Every man he's ever bought, and what he paid, and what for. Guild masters. Magistrates. Abbots. Me, once or twice." She shuffles. "Whoever holds that book holds the river."
 "Midsummer, he throws a masque at Seawatch House. Five hundred guests in masks, and the ledger in the map room on the second floor." She lays down a card: the King of Coins. "I want it."
@@ -79,6 +81,7 @@ At the doors, the Steward of Seawatch House checks every invitation with a gold 
 * invite: Present an invitation. Somebody's.
   challenge: kind=test difficulty=standard tries=2 title="A forged invitation"
   mod: seen:grisewold_ruined => progress=-2
+  mod: seen:con_rumbled => progress=2
   approach guile: Grisewold's invitation, stolen from his cabin on the Swan. He won't be using it.
   approach lore: Forge one: you've seen enough of the Duke's seals.
   approach grace: Arrive on a lord's arm, and let him do the explaining.

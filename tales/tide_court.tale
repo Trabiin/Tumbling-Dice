@@ -6,7 +6,7 @@ arc: wren
 order: 3
 stakes: 1
 pitch: The lake is rising at Marrowmere, and Wren says the drowned are holding court under it. Somebody is going to be judged.
-offer: ended:bell_market and not season==spring and not season==summer
+offer: told:bell_market and not season==spring and not season==summer
 teller: triumph :: Even the lake goes quiet for that one.
 teller: triumph :: Somewhere under the water, a drowned bell rings once, approving.
 teller: mixed :: Through, and the lake takes its tithe. It always has.
@@ -25,9 +25,9 @@ tile: inn
 at: 0, 0
 token: wren_along => handbell "Wren, coming with you"
 
-? seen:lake_lost :: [i]The lake is still rising. The court is still sitting. Wren is still waiting for you.[/i]
+? seen:market_lost :: Wren comes in out of the rain and stands by your table, dripping. "He brought them back," she says. "Ormond. All four hundred, on his barge, and he's anchored over the abbey." She sits down at last. "I'm not asking you to win this time. I'm asking you to come."
 ? seen:drowned_home :: Wren comes in out of the rain with lake water in her hair and puts a wet hand on your shoulder, which is how she says hello now.
-? not seen:drowned_home :: Wren comes in out of the rain and sits down across from you without a word, and for a while doesn't say anything at all.
+? not seen:drowned_home and not seen:market_lost :: Wren comes in out of the rain and sits down across from you without a word, and for a while doesn't say anything at all.
 "The lake's rising," she says. "Not like a flood. Like it's breathing in. And at night the drowned come up and stand in the shallows, all of them, facing the abbey, like they're waiting for something."
 "Gran says it's the Tide Court. Once in a long while, on the autumn tide, the drowned sit in judgement over whoever wronged the lake. And then the lake gives its verdict." She looks at you. "She says this time they've summoned someone."
 ? seen:marrowmere_flooded :: [i]Marrowmere is half under water already. The woman by the fire tonight came from there.[/i]
@@ -465,7 +465,7 @@ type: ending
   if: defeat or fallen
   [i]And so the lake rose, and kept rising, and the court sat on without you.[/i]
   You wake on the shore at Marrowmere at dawn, coughing up lake water, with Wren pressing on your chest. She doesn't say anything. She doesn't have to.
-  [i]Get warm. Get mended. The court sits until the tide turns, and the lake is patient.[/i]
+  [i]The water never quite went down that winter. Marrowmere is a village on stilts now, and the drowned walk the shallows at dusk, and Wren rows out sometimes and talks to them. Somebody has to.[/i]
   do: mark lake_lost; chronicle "The Tide Court rose against you, and the lake kept rising."
 
 + peace: The Verdict of the Lake

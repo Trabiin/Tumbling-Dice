@@ -23,7 +23,6 @@ at: 0, 0
 token: swore_ashgrove => seal "Sworn to the captain"
 token: paid => coins "The captain's last coins"
 
-? seen:watch_lost :: [i]Another traveller sat in that chair, not long ago. The captain still sets out the same two cups.[/i]
 [i]Now. This one has no ghosts in it, or not the kind you think. Just men, and a tower, and a night nobody talks about.[/i]
 The man at the table by the door has sat with his back to the wall every night this season. Grey at the temples, a soldier's hands, a sword across his knees, and on his boots the pale marks where spurs used to be.
 "Ashgrove," he says. "I was captain of the Greyfell company, on the northern border. Two winters ago we held the watchtower on Greyfell ridge, and one night we left it. Every man. They took my spurs for that, and they were right to."
@@ -522,7 +521,7 @@ type: ending
   if: defeat or fallen
   [i]And so the tower kept one more.[/i]
   They found you at dawn on the ridge, the shepherds of Greyfell, and carried you down to Tamsin's fire. The tower burned all night. The banner, the box, whatever truth was in it: ash, on the wind, over the border.
-  [i]Ashgrove still sits at his table. He doesn't blame you. That's the worst of it. Come back when you're mended. The tower isn't going anywhere, and neither is he.[/i]
+  [i]Ashgrove still sits at his table. He doesn't blame you. That's the worst of it. Whatever was in that box, he will have to go on without it now, and so will you.[/i]
   do: mark watch_lost; chronicle "The Greyfell watchtower burned with everything in it."
 
 + both: Banner and Letter
