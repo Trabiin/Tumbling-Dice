@@ -476,7 +476,7 @@ type: ending
   if: defeat or fallen
   [i]And the would-be king went down the mountain road with his banners up, and nobody stood in his way.[/i]
   They carry you to the bothy, where a shepherd sets your bones. By the time you can walk, Harrow is at Holloway's walls.
-  [i]Tales can be told again. But armies don't wait for second tellings. Get well, and get to Holloway.[/i]
+  [i]Armies don't wait for anyone to get well. Harrow didn't. If Holloway is going to hold now, it will have to hold against all of him.[/i]
   do: mark road_lost; chronicle "Harrow came down the mountain road unopposed."
 
 + joined: Long Live the King

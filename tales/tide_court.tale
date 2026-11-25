@@ -25,7 +25,6 @@ tile: inn
 at: 0, 0
 token: wren_along => handbell "Wren, coming with you"
 
-? seen:lake_lost :: [i]The lake is still rising. The court is still sitting. Wren is still waiting for you.[/i]
 ? seen:drowned_home :: Wren comes in out of the rain with lake water in her hair and puts a wet hand on your shoulder, which is how she says hello now.
 ? not seen:drowned_home :: Wren comes in out of the rain and sits down across from you without a word, and for a while doesn't say anything at all.
 "The lake's rising," she says. "Not like a flood. Like it's breathing in. And at night the drowned come up and stand in the shallows, all of them, facing the abbey, like they're waiting for something."
@@ -465,7 +464,7 @@ type: ending
   if: defeat or fallen
   [i]And so the lake rose, and kept rising, and the court sat on without you.[/i]
   You wake on the shore at Marrowmere at dawn, coughing up lake water, with Wren pressing on your chest. She doesn't say anything. She doesn't have to.
-  [i]Get warm. Get mended. The court sits until the tide turns, and the lake is patient.[/i]
+  [i]The water never quite went down that winter. Marrowmere is a village on stilts now, and the drowned walk the shallows at dusk, and Wren rows out sometimes and talks to them. Somebody has to.[/i]
   do: mark lake_lost; chronicle "The Tide Court rose against you, and the lake kept rising."
 
 + peace: The Verdict of the Lake

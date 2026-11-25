@@ -176,7 +176,7 @@ Effects are separated by `;`. Words with spaces go in double quotes. Lists go in
 | `fallen` | You have taken Wounds enough to lose the tale (use it on the defeat ending: `if: defeat or fallen`) |
 | `seen:drowned_before` | A campaign Chronicle mark exists |
 | `rumour:tide_turn` | You hold that rumour, from this tale or an earlier one |
-| `told:drowned_bell`, `ended:drowned_bell`, `missed:siege_holloway` | You have told that tale (any ending), ended it without defeat, or let it go by |
+| `told:drowned_bell`, `ended:drowned_bell`, `fell:drowned_bell`, `missed:siege_holloway` | You have told that tale (any ending), ended it without defeat, ended it in defeat, or let it go by. A defeat counts as told: patrons never offer a tale twice |
 | `ending:drowned_bell==rest` | How that tale ended (the last ending that was not a defeat) |
 | `standing:guild>=1` | Faction standing (campaign plus anything gained in this tale) |
 | `season==winter`, `night>=7` | The calendar: four seasons of six nights; nights count from 1 for the year |

@@ -75,7 +75,7 @@ static func ctx(campaign) -> Dictionary:
 
 ## Is this tale on offer tonight?
 static func offered(campaign, h: Dictionary) -> bool:
-	if campaign.done(h.id) or campaign.missed.has(h.id):
+	if campaign.told(h.id) or campaign.missed.has(h.id):
 		return false
 	return Cond.check(String(h.offer), ctx(campaign))
 
@@ -101,7 +101,7 @@ static func offers(campaign, cat := []) -> Array:
 ## How the patron's offer reads at their table, and whether it is running out.
 static func offer_note(campaign, h: Dictionary) -> String:
 	var exp := String(h.get("expires", ""))
-	if campaign.done(h.id) or exp == "" or not exp in Campaign.SEASONS:
+	if campaign.told(h.id) or exp == "" or not exp in Campaign.SEASONS:
 		return ""
 	var left: int = Campaign.SEASONS.find(exp) * Campaign.NIGHTS_PER_SEASON + 1 - campaign.night
 	if left <= 0:
@@ -141,7 +141,7 @@ static func _turn_season(campaign, cat: Array) -> Array:
 	var s: String = campaign.season()
 	out.append({"text": s.capitalize(), "style": "scene"})
 	for h in cat:
-		if String(h.expires) == s and not campaign.done(h.id) and not campaign.missed.has(h.id):
+		if String(h.expires) == s and not campaign.told(h.id) and not campaign.missed.has(h.id):
 			campaign.missed.append(h.id)
 			var txt := String(h.missed) if String(h.missed) != "" else "%s went by without you." % h.title
 			out.append({"text": "[i]%s[/i]" % txt, "style": "teller"})

@@ -26,7 +26,6 @@ tile: inn
 at: 0, 0
 token: wren_along => handbell "Wren, coming with you"
 
-? seen:market_lost :: [i]You've heard this one before. Ormond is still buying. Wren is still asking.[/i]
 ? ending:drowned_bell==rest :: Wren sits down at your table as if it were hers, which these days it nearly is.
 ? ending:drowned_bell==bargain :: Wren comes to your table, but doesn't sit. She hasn't forgiven you for selling the bell. She's come anyway.
 ? ending:drowned_bell==silence :: Wren sits down across from you. She still wears a sliver of the broken bell on a cord round her neck.
@@ -397,7 +396,7 @@ type: ending
   if: defeat or fallen
   [i]And so Ormond Vane went south with the river, and four hundred servants who never complain.[/i]
   You wake in the bridge chapel with a candle burning beside you and Pell the fence sitting at your feet, of all people. "You owe me for the candle," he says.
-  [i]Come back when you're mended. The market will still be there. So, I'm afraid, will Ormond.[/i]
+  [i]The market packed up and went south without you, and Ormond with it, and everything he bought. Wren doesn't say she blames you. She doesn't say much at all, for a while.[/i]
   do: mark market_lost; chronicle "Ormond Vane went south with the drowned of Marrowmere."
 
 + rest: Called Home

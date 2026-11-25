@@ -405,7 +405,7 @@ type: ending
   [i]And so Holloway fell, in the last week of autumn, with the snow coming.[/i]
   You wake in a cart going south, among the wounded, and do not need to be told. Behind you there is smoke on the hill.
   ? not ashgrove_fell :: Ashgrove is in the next cart. He hasn't spoken since the wall came down.
-  [i]A tale can be told again. A town takes longer. Come back to the fire.[/i]
+  [i]Some towns get rebuilt. Some become a name on an old map. We'll know which in a year or two. Come and sit by the fire. You stood on the wall, and that counts, even so.[/i]
   do: mark holloway_fell; chronicle "Holloway fell to Harrow."; standing Holloway -1
 
 + last: The Captain's Last Stand
