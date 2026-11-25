@@ -200,7 +200,7 @@ msgstr ""
 msgid "Assessor Grisewold"
 msgstr ""
 
-#: scripts/rules/patrons.gd:42
+#: scripts/rules/patrons.gd:45
 msgid "Autumn, and the road from the north fills with carts. The Pretender's men are taking the harvest, and the people of the hill farms are walking south ahead of them."
 msgstr ""
 
@@ -1008,7 +1008,7 @@ msgstr ""
 msgid "Maud looks you up and down. \"Nothing wrong with you that sleep won't fix. Off you go.\""
 msgstr ""
 
-#: scripts/rules/patrons.gd:201
+#: scripts/rules/patrons.gd:204
 msgid "Maud treats your %s for nothing, and then hands you a mop. Two nights of boiling bandages and carrying slops later, you are square. (two nights)"
 msgstr ""
 
@@ -1424,7 +1424,7 @@ msgstr ""
 msgid "Silas Crane's d6"
 msgstr ""
 
-#: scripts/rules/patrons.gd:198
+#: scripts/rules/patrons.gd:201
 msgid "Sister Maud sets your %s, mutters a prayer over it and a worse word under it, and sends you up to bed. (-%d Coin, a night)"
 msgstr ""
 
@@ -1708,6 +1708,10 @@ msgstr ""
 msgid "The Wood's Huntsman"
 msgstr ""
 
+#: scripts/rules/patrons.gd:42
+msgid "The autumn rains come, and the lake rises, and under it the bell is still ringing. Half of Marrowmere sleeps in the abbey barns on the hill now. Wren brings her net to the tavern to mend, because there is nowhere left at home to spread it."
+msgstr ""
+
 #: scripts/rules/patrons.gd:39
 msgid "The autumn rains come, and the lake rises. A woman from Marrowmere sits by the fire tonight with nothing but the coat she ran in. She looks at your Pouch, where the Bellmetal hums, and then away."
 msgstr ""
@@ -1720,7 +1724,7 @@ msgstr ""
 msgid "The file has errors; fix them and press Reload file."
 msgstr ""
 
-#: scripts/rules/patrons.gd:45
+#: scripts/rules/patrons.gd:48
 msgid "The first snow. By morning the mountain road is shut, and it will stay shut until spring. The tavern fills with people who meant to be somewhere else."
 msgstr ""
 
@@ -1756,7 +1760,7 @@ msgstr ""
 msgid "The patrons' tables, Hollis's shelf with your dice, old Brannoc the Dicewright, and Sister Maud's corner."
 msgstr ""
 
-#: scripts/rules/patrons.gd:161
+#: scripts/rules/patrons.gd:164
 msgid "The season turns, and your %s mends on its own."
 msgstr ""
 
@@ -1828,7 +1832,7 @@ msgstr ""
 msgid "Translations live in the locale folder as .po files."
 msgstr ""
 
-#: scripts/rules/patrons.gd:183
+#: scripts/rules/patrons.gd:186
 msgid "Treating a Wound costs %d Coin."
 msgstr ""
 
@@ -1960,7 +1964,7 @@ msgstr ""
 msgid "You deal %d%s"
 msgstr ""
 
-#: scripts/rules/patrons.gd:181
+#: scripts/rules/patrons.gd:184
 msgid "You have no Wounds to treat."
 msgstr ""
 

@@ -6,7 +6,7 @@ arc: wren
 order: 2
 stakes: 4
 pitch: A collector at the Saltreach river market is buying everything that came out of Marrowmere lake, and Wren thinks she knows why.
-offer: ended:drowned_bell
+offer: told:drowned_bell
 expires: winter
 missed: The river froze, and the market went south for the winter, and Ormond Vane went with it, with everything he had bought.
 teller: triumph :: They'll talk about that on the river until the ice comes.
@@ -30,10 +30,12 @@ token: wren_along => handbell "Wren, coming with you"
 ? ending:drowned_bell==bargain :: Wren comes to your table, but doesn't sit. She hasn't forgiven you for selling the bell. She's come anyway.
 ? ending:drowned_bell==silence :: Wren sits down across from you. She still wears a sliver of the broken bell on a cord round her neck.
 ? ending:drowned_bell==greed :: Wren comes to your table and looks at your Pouch, where the Bellmetal hums, before she looks at you.
+? fell:drowned_bell :: Wren comes to your table in a black shawl that isn't hers. Her gran's, you think. She doesn't mention the abbey stair, or the morning on the shore, and neither do you.
 "There's a man at the Saltreach river market," she says. "Ormond Vane. He calls himself a collector. He's been buying everything that came out of the lake: nets, boats, rings off drowned fingers. Gran's neighbour sold him her husband's boots."
 "And now he's bought the Register. The book from the abbey, with all their names in it." Her voice drops. "You can call the drowned by name, Gran used to say. If you know it, they come."
 ? ending:drowned_bell==bargain :: "And he's bought the bell," she says. "From Mother Kettle. Your partner."
 ? ending:drowned_bell==greed :: "He's asking after the abbey's gold, too," she says, not looking at you. "Says he'll pay double what anyone else would."
+? fell:drowned_bell :: "The bell never stopped," she says. "There's more of them under the water every week, and he's buying every one the lake gives back. Gran went in at Martinmas." She says it flatly, the way you say a thing you've said too many times already. "You owe her this. So do I."
 [i]A collector of the drowned, with a book of their names. I don't care for the sound of that, and I've heard most things.[/i]
 
 * promise: "Then we take the names back."
@@ -348,6 +350,7 @@ Out of the river, one by one, the drowned come up, and stand dripping on the qua
   temper: duty +1
   combat: foe=ormond
   mod: sold_gold => resolve=6
+  mod: seen:bell_ringing => resolve=3
   mod: drowned_freed => no_wardens=true
   mod: ormond_shamed => resolve=-3
   mod: ormond_warned => ambushed=1
@@ -397,7 +400,7 @@ type: ending
   [i]And so Ormond Vane went south with the river, and four hundred servants who never complain.[/i]
   You wake in the bridge chapel with a candle burning beside you and Pell the fence sitting at your feet, of all people. "You owe me for the candle," he says.
   [i]The market packed up and went south without you, and Ormond with it, and everything he bought. Wren doesn't say she blames you. She doesn't say much at all, for a while.[/i]
-  do: mark market_lost; chronicle "Ormond Vane went south with the drowned of Marrowmere."
+  do: mark market_lost; mark ormond_escaped; if sold_gold then mark sold_gold; chronicle "Ormond Vane went south with the drowned of Marrowmere."
 
 + rest: Called Home
   if: climax==rest

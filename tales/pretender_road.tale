@@ -6,7 +6,7 @@ arc: ashgrove
 order: 2
 stakes: 2
 pitch: Lord Marshal Harrow calls himself king and is marching south on the mountain road. The captain wants him met before the snow.
-offer: ended:last_watch
+offer: told:last_watch
 expires: winter
 missed: Snow closed the mountain road. Harrow came down it before the snow did, and nobody stood in his way.
 teller: triumph :: Now that is how you meet a would-be king on his own road.
@@ -26,6 +26,8 @@ token: carry_letter => seal "The Marshal's letter, for the Crown"
 
 ? seen:banner_home :: The Greyfell banner hangs over the captain's table now, scorched and proud.
 ? seen:tower_burned :: The captain's table is bare. He hasn't been sleeping.
+? seen:watch_lost :: The captain's table is bare, and there are two cups on it, as always. He fills yours before you sit, and doesn't mention the tower. You notice that he's stopped wearing the Greyfell grey.
+? seen:watch_lost :: "Whatever was in that box," he says at last, "Harrow didn't need it. He's coming anyway."
 Ashgrove has a map spread across his table, held down with cups. "Harrow," he says, before you sit. "He's done waiting. He's calling himself king, and he's bringing three hundred men down the mountain road to prove it. The first town in his way is Holloway." He taps the map. "My town. My mother's buried there."
 ? seen:harrow_letter :: "The letter you brought me," he says. "If it reaches the Crown's magistrate at Kestrel Bridge before Harrow does, the garrison will hold the bridge against him. If it doesn't, they'll open the gate and kneel."
 ? not seen:harrow_letter :: "There's a Crown garrison at Kestrel Bridge, and a magistrate who'll kneel to whoever arrives first. I need someone to arrive first."

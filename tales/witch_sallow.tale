@@ -27,6 +27,7 @@ at: 0, 0
 token: promised_pilgrim => candle "A promise to the stranger"
 
 The stool by the hearth isn't empty tonight. The hooded stranger is back, travel-stained, throwing their six dice into the wooden bowl. When you sit down they stop, and take something out of their coat: a single die of black wood, old and smooth, with no numbers on it at all.
+? fell:strangers_throw :: "Pip still has your scarf, you know," the stranger says. "The moor beat you, that night. You went back out the next evening anyway. The Wood will like that."
 ? seen:hounds_fed :: "The miller's hounds still follow you about, I hear," the stranger says. "Good. The Wood likes people that dogs like."
 "This has to go to Mag Sallow, the witch in Sallow Wood, before the moon is full," they say. "I'd take it myself. But the Wood knows me, and it wouldn't let me out again." They hesitate. "It knows you, too. A little. From the tales."
 [i]Ah. This one. I'd hoped she'd ask somebody else.[/i]

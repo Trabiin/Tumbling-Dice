@@ -29,6 +29,7 @@ token: promised_wenna => candle "A promise to Wenna"
 ? seen:teller_named :: Wenna sits by the hearth with her hood down. Without it she's a small old woman with white hair cut short like a soldier's and eyes the colour of the hearthstone. She nods to the empty stool by the chimney breast when you sit down, as if introducing you.
 ? not seen:teller_named :: The hooded stranger is at the hearth again. Tonight, for the first time, they lower the hood: an old woman, white hair cut short, eyes the colour of the hearthstone. "Wenna," she says. "We've been introduced, more or less."
 "My brother and I were foundlings," she says. "Left on the step of Saint Hollow's priory, up on Greyfell Moor, sixty years back. The sisters raised us. Saint Hollow raised us, they used to say." She turns a die over and over in her fingers. "There's something in the saint's reliquary that I need for the longest night. And the Prior is going to sell it."
+? seen:wood_kept :: "You were in the Wood a week," she says. "It kept you longer than it keeps most, and it let you go. It's never let me go twice." She looks at your hands, which still smell of moss when it rains. "Whatever it wanted with you, it hasn't finished."
 ? seen:wood_sworn :: "You promised the Wood you'd come to its table," she says. "So did I, once. You'll want every advantage."
 ? seen:die_given :: "The willows have Aldous's black die now," she says. "So I'll need something else to bargain with."
 ? seen:ormond_escaped :: "He's selling it to a collector from Saltreach," she adds. "A thin man in green. Vane."
